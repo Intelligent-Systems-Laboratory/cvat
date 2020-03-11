@@ -17,7 +17,7 @@ const defaultState: SettingsState = {
     shapes: {
         colorBy: ColorBy.INSTANCE,
         opacity: 3,
-        selectedOpacity: 30,
+        selectedOpacity: 0,   // EDITED FROM 30 for USER STORY 1
         blackBorders: false,
     },
     workspace: {

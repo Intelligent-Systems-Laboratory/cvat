@@ -163,6 +163,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         if (prevProps.annotations !== annotations || prevProps.frameData !== frameData) {
             this.updateCanvas();
+            // EDITED START for USER STORY 2
+            if (annotations.length > prevProps.annotations.length) {
+                this.contextMenuOnDraw()
+            }
+            // EDITED END
         }
 
         if (prevProps.frame !== frameData.number && resetZoom) {
@@ -190,6 +195,22 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     public componentWillUnmount(): void {
         window.removeEventListener('resize', this.fitCanvas);
     }
+
+    // EDITED START for USER STORY 2
+    private contextMenuOnDraw(): void {
+        const {
+            annotations,
+            onActivateObject,
+            onUpdateContextMenu,
+        } = this.props;
+        onActivateObject(annotations[annotations.length - 1].clientID);
+        const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            onUpdateContextMenu(true, rect.right, rect.top);
+        }
+    }
+    // EDITED END
 
     private onShapeDrawn(event: any): void {
         const {

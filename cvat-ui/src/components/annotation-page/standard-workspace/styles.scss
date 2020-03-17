@@ -117,7 +117,7 @@
 }
 
 .cvat-canvas-context-menu {
-    opacity: 0.6;
+    opacity: 1;  // EDITED FROM 0.6 for USER STORY 2
     position: fixed;
     width: 300px;
     z-index: 10;

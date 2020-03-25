@@ -119,3 +119,65 @@
         margin: 0px 5px;
     }
 }
+<<<<<<< HEAD
+=======
+
+.cvat-canvas-context-menu {
+    opacity: 1;  // EDITED FROM 0.6 for USER STORY 2
+    position: fixed;
+    width: 300px;
+    z-index: 10;
+    max-height: 50%;
+    overflow-y: auto;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.cvat-canvas-z-axis-wrapper {
+    position: absolute;
+    background: $background-color-2;
+    bottom: 10px;
+    right: 10px;
+    height: 150px;
+    z-index: 100;
+    border-radius: 6px;
+    opacity: 0.5;
+    border: 1px solid $border-color-3;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3px;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    > .ant-slider {
+        height: 75%;
+        margin: 5px 3px;
+
+        > .ant-slider-rail {
+            background-color: #979797;
+        }
+
+        > .ant-slider-handle {
+            transform: none !important;
+        }
+    }
+
+    > i {
+        opacity: 0.7;
+        color: $objects-bar-icons-color;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &:active {
+            opacity: 0.7;
+        }
+    }
+}
+>>>>>>> dad2bff9d1854d036d3df3890655ba9c5da851ab

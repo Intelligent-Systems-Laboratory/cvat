@@ -66,6 +66,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private zoomHandler: ZoomHandler;
     private activeElement: ActiveElement;
 
+    // EDITED START for USER STORY 1
+    private backgroundOriginal: any;
+    private backgroundNew: any;
+    private lastShapeClicked: number;
+    // EDITED END
+
     private set mode(value: Mode) {
         this.controller.mode = value;
     }
@@ -403,6 +409,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.svgShapes[state.clientID].off('click.canvas');
             this.svgShapes[state.clientID].remove();
             delete this.drawnStates[state.clientID];
+            // EDITED START for USER STORY 1
+            if (state.clientID == this.lastShapeClicked) {
+                this.focusBox(false);
+                this.lastShapeClicked = null;
+            }
+            // EDITED END
         }
 
         this.addObjects(created, translate);
@@ -415,6 +427,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.activate(this.controller.activeElement);
             }
         }
+        // EDITED START for USER STORY 1
+        this.focusBox(true);
+        // EDITED END
     }
 
     private selectize(value: boolean, shape: SVG.Element): void {
@@ -630,6 +645,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 if (![Mode.ZOOM_CANVAS, Mode.GROUP].includes(this.mode) || event.which === 2) {
                     self.controller.enableDrag(event.clientX, event.clientY);
                 }
+                // EDITED START for USER STORY 1
+                if (this.lastShapeClicked != null){
+                    this.focusBox(false);
+                    this.lastShapeClicked = null;
+                }
+                // EDITED END
             }
         });
 
@@ -692,6 +713,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.moveCanvas();
                 this.resizeCanvas();
                 this.transformCanvas();
+                // EDITED START for USER STORY 1
+                this.getFilteredBG();
+                // EDITED END
             }
         } else if (reason === UpdateReasons.FITTED_CANVAS) {
             // Canvas geometry is going to be changed. Old object positions aren't valid any more
@@ -838,6 +862,40 @@ export class CanvasViewImpl implements CanvasView, Listener {
     public html(): HTMLDivElement {
         return this.canvas;
     }
+
+    // EDITED START for USER STORY 1
+    private getFilteredBG(): void {
+        var ctx = this.background.getContext("2d");
+        this.backgroundOriginal = ctx.getImageData(0, 0, this.background.width, this.background.height);
+        this.backgroundNew = new ImageData(
+            new Uint8ClampedArray(this.backgroundOriginal.data),
+            this.backgroundOriginal.width,
+            this.backgroundOriginal.height
+        )
+        for (var index = 0; index < this.backgroundOriginal.data.length; index+=4) {
+            this.backgroundNew.data[index] = 0;
+        }
+        ctx = null;
+    }
+
+    private focusBox(focusedBox: any): void {
+        if (focusedBox == true){
+            if (this.lastShapeClicked == this.activeElement.clientID && this.lastShapeClicked != null) {
+                var ctx = this.background.getContext("2d");
+                var pointsBBox = this.drawnStates[this.activeElement.clientID].points;
+                ctx.putImageData(this.backgroundNew, 0, 0);
+                ctx.putImageData(this.backgroundOriginal, 0, 0, pointsBBox[0], pointsBBox[1], pointsBBox[2] - pointsBBox[0], pointsBBox[3] - pointsBBox[1]);
+                pointsBBox = null;
+                ctx = null;
+            }
+        }
+        else if (focusedBox == false && this.lastShapeClicked != null){
+            var ctx = this.background.getContext("2d");
+            ctx.putImageData(this.backgroundOriginal, 0, 0);
+            ctx = null;
+        };
+    }
+    // EDITED END
 
     private saveState(state: any): void {
         this.drawnStates[state.clientID] = {
@@ -1131,9 +1189,21 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.content.append(shape.node);
         }
 
+        // EDITED START for USER STORY 1
+        (shape as any).on('click', (): void => {
+            if (this.lastShapeClicked != clientID){
+                this.lastShapeClicked = clientID;
+                this.focusBox(true);
+            }
+        })
+        // EDITED END
+
         if (!state.pinned) {
             (shape as any).draggable().on('dragstart', (): void => {
                 this.mode = Mode.DRAG;
+                // EDITED START for USER STORY 1
+                this.focusBox(false);
+                // EDITED END
                 if (text) {
                     text.addClass('cvat_canvas_hidden');
                 }
@@ -1161,6 +1231,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     this.drawnStates[state.clientID].points = points;
                     this.onEditDone(state, points);
                 }
+                // EDITED START for USER STORY 1
+                this.focusBox(true);
+                // EDITED END
             });
         }
 
@@ -1172,6 +1245,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         let resized = false;
         (shape as any).resize().on('resizestart', (): void => {
             this.mode = Mode.RESIZE;
+            // EDITED START for USER STORY 1
+            this.focusBox(false);
+            // EDITED END
             if (state.shapeType === 'rectangle') {
                 shapeSizeElement = displayShapeSize(this.adoptedContent, this.adoptedText);
             }
@@ -1211,6 +1287,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.drawnStates[state.clientID].points = points;
                 this.onEditDone(state, points);
             }
+            // EDITED START for USER STORY 1
+            this.focusBox(true);
+            // EDITED END
         });
 
         this.activeElement = {

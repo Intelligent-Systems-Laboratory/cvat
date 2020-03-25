@@ -230,6 +230,10 @@ export interface NotificationsState {
             undo: null | ErrorState;
             redo: null | ErrorState;
             search: null | ErrorState;
+            savingLogs: null | ErrorState;
+        };
+        boundaries: {
+            resetError: null | ErrorState;
         };
 
         [index: string]: any;
@@ -282,6 +286,7 @@ export enum StatesOrdering {
 export enum ContextMenuType {
     CANVAS = 'canvas',
     CANVAS_SHAPE = 'canvas_shape',
+    CANVAS_SHAPE_POINT = 'canvas_shape_point',
 }
 
 export enum Rotation {
@@ -301,6 +306,8 @@ export interface AnnotationState {
             visible: boolean;
             top: number;
             left: number;
+            type: ContextMenuType;
+            pointID: number | null;
         };
         instance: Canvas;
         ready: boolean;

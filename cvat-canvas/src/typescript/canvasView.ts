@@ -80,7 +80,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         return this.controller.mode;
     }
 
-    private onDrawDone(data: object, continueDraw?: boolean): void {
+    private onDrawDone(data: object | null, duration: number, continueDraw?: boolean): void {
         if (data) {
             const { zLayer } = this.controller;
             const event: CustomEvent = new CustomEvent('canvas.drawn', {
@@ -93,6 +93,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         zOrder: zLayer || 0,
                     },
                     continue: continueDraw,
+                    duration,
                 },
             });
 
@@ -143,12 +144,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.mode = Mode.IDLE;
     }
 
-    private onMergeDone(objects: any[]): void {
+    private onMergeDone(objects: any[]| null, duration?: number): void {
         if (objects) {
             const event: CustomEvent = new CustomEvent('canvas.merged', {
                 bubbles: false,
                 cancelable: true,
                 detail: {
+                    duration,
                     states: objects,
                 },
             });
@@ -469,6 +471,27 @@ export class CanvasViewImpl implements CanvasView, Listener {
             e.preventDefault();
         }
 
+        function contextmenuHandler(e: MouseEvent): void {
+            const pointID = Array.prototype.indexOf
+                .call(((e.target as HTMLElement).parentElement as HTMLElement).children, e.target);
+            if (self.activeElement.clientID !== null) {
+                const [state] = self.controller.objects
+                    .filter((_state: any): boolean => (
+                        _state.clientID === self.activeElement.clientID
+                    ));
+                self.canvas.dispatchEvent(new CustomEvent('point.contextmenu', {
+                    bubbles: false,
+                    cancelable: true,
+                    detail: {
+                        mouseEvent: e,
+                        objectState: state,
+                        pointID,
+                    },
+                }));
+            }
+            e.preventDefault();
+        }
+
         if (value) {
             (shape as any).selectize(value, {
                 deepSelect: true,
@@ -491,6 +514,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         });
 
                         circle.on('dblclick', dblClickHandler);
+                        circle.on('contextmenu', contextmenuHandler);
                         circle.addClass('cvat_canvas_selected_point');
                     });
 
@@ -500,6 +524,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         });
 
                         circle.off('dblclick', dblClickHandler);
+                        circle.off('contextmenu', contextmenuHandler);
                         circle.removeClass('cvat_canvas_selected_point');
                     });
 
@@ -725,6 +750,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
         } else if ([UpdateReasons.IMAGE_ZOOMED, UpdateReasons.IMAGE_FITTED].includes(reason)) {
             this.moveCanvas();
             this.transformCanvas();
+            if (reason === UpdateReasons.IMAGE_FITTED) {
+                this.canvas.dispatchEvent(new CustomEvent('canvas.fit', {
+                    bubbles: false,
+                    cancelable: true,
+                }));
+            }
         } else if (reason === UpdateReasons.IMAGE_MOVED) {
             this.moveCanvas();
         } else if ([UpdateReasons.OBJECTS_UPDATED, UpdateReasons.SET_Z_LAYER].includes(reason)) {
@@ -950,7 +981,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.activate(activeElement);
             }
 
-            if (state.points
+            if (state.points.length !== drawnState.points.length || state.points
                 .some((p: number, id: number): boolean => p !== drawnState.points[id])
             ) {
                 const translatedPoints: number[] = translate(state.points);
@@ -1229,6 +1260,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     ).map((x: number): number => x - offset);
 
                     this.drawnStates[state.clientID].points = points;
+                    this.canvas.dispatchEvent(new CustomEvent('canvas.dragshape', {
+                        bubbles: false,
+                        cancelable: true,
+                        detail: {
+                            id: state.clientID,
+                        },
+                    }));
                     this.onEditDone(state, points);
                 }
                 // EDITED START for USER STORY 1
@@ -1243,7 +1281,11 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         let shapeSizeElement: ShapeSizeElement | null = null;
         let resized = false;
-        (shape as any).resize().on('resizestart', (): void => {
+        (shape as any).resize().on('resizestart', (e: any): void => {
+            if (e.detail.event.detail.event.button === 2) {
+                e.preventDefault();
+                return;
+            }
             this.mode = Mode.RESIZE;
             // EDITED START for USER STORY 1
             this.focusBox(false);
@@ -1285,6 +1327,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 ).map((x: number): number => x - offset);
 
                 this.drawnStates[state.clientID].points = points;
+                this.canvas.dispatchEvent(new CustomEvent('canvas.resizeshape', {
+                    bubbles: false,
+                    cancelable: true,
+                    detail: {
+                        id: state.clientID,
+                    },
+                }));
                 this.onEditDone(state, points);
             }
             // EDITED START for USER STORY 1

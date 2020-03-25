@@ -7,11 +7,13 @@ import { AnyAction } from 'redux';
 import { Canvas, CanvasMode } from 'cvat-canvas';
 import { AnnotationActionTypes } from 'actions/annotation-actions';
 import { AuthActionTypes } from 'actions/auth-actions';
+import { BoundariesActionTypes } from 'actions/boundaries-actions';
 import {
     AnnotationState,
     ActiveControl,
     ShapeType,
     ObjectType,
+    ContextMenuType,
     Workspace,
 } from './interfaces';
 
@@ -24,6 +26,8 @@ const defaultState: AnnotationState = {
             visible: false,
             left: 0,
             top: 0,
+            type: ContextMenuType.CANVAS_SHAPE,
+            pointID: null,
         },
         instance: new Canvas(),
         ready: false,
@@ -104,6 +108,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 },
             };
         }
+        case BoundariesActionTypes.RESET_AFTER_ERROR:
         case AnnotationActionTypes.GET_JOB_SUCCESS: {
             const {
                 job,
@@ -153,6 +158,10 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                     activeLabelID: job.task.labels[0].id,
                     activeObjectType: job.task.mode === 'interpolation' ? ObjectType.TRACK : ObjectType.SHAPE,
                 },
+                canvas: {
+                    ...state.canvas,
+                    instance: new Canvas(),
+                },
                 colors,
             };
         }
@@ -163,15 +172,6 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                     ...state.job,
                     instance: undefined,
                     fetching: false,
-                },
-            };
-        }
-        case AnnotationActionTypes.CLOSE_JOB: {
-            return {
-                ...defaultState,
-                canvas: {
-                    ...defaultState.canvas,
-                    instance: new Canvas(),
                 },
             };
         }
@@ -931,6 +931,8 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 visible,
                 left,
                 top,
+                type,
+                pointID,
             } = action.payload;
 
             return {
@@ -942,6 +944,8 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                         visible,
                         left,
                         top,
+                        type,
+                        pointID,
                     },
                 },
             };
@@ -1065,10 +1069,9 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 },
             };
         }
+        case AnnotationActionTypes.CLOSE_JOB:
         case AuthActionTypes.LOGOUT_SUCCESS: {
-            return {
-                ...defaultState,
-            };
+            return { ...defaultState };
         }
         default: {
             return state;

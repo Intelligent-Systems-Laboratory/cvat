@@ -183,6 +183,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             if (annotations.length > prevProps.annotations.length) {
                 this.contextMenuOnDraw()
             }
+            else {
+                this.removeContextMenu()
+            }
             // EDITED END
         }
 
@@ -252,12 +255,19 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
         if (el) {
             const rect = el.getBoundingClientRect();
-            onUpdateContextMenu(true, rect.right, rect.top);
+            onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
         }
+    }
+
+    private removeContextMenu(): void {
+        const {
+            onUpdateContextMenu,
+        } = this.props;
+        onUpdateContextMenu(false, 10000, 10000, ContextMenuType.CANVAS_SHAPE);
     }
     // EDITED END
 
-    private onShapeDrawn(event: any): void {
+    private onCanvasShapeDrawn = (event: any): void => {
         const {
             jobInstance,
             activeLabelID,

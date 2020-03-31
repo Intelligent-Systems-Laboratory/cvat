@@ -176,7 +176,6 @@ polyline.cvat_canvas_shape_splitting {
 }
 
 // EDITED START MAGNIFYING GLASS
-
 #cvat_canvas_magnifying_glass_container {
     position: absolute;
     z-index: 4;
@@ -185,19 +184,6 @@ polyline.cvat_canvas_shape_splitting {
     height: 100%;
     pointer-events: none;
 }
-
-// #cvat_canvas_magnifying_glass {
-//     fill-opacity: 0;
-//     stroke-opacity: 1;
-//     fill: black;
-//     stroke: black;
-//     stroke-width: 5px;
-// }
-
-// #zoomed_image {
-//     position: relative;
-// }
-
 // EDITED END
 
 @keyframes loadingAnimation {

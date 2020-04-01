@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+import { ExtendedKeyMapOptions } from 'react-hotkeys';
 import { Canvas, RectDrawingMethod } from 'cvat-canvas';
 
 export type StringObject = {
@@ -323,6 +324,7 @@ export interface AnnotationState {
     player: {
         frame: {
             number: number;
+            filename: string;
             data: any | null;
             fetching: boolean;
             delay: number;
@@ -349,8 +351,8 @@ export interface AnnotationState {
         filtersHistory: string[];
         resetGroupFlag: boolean;
         history: {
-            undo: string[];
-            redo: string[];
+            undo: [string, number][];
+            redo: [string, number][];
         };
         saving: {
             uploading: boolean;
@@ -442,6 +444,8 @@ export interface SettingsState {
 
 export interface ShortcutsState {
     visibleShortcutsHelp: boolean;
+    keyMap: Record<string, ExtendedKeyMapOptions>;
+    normalizedKeyMap: Record<string, string>;
 }
 
 export interface CombinedState {

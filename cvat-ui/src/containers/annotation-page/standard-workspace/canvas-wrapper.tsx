@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+import { ExtendedKeyMapOptions } from 'react-hotkeys';
 import { connect } from 'react-redux';
 
 import CanvasWrapperComponent from 'components/annotation-page/standard-workspace/canvas-wrapper';
@@ -55,6 +56,7 @@ interface StateToProps {
     annotations: any[];
     frameData: any;
     frameAngle: number;
+    frameFetching: boolean;
     frame: number;
     opacity: number;
     colorBy: ColorBy;
@@ -77,6 +79,7 @@ interface StateToProps {
     curZLayer: number;
     contextVisible: boolean;
     contextType: ContextMenuType;
+    keyMap: Record<string, ExtendedKeyMapOptions>;
 }
 
 interface DispatchToProps {
@@ -129,6 +132,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 frame: {
                     data: frameData,
                     number: frame,
+                    fetching: frameFetching,
                 },
                 frameAngles,
             },
@@ -167,6 +171,9 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 blackBorders,
             },
         },
+        shortcuts: {
+            keyMap,
+        },
     } = state;
 
     return {
@@ -175,6 +182,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         jobInstance,
         frameData,
         frameAngle: frameAngles[frame - jobInstance.startFrame],
+        frameFetching,
         frame,
         activatedStateID,
         activatedAttributeID,
@@ -201,6 +209,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         contextVisible,
         contextType,
         workspace,
+        keyMap,
     };
 }
 

@@ -291,7 +291,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     private moveCanvas(): void {
-        for (const obj of [this.background, this.grid, this.loadingAnimation]) {
+        for (const obj of [this.background, this.grid]) {
             obj.style.top = `${this.geometry.top}px`;
             obj.style.left = `${this.geometry.left}px`;
         }
@@ -309,7 +309,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
     private transformCanvas(): void {
         // Transform canvas
-        for (const obj of [this.background, this.grid, this.loadingAnimation, this.content]) {
+        for (const obj of [this.background, this.grid, this.content]) {
             obj.style.transform = `scale(${this.geometry.scale}) rotate(${this.geometry.angle}deg)`;
         }
 
@@ -364,7 +364,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     private resizeCanvas(): void {
-        for (const obj of [this.background, this.grid, this.loadingAnimation]) {
+        for (const obj of [this.background, this.grid]) {
             obj.style.width = `${this.geometry.image.width}px`;
             obj.style.height = `${this.geometry.image.height}px`;
         }
@@ -730,10 +730,21 @@ export class CanvasViewImpl implements CanvasView, Listener {
             } else {
                 this.loadingAnimation.classList.add('cvat_canvas_hidden');
                 const ctx = this.background.getContext('2d');
-                this.background.setAttribute('width', `${image.width}px`);
-                this.background.setAttribute('height', `${image.height}px`);
+                this.background.setAttribute('width', `${image.renderWidth}px`);
+                this.background.setAttribute('height', `${image.renderHeight}px`);
+
                 if (ctx) {
-                    ctx.drawImage(image, 0, 0);
+                    if (image.imageData instanceof ImageData) {
+                        ctx.scale(image.renderWidth / image.imageData.width,
+                            image.renderHeight / image.imageData.height);
+                        ctx.putImageData(image.imageData, 0, 0);
+                        // Transformation matrix must not affect the putImageData() method.
+                        // By this reason need to redraw the image to apply scale.
+                        // https://www.w3.org/TR/2dcontext/#dom-context-2d-putimagedata
+                        ctx.drawImage(this.background, 0, 0);
+                    } else {
+                        ctx.drawImage(image.imageData, 0, 0);
+                    }
                 }
                 this.moveCanvas();
                 this.resizeCanvas();
@@ -1281,11 +1292,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         let shapeSizeElement: ShapeSizeElement | null = null;
         let resized = false;
-        (shape as any).resize().on('resizestart', (e: any): void => {
-            if (e.detail.event.detail.event.button === 2) {
-                e.preventDefault();
-                return;
-            }
+        (shape as any).resize().on('resizestart', (): void => {
             this.mode = Mode.RESIZE;
             // EDITED START for USER STORY 1
             this.focusBox(false);

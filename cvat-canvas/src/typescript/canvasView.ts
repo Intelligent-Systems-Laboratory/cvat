@@ -72,6 +72,15 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private lastShapeClicked: number;
     // EDITED END
 
+    // EDITED START FOR MAGNIFYING GLASS
+    private magnifyingGlassContainer: SVGSVGElement;
+    private magnifyingGlassForeignObject: SVGForeignObjectElement;
+    private magnifyingGlassImage: HTMLCanvasElement;
+    private circle: SVGCircleElement;
+    private border: SVGCircleElement;
+    private magnifyingGlassRadius: number;
+    // EDITED END
+
     private set mode(value: Mode) {
         this.controller.mode = value;
     }
@@ -312,6 +321,10 @@ export class CanvasViewImpl implements CanvasView, Listener {
         for (const obj of [this.background, this.grid, this.content]) {
             obj.style.transform = `scale(${this.geometry.scale}) rotate(${this.geometry.angle}deg)`;
         }
+
+        // EDITED START FOR MAGNIFYING GLASS
+        this.magnifyingGlassContainer.style.transform = `rotate(${this.geometry.angle}deg)`; 
+        // EDITED END
 
         // Transform grid
         this.gridPath.setAttribute('stroke-width', `${consts.BASE_GRID_WIDTH / (this.geometry.scale)}px`);
@@ -579,6 +592,56 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const gridRect: SVGRectElement = window.document
             .createElementNS('http://www.w3.org/2000/svg', 'rect');
 
+        // EDITED START FOR MAGNIFYING GLASS
+        this.magnifyingGlassRadius = 75;
+        this.magnifyingGlassContainer = window.document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this.magnifyingGlassForeignObject = window.document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+        const magnifyingGlassDiv = window.document.createElement('div');
+        this.magnifyingGlassImage = window.document.createElement('canvas');
+
+        this.magnifyingGlassContainer.setAttribute('id', 'cvat_canvas_magnifying_glass_container');
+        this.magnifyingGlassContainer.classList.add('cvat_canvas_hidden');
+        this.magnifyingGlassForeignObject.setAttribute('id', 'cvat_canvas_foreign');
+        this.magnifyingGlassForeignObject.setAttribute('height', `${this.magnifyingGlassRadius*2}`);
+        this.magnifyingGlassForeignObject.setAttribute('width', `${this.magnifyingGlassRadius*2}`);
+        this.magnifyingGlassImage.setAttribute('id', 'magnifying_glass_image');
+        this.magnifyingGlassImage.setAttribute('height', `${this.magnifyingGlassRadius*2}`);
+        this.magnifyingGlassImage.setAttribute('width', `${this.magnifyingGlassRadius*2}`);
+
+        // define clip path for 'border'
+        var defs = window.document.createElementNS('http://www.w3.org/2000/svg','defs');
+        var clipPath = window.document.createElementNS('http://www.w3.org/2000/svg','clipPath');
+        clipPath.setAttributeNS(null,'id','clip');
+        this.circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        this.circle.setAttributeNS(null,'id','circle');
+        this.circle.setAttributeNS(null,'cx',`${this.magnifyingGlassRadius}`);
+        this.circle.setAttributeNS(null,'cy',`${this.magnifyingGlassRadius}`);
+        this.circle.setAttributeNS(null,'r',`${this.magnifyingGlassRadius}`);
+        this.circle.setAttributeNS(null,'fill','#FFFFFF');
+        this.circle.setAttributeNS(null,'fill-opacity','0.0')
+        //separate circle for the border, can't use the same circle as above
+        this.border = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        this.border.setAttributeNS(null,'cx',`${this.magnifyingGlassRadius}`);
+        this.border.setAttributeNS(null,'cy',`${this.magnifyingGlassRadius}`);
+        this.border.setAttributeNS(null,'r',`${this.magnifyingGlassRadius}`);
+        this.border.setAttributeNS(null,'fill','#FFFFFF');
+        this.border.setAttributeNS(null,'style',"fill:none;stroke:#ff0000;stroke-width:3");
+
+        var use = document.createElementNS('http://www.w3.org/2000/svg','use');
+        use.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#circle');
+        defs.appendChild(clipPath);
+        clipPath.appendChild(use);
+        this.magnifyingGlassContainer.appendChild(defs);
+        this.magnifyingGlassContainer.appendChild(this.circle);
+        this.magnifyingGlassForeignObject.setAttribute('clip-path', 'url(#clip)');
+        magnifyingGlassDiv.appendChild(this.magnifyingGlassImage);
+        this.magnifyingGlassForeignObject.appendChild(magnifyingGlassDiv);
+        this.magnifyingGlassContainer.appendChild(this.magnifyingGlassForeignObject);
+        this.magnifyingGlassContainer.appendChild(this.border);
+        
+        this.canvas.appendChild(this.magnifyingGlassContainer);
+        // EDITED END
+
         // Setup loading animation
         this.loadingAnimation.setAttribute('id', 'cvat_canvas_loading_animation');
         loadingCircle.setAttribute('id', 'cvat_canvas_loading_circle');
@@ -686,6 +749,19 @@ export class CanvasViewImpl implements CanvasView, Listener {
         });
 
         this.content.addEventListener('wheel', (event): void => {
+            // EDITED START FOR MAGNIFYING GLASS
+            if (this.mode == Mode.RESIZE) {
+                if (event.deltaY < 0 && this.magnifyingGlassParameters.zoomScale > 30) {
+                    this.magnifyingGlassParameters.zoomScale -= 5;
+                    this.updateMagnifyingGlass();
+                } else if (event.deltaY > 0 && this.magnifyingGlassParameters.zoomScale < 180) {
+                    this.magnifyingGlassParameters.zoomScale += 5;
+                    this.updateMagnifyingGlass();
+                }
+                return
+            }
+            // EDITED END
+            
             const { offset } = this.controller.geometry;
             const point = translateToSVG(this.content, [event.clientX, event.clientY]);
             self.controller.zoom(point[0] - offset, point[1] - offset, event.deltaY > 0 ? -1 : 1);
@@ -698,6 +774,15 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         this.content.addEventListener('mousemove', (e): void => {
             self.controller.drag(e.clientX, e.clientY);
+
+            // EDITED START MAGNIFYING GLASS
+            this.magnifyingGlassParameters.cursorX = e.clientX;
+            this.magnifyingGlassParameters.cursorY = e.clientY;
+
+            if (this.mode == Mode.RESIZE) {
+                this.updateMagnifyingGlass();
+            }
+            // EDITED END
 
             if (this.mode !== Mode.IDLE) return;
             if (e.ctrlKey || e.shiftKey) return;
@@ -905,6 +990,60 @@ export class CanvasViewImpl implements CanvasView, Listener {
         return this.canvas;
     }
 
+    // EDITED START FOR MAGNIFYING GLASS
+    private magnifyingGlassParameters = {
+        cursorX: 0,
+        cursorY: 0,
+        resizePointID: '',
+        resizeRectID: '',
+        zoomScale: 100
+    }
+
+    private updateMagnifyingGlass(): void {
+        const [mgX, mgY] = translateToSVG(this.magnifyingGlassContainer, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
+        const width = this.magnifyingGlassImage.width;
+        const height = this.magnifyingGlassImage.height;
+        const point = window.document.getElementById(this.magnifyingGlassParameters.resizePointID)
+        const activeRect = window.document.getElementById(this.magnifyingGlassParameters.resizeRectID)
+        const rectbbox = (activeRect as any).getBBox()
+
+        const mgCtx = this.magnifyingGlassImage.getContext('2d');
+        const [cX, cY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
+        const bgX = cX - this.geometry.offset;
+        const bgY = cY - this.geometry.offset;
+        
+        const theta = Math.atan2((point.getAttribute('cy') as any) - (rectbbox.height/2 as any), (point.getAttribute('cx') as any) - (rectbbox.width/2 as any));
+        const rad = Math.sqrt((width*width) + (height*height)) / 2;
+
+        // move magnifying glass
+        this.border.setAttributeNS(null,'cx',`${mgX + (rad * Math.cos(theta))}`);
+        this.border.setAttributeNS(null,'cy',`${mgY + (rad * Math.sin(theta))}`);
+        this.magnifyingGlassForeignObject.setAttribute('x', `${mgX-width/2 + (rad * Math.cos(theta))}`);
+        this.magnifyingGlassForeignObject.setAttribute('y', `${mgY-height/2 + (rad * Math.sin(theta))}`);
+
+        // draw zoom        
+        mgCtx.fillStyle = "#FFFFFF";
+        mgCtx.fillRect(0,0,width,height);
+        mgCtx.drawImage(this.background, 
+            bgX - (width/2)*(this.magnifyingGlassParameters.zoomScale/100), 
+            bgY - (height/2)*(this.magnifyingGlassParameters.zoomScale/100), 
+            (width)*(this.magnifyingGlassParameters.zoomScale/100), 
+            (height)*(this.magnifyingGlassParameters.zoomScale/100), 
+            0, 
+            0, 
+            width, 
+            height);
+        // draw crosshair
+        mgCtx.strokeStyle = "red";
+        mgCtx.moveTo(width/2, 0);
+        mgCtx.lineTo(width/2, height);
+        mgCtx.stroke();
+        mgCtx.moveTo(0, height/2);
+        mgCtx.lineTo(width, height/2);
+        mgCtx.stroke();
+    }
+    // EDITED END
+    
     // EDITED START for USER STORY 1
     private getFilteredBG(): void {
         var ctx = this.background.getContext("2d");
@@ -1304,6 +1443,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
             if (text) {
                 text.addClass('cvat_canvas_hidden');
             }
+            // EDITED START FOR MAGNIFYING GLASS
+            this.magnifyingGlassParameters.resizePointID = window.document.getElementsByClassName('cvat_canvas_selected_point')[0].id
+            this.magnifyingGlassParameters.resizeRectID = window.document.getElementsByClassName('cvat_canvas_shape_activated')[0].id
+            this.magnifyingGlassContainer.classList.remove('cvat_canvas_hidden');
+            this.updateMagnifyingGlass()
+            // EDITED END
         }).on('resizing', (): void => {
             resized = true;
             if (shapeSizeElement) {
@@ -1344,6 +1489,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.onEditDone(state, points);
             }
             // EDITED START for USER STORY 1
+            this.magnifyingGlassContainer.classList.add('cvat_canvas_hidden');
             this.focusBox(true);
             // EDITED END
         });

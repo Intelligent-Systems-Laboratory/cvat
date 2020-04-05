@@ -50,6 +50,9 @@ function ItemMenu(
     createURL: (() => void),
     toBackground: (() => void),
     toForeground: (() => void),
+    // EDITED FOR INTEGRATION
+    autoSnap: (() => void),
+    // EDITED END
 ): JSX.Element {
     return (
         <Menu className='cvat-object-item-menu'>
@@ -115,6 +118,19 @@ function ItemMenu(
                     </Button>
                 </Tooltip>
             </Menu.Item>
+            {/* EDITED FOR INTEGRATION */}
+            <Menu.Item>
+                <Tooltip title={`Snap`}>
+                    <Button
+                        type='link'
+                        icon='delete'
+                        onClick={autoSnap}   
+                    >
+                        autoSnap
+                    </Button>
+                </Tooltip>
+            </Menu.Item>
+            {/* EDITED END */}
         </Menu>
     );
 }
@@ -140,6 +156,9 @@ interface ItemTopComponentProps {
     createURL(): void;
     toBackground(): void;
     toForeground(): void;
+    // EDITED FOR INTEGRATION
+    autoSnap(): void;
+    // EDITED END
 }
 
 function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
@@ -164,6 +183,9 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         createURL,
         toBackground,
         toForeground,
+        // EDITED FOR INTEGRATION
+        autoSnap,
+        // EDITED END
     } = props;
 
     return (
@@ -203,6 +225,9 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
                         createURL,
                         toBackground,
                         toForeground,
+                        // EDITED FOR INTEGRATION
+                        autoSnap,
+                        // EDITED END
                     )}
                 >
                     <Icon type='more' />
@@ -721,6 +746,9 @@ interface Props {
     changeAttribute(attrID: number, value: string): void;
     changeColor(color: string): void;
     collapse(): void;
+    // EDITED FOR INTEGRATION
+    autoSnap(): void,
+    // EDITED END
 }
 
 function objectItemsAreEqual(prevProps: Props, nextProps: Props): boolean {
@@ -798,6 +826,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
         changeAttribute,
         changeColor,
         collapse,
+        // EDITED FOR INTEGRATION
+        autoSnap,
+        // EDITED END
     } = props;
 
     const type = objectType === ObjectType.TAG ? ObjectType.TAG.toUpperCase()
@@ -850,6 +881,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     createURL={createURL}
                     toBackground={toBackground}
                     toForeground={toForeground}
+                    // EDITED FOR INTEGRATION
+                    autoSnap={autoSnap}
+                    // EDITED END
                 />
                 <ItemButtons
                     shapeType={shapeType}

@@ -658,6 +658,23 @@
                 }
             }
 
+            // EDITED FOR INTEGRATION
+            async function autoSnap(id, number) {
+                const { backendAPI } = config;
+                
+                let response = null;
+                try {
+                    response = await Axios.get(`${backendAPI}/tasks/${id}/snap/${number}`, {
+                        proxy: config.proxy,
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+                
+                return response.data;
+            }
+            // EDITED END
+
             Object.defineProperties(this, Object.freeze({
                 server: {
                     value: Object.freeze({
@@ -682,6 +699,7 @@
                         createTask,
                         deleteTask,
                         exportDataset,
+                        autoSnap,           /*EDITED FOR INTEGRATION*/
                     }),
                     writable: false,
                 },

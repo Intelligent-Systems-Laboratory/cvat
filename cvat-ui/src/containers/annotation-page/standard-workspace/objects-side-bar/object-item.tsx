@@ -20,6 +20,7 @@ import {
     activateObject as activateObjectAction,
     propagateObject as propagateObjectAction,
     pasteShapeAsync,
+    // snapAsync, /*EDITED FOR INTEGRATION*/
 } from 'actions/annotation-actions';
 
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
@@ -426,10 +427,17 @@ class ObjectItemContainer extends React.PureComponent<Props> {
     private autoSnap = (): void => {
         const {
             objectState,
+            jobInstance,
         } = this.props;
-        objectState.points = [0,0,200,200]
-        this.commit();
 
+        // let result = [];
+        // result.push(jobInstance.annotations.snap(objectState.serverID));
+        // console.log(result);
+        let result = jobInstance.annotations.snap(objectState.serverID);
+        result.then((data: any) => {
+            objectState.points = data.points;
+            this.commit();
+        });
     }
     // EDITED END
 

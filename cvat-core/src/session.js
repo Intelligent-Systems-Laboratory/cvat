@@ -21,6 +21,14 @@
         Object.defineProperties(prototype, {
             annotations: Object.freeze({
                 value: {
+                    // EDITED FOR INTEGRATION
+                    async snap(number) {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.snap, number);
+                        return result;
+                    },
+                    // EDITED END
+
                     async upload(file, loader) {
                         const result = await PluginRegistry
                             .apiWrapper.call(this, prototype.annotations.upload, file, loader);
@@ -697,6 +705,9 @@
                 statistics: Object.getPrototypeOf(this).annotations.statistics.bind(this),
                 hasUnsavedChanges: Object.getPrototypeOf(this)
                     .annotations.hasUnsavedChanges.bind(this),
+                // EDITED FOR INTEGRATION
+                snap: Object.getPrototypeOf(this).annotations.snap.bind(this),
+                // EDITED END
             };
 
             this.actions = {
@@ -1249,6 +1260,9 @@
                     .annotations.hasUnsavedChanges.bind(this),
                 exportDataset: Object.getPrototypeOf(this)
                     .annotations.exportDataset.bind(this),
+                // EDITED FOR INTEGRATION
+                snap: Object.getPrototypeOf(this).annotations.snap.bind(this),
+                // EDITED END
             };
 
             this.actions = {
@@ -1330,10 +1344,23 @@
         redoActions,
         clearActions,
         getActions,
+        // autoSnap, /*EDITED FOR INTEGRATION*/
     } = require('./annotations');
 
     buildDublicatedAPI(Job.prototype);
     buildDublicatedAPI(Task.prototype);
+
+    // EDITED FOR INTEGRATION
+    Job.prototype.annotations.snap = async function (number) {
+        const result = await serverProxy.tasks.autoSnap(this.id, number)
+        return result;
+    },
+
+    Task.prototype.annotations.snap = async function (number) {
+        const result = await serverProxy.tasks.autoSnap(this.id, number)
+        return result;
+    },
+    // EDITED END
 
     Job.prototype.save.implementation = async function () {
         // TODO: Add ability to change an assignee

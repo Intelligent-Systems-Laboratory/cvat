@@ -428,11 +428,10 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         const {
             objectState,
             jobInstance,
+            frameNumber,
         } = this.props;
-
-        // let result = [];
-        // result.push(jobInstance.annotations.snap(objectState.serverID));
-        // console.log(result);
+        // frameNumber is frame number, objectState.serverID is object ID
+        console.log(frameNumber, objectState.serverID);
         let result = jobInstance.annotations.snap(objectState.serverID);
         result.then((data: any) => {
             objectState.points = data.points;

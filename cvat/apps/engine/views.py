@@ -380,6 +380,18 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             shutil.rmtree(instance.data.get_data_dirname(), ignore_errors=True)
             instance.data.delete()
 
+    # EDITED FOR INTEGRATION    
+    @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task')
+    @action(detail=True, methods=['GET'], url_path='snap/(?P<number>[^/]+)')
+    def snap(self, request, pk, number):
+        new_coords = {
+            "task" : pk,
+            "object" : number,
+            "points" : [0, 0, 200, 200]
+        }
+        return Response(new_coords)
+    # EDITED END
+
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',
         responses={'200': JobSerializer(many=True)})
     @action(detail=True, methods=['GET'], serializer_class=JobSerializer)

@@ -21,8 +21,10 @@ import {
 import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas';
 import getCore from 'cvat-core';
+import getSnap from 'cvat-snap';
 
 const cvat = getCore();
+const snap = getSnap();
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
 
@@ -262,13 +264,37 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             annotations,
             onActivateObject,
             onUpdateContextMenu,
+            
         } = this.props;
         onActivateObject(annotations[annotations.length - 1].clientID);
         const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
         if (el) {
             const rect = el.getBoundingClientRect();
             onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
+            console.log("xtl: " + rect.left);
+            console.log("ytl: " + rect.top);
+            console.log("xbr: " + rect.right);
+            console.log("ybr: " + rect.bottom);
+            // EDITED START for SNAPPING
+            var x = snap.snapping.snapBoundingBox(rect.left, rect.top, rect.right, rect.bottom);
+            console.log(x);
+            var new_coords:any = [];
+            x.then((data: any) => {
+                new_coords = data.points;
+                console.log(new_coords);
+                //update the bbox
+            });
+            
+            // console.log(x.data)
+            // console.log(x[0].points)
+            // console.log(x['PromiseValue']);
+            // console.log(x[0]);
+            // console.log(x[1]);
+            // console.log(x[2]);
+            // console.log(x[3]);
+            // EDITED END for SNAPPING
         }
+
     }
 
     private removeContextMenu(): void {

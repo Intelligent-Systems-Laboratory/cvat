@@ -72,7 +72,7 @@ class FrameProvider():
         buf = BytesIO()
         pil_img.save(buf, format='PNG')
         buf.seek(0)
-        return pil_img # EDITED FOR INTEGRATION
+        return buf 
 
     def _get_frame(self, frame_number, chunk_path_getter, extracted_chunk, chunk_reader, reader_class):
         _, chunk_number, frame_offset = self._validate_frame_number(frame_number)
@@ -106,6 +106,23 @@ class FrameProvider():
                     yield image
                 else:
                     raise Exception('unsupported output type')
+    
+    # EDITED START FOR INTEGRATION
+    def _get_frame_snap(self, frame_number, chunk_path_getter, extracted_chunk, chunk_reader, reader_class):
+        _, chunk_number, frame_offset = self._validate_frame_number(frame_number)
+        chunk_path = chunk_path_getter(chunk_number)
+        if chunk_number != extracted_chunk:
+            extracted_chunk = chunk_number
+            chunk_reader = reader_class([chunk_path])
+
+        frame, frame_name, _  = next(itertools.islice(chunk_reader, frame_offset, None))
+        if reader_class is VideoReader:
+            pil_img = frame.to_image()
+            return (pil_img, 'image/png')
+
+        return (frame, mimetypes.guess_type(frame_name))
+    # EDITED END FOR INTEGRATION
+    
 
     def get_preview(self):
         return self._db_data.get_preview_path()
@@ -148,3 +165,24 @@ class FrameProvider():
                 reader_class=self._compressed_chunk_reader_class,
                 out_type=out_type,
             )
+
+    # EDITED START FOR INTEGRATION
+    def get_frame_snap(self, frame_number, quality=Quality.ORIGINAL):
+        if quality == self.Quality.ORIGINAL:
+            return self._get_frame_snap(
+                frame_number=frame_number,
+                chunk_path_getter=self._db_data.get_original_chunk_path,
+                extracted_chunk=self._extracted_original_chunk,
+                chunk_reader=self._original_chunk_reader,
+                reader_class=self._original_chunk_reader_class,
+            )
+        elif quality == self.Quality.COMPRESSED:
+            return self._get_frame_snap(
+                frame_number=frame_number,
+                chunk_path_getter=self._db_data.get_compressed_chunk_path,
+                extracted_chunk=self._extracted_compressed_chunk,
+                chunk_reader=self._compressed_chunk_reader,
+                reader_class=self._compressed_chunk_reader_class,
+            )
+    # EDITED END FOR INTEGRATION
+    

@@ -300,7 +300,8 @@ class Snap:
             # cv2.imwrite(folder_name+'/img.jpg',imgvis)
             
         data = [x1, y1, x2, y2]
-        return data
+        dim = [H, W]
+        return data, dim
             
 
 snap = Snap()

@@ -399,15 +399,15 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
         data_quality = FrameProvider.Quality.ORIGINAL
-        img, mime = frame_provider.get_frame(int(frame), data_quality)
+        img, mime = frame_provider.get_frame_snap(int(frame), data_quality)
         orig_img = np.array(img)
         image = orig_img[:, :, ::-1].copy()
-        data = snap_cvat.Snap().run(image, int(xtl), int(ytl), int(xbr), int(ybr), snap_cvat.Snap().SNAP_GRABCUT)
+        data, dim = snap_cvat.Snap().run(image, int(xtl), int(ytl), int(xbr), int(ybr), snap_cvat.Snap().SNAP_GRABCUT)
         #data = 1
 
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                
-                snap_points = [100, 100, 100, 100] #replace with actual snapping function
+                snap_points = [0, 0, 100, 100] #replace with actual snapping function
                 
                 new_coords = {
                     "task" : pk,
@@ -417,6 +417,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     "old_points" : [xtl, ytl, xbr, ybr],
                     "path" : request.build_absolute_uri(),
                     "data" : data,
+                    "dimensions" : dim,
                 }
             return Response(new_coords)
         except Exception as e:

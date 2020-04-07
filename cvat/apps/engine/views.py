@@ -399,7 +399,8 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
         data_quality = FrameProvider.Quality.ORIGINAL
-        img, mime = frame_provider.get_frame_snap(int(frame), data_quality)
+        img, mime = frame_provider.get_frame(int(frame), data_quality)
+        img = Image.open(img)
         orig_img = np.array(img)
         image = orig_img[:, :, ::-1].copy()
         data, dim = snap_cvat.Snap().run(image, int(xtl), int(ytl), int(xbr), int(ybr), snap_cvat.Snap().SNAP_GRABCUT)

@@ -751,18 +751,18 @@
         * @extends Session
     */
     class Task extends Session {
-    /**
-        * In a fact you need use the constructor only if you want to create a task
-        * @param {object} initialData - Object which is used for initalization
-        * <br> It can contain keys:
-        * <br> <li style="margin-left: 10px;"> name
-        * <br> <li style="margin-left: 10px;"> assignee
-        * <br> <li style="margin-left: 10px;"> bug_tracker
-        * <br> <li style="margin-left: 10px;"> z_order
-        * <br> <li style="margin-left: 10px;"> labels
-        * <br> <li style="margin-left: 10px;"> segment_size
-        * <br> <li style="margin-left: 10px;"> overlap
-    */
+        /**
+            * In a fact you need use the constructor only if you want to create a task
+            * @param {object} initialData - Object which is used for initalization
+            * <br> It can contain keys:
+            * <br> <li style="margin-left: 10px;"> name
+            * <br> <li style="margin-left: 10px;"> assignee
+            * <br> <li style="margin-left: 10px;"> bug_tracker
+            * <br> <li style="margin-left: 10px;"> z_order
+            * <br> <li style="margin-left: 10px;"> labels
+            * <br> <li style="margin-left: 10px;"> segment_size
+            * <br> <li style="margin-left: 10px;"> overlap
+        */
         constructor(initialData) {
             super();
             const data = {
@@ -1063,7 +1063,7 @@
                             if (!(label instanceof Label)) {
                                 throw new ArgumentError(
                                     'Each array value must be an instance of Label. '
-                                        + `${typeof (label)} was found`,
+                                    + `${typeof (label)} was found`,
                                 );
                             }
                         }
@@ -1297,7 +1297,7 @@
             * @throws {module:API.cvat.exceptions.ServerError}
             * @throws {module:API.cvat.exceptions.PluginError}
         */
-        async save(onUpdate = () => {}) {
+        async save(onUpdate = () => { }) {
             const result = await PluginRegistry
                 .apiWrapper.call(this, Task.prototype.save, onUpdate);
             return result;
@@ -1351,33 +1351,33 @@
     buildDublicatedAPI(Task.prototype);
 
     // EDITED FOR INTEGRATION
-    Job.prototype.annotations.snap = async function (number) {
-        const result = await serverProxy.tasks.autoSnap(this.id, number)
+    Job.prototype.annotations.snap = async function (number, frameNum, points) {
+        const result = await serverProxy.tasks.autoSnap(this.id, number, frameNum, points)
         return result;
     },
 
-    Task.prototype.annotations.snap = async function (number) {
-        const result = await serverProxy.tasks.autoSnap(this.id, number)
-        return result;
-    },
-    // EDITED END
+        Task.prototype.annotations.snap = async function (number, frameNum, points) {
+            const result = await serverProxy.tasks.autoSnap(this.id, number, frameNum, points)
+            return result;
+        },
+        // EDITED END
 
-    Job.prototype.save.implementation = async function () {
-        // TODO: Add ability to change an assignee
-        if (this.id) {
-            const jobData = {
-                status: this.status,
-                assignee: this.assignee ? this.assignee.id : null,
-            };
+        Job.prototype.save.implementation = async function () {
+            // TODO: Add ability to change an assignee
+            if (this.id) {
+                const jobData = {
+                    status: this.status,
+                    assignee: this.assignee ? this.assignee.id : null,
+                };
 
-            await serverProxy.jobs.saveJob(this.id, jobData);
-            return this;
-        }
+                await serverProxy.jobs.saveJob(this.id, jobData);
+                return this;
+            }
 
-        throw new ArgumentError(
-            'Can not save job without and id',
-        );
-    };
+            throw new ArgumentError(
+                'Can not save job without and id',
+            );
+        };
 
     Job.prototype.frames.get.implementation = async function (frame, isPlaying, step) {
         if (!Number.isInteger(frame) || frame < 0) {

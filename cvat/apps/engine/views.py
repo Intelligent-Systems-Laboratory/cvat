@@ -56,6 +56,9 @@ from django.utils.decorators import method_decorator
 from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
 from django_filters.rest_framework import DjangoFilterBackend
 
+import cvat.apps.engine.snap_cvat as snap_cvat # EDITED for snapping algorithm
+import cv2 # EDITED for snapping algorithm
+
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
 # We map the required paramater explicitly and add it into query arguments
@@ -382,14 +385,35 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
 
     # EDITED FOR INTEGRATION    
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task')
-    @action(detail=True, methods=['GET'], url_path='snap/(?P<number>[^/]+)')
+    @action(detail=True, methods=['GET'], url_path='snap/(?P<number>[^/]+)/data?')
     def snap(self, request, pk, number):
-        new_coords = {
-            "task" : pk,
-            "object" : number,
-            "points" : [0, 0, 200, 200]
-        }
-        return Response(new_coords)
+        frame = request.query_params.get('frame', None)
+        xtl = request.query_params.get('xtl', None)
+        ytl = request.query_params.get('ytl', None)
+        xbr = request.query_params.get('xbr', None)
+        ybr = request.query_params.get('ybr', None)
+
+        # ADD code for getting the image here
+
+        try:
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None):
+                snap_points = [float(xtl)+100,float(ytl)+100,float(xbr)+100,float(ybr)+100] #replace with actual snapping function
+                
+                # snap_points = snap_cvat.Snap().run(image,xtl,ytl,xbr,ybr,snap_cvat.Snap().SNAP_GRABCUT)
+                
+                # return JsonResponse(snap_points, safe=False)
+                new_coords = {
+                    "task" : pk,
+                    "object" : number,
+                    "frame" : frame,
+                    "points" : snap_points,
+                    "old_points" : [xtl, ytl, xbr, ybr]
+                }
+                return Response(new_coords)
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+            
     # EDITED END
 
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',

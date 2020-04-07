@@ -206,8 +206,8 @@
                     authenticationResponse = await Axios.post(
                         `${config.backendAPI}/auth/login`,
                         authenticationData, {
-                            proxy: config.proxy,
-                        },
+                        proxy: config.proxy,
+                    },
                     );
                 } catch (errorData) {
                     throw generateError(errorData);
@@ -659,18 +659,22 @@
             }
 
             // EDITED FOR INTEGRATION
-            async function autoSnap(id, number) {
+            async function autoSnap(id, number, frame, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
                 const { backendAPI } = config;
-                
+                const x1 = points[0]
+                const y1 = points[1]
+                const x2 = points[2]
+                const y2 = points[3]
+
                 let response = null;
                 try {
-                    response = await Axios.get(`${backendAPI}/tasks/${id}/snap/${number}`, {
+                    response = await Axios.get(`${backendAPI}/tasks/${id}/snap/${number}/data?frame=${frame}&xtl=${x1}&ytl=${y1}&xbr=${x2}&ybr=${y2}`, { // EDITED to  add the URL parameters instead
                         proxy: config.proxy,
                     });
                 } catch (errorData) {
                     throw generateError(errorData);
                 }
-                
+
                 return response.data;
             }
             // EDITED END

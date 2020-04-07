@@ -429,10 +429,11 @@ class ObjectItemContainer extends React.PureComponent<Props> {
             jobInstance,
             frameNumber,
         } = this.props;
-        
+        console.log(frameNumber, objectState.points);
         let result = jobInstance.annotations.snap(objectState.serverID, frameNumber, objectState.points);
         result.then((data: any) => {
             objectState.points = data.points;
+            console.log(result);
             this.commit();
         });
     }
@@ -543,7 +544,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 collapse={this.collapse}
                 // EDITED FOR INTEGRATION
                 autoSnap={this.autoSnap}
-                // EDITED END
+            // EDITED END
             />
         );
     }

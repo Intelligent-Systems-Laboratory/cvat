@@ -72,7 +72,7 @@ class FrameProvider():
         buf = BytesIO()
         pil_img.save(buf, format='PNG')
         buf.seek(0)
-        return buf
+        return pil_img # EDITED FOR INTEGRATION
 
     def _get_frame(self, frame_number, chunk_path_getter, extracted_chunk, chunk_reader, reader_class):
         _, chunk_number, frame_offset = self._validate_frame_number(frame_number)

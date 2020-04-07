@@ -57,6 +57,8 @@ from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
 from django_filters.rest_framework import DjangoFilterBackend
 
 import cvat.apps.engine.snap_cvat as snap_cvat # EDITED for snapping algorithm
+from PIL import Image # EDITED for snapping algorithm
+import numpy as np # EDITED for snapping algorithm
 
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
@@ -388,23 +390,24 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     def snap(self, request, pk):
         objectID = request.query_params.get('objectID', None)
         frame = request.query_params.get('frameNumber', None)
-        xtl = request.query_params.get('x1', None)
-        ytl = request.query_params.get('y1', None)
-        xbr = request.query_params.get('x2', None)
-        ybr = request.query_params.get('y2', None)
+        xtl = float(request.query_params.get('x1', None))
+        ytl = float(request.query_params.get('y1', None))
+        xbr = float(request.query_params.get('x2', None))
+        ybr = float(request.query_params.get('y2', None))
 
         # ADD code for getting the image here
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
         data_quality = FrameProvider.Quality.ORIGINAL
-        image, mime = frame_provider.get_frame(int(frame), data_quality)
+        img, mime = frame_provider.get_frame(int(frame), data_quality)
+        orig_img = np.array(img)
+        image = orig_img[:, :, ::-1].copy()
+        data = snap_cvat.Snap().run(image, int(xtl), int(ytl), int(xbr), int(ybr), snap_cvat.Snap().SNAP_GRABCUT)
+        #data = 1
 
         try:
-            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None):                
-                # data = snap_cvat.Snap().run(image, xtl, ytl, xbr, ybr, snap_cvat.Snap().SNAP_GRABCUT)
-                snap_points = [float(xtl)+100,float(ytl)+100,float(xbr)+100,float(ybr)+100] #replace with actual snapping function
-                
-                # snap_points = snap_cvat.Snap().run(image,xtl,ytl,xbr,ybr,snap_cvat.Snap().SNAP_GRABCUT)
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                
+                snap_points = [100, 100, 100, 100] #replace with actual snapping function
                 
                 new_coords = {
                     "task" : pk,
@@ -413,7 +416,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     "points" : snap_points,
                     "old_points" : [xtl, ytl, xbr, ybr],
                     "path" : request.build_absolute_uri(),
-                    "mimetype" : mime,
+                    "data" : data,
                 }
             return Response(new_coords)
         except Exception as e:

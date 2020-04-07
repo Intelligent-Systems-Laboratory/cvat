@@ -280,17 +280,10 @@ class Snap:
             return ValueError
 
 
-
-    def click(self, event, x, y, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN:
-            print("x-coor: ", x, ", y-coor:", y)
-
     def run(self,img,bboxx1,bboxy1,bboxx2,bboxy2,snap_type):
         # THE PARAMETERS TO CHANGE
         # Coordinates of the resized image, not the full size
-        folder_name = 'results'
-        if path.exists(folder_name) == False:
-            os.mkdir(folder_name)
+
         (H,W) = img.shape[:2]
         
         imgvis = imutils.resize(img, width=1028)

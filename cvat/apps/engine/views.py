@@ -403,11 +403,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         orig_img = np.array(img)
         image = orig_img[:, :, ::-1].copy()
         data, dim = snap_cvat.Snap().run(image, int(xtl), int(ytl), int(xbr), int(ybr), snap_cvat.Snap().SNAP_GRABCUT)
-        #data = 1
 
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                
-                snap_points = [0, 0, 100, 100] #replace with actual snapping function
+                snap_points = data #replace with actual snapping function
                 
                 new_coords = {
                     "task" : pk,

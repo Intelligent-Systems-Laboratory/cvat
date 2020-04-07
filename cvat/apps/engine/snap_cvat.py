@@ -272,7 +272,7 @@ class Snap:
             # cv2.imwrite(folder_name+'/img_drawn.jpg',display)
             display = display[int(y1):int(y2), int(x1):int(x2)]
             # cv2.imwrite(folder_name+'/img_crop.jpg', display)
-            return x1 + nX, y1 + nY, x1 + nX + w, y1 + nY + h
+            return nX, nY, nX + w, nY + h
 
 
         else:
@@ -291,13 +291,12 @@ class Snap:
 
         x1, y1, x2, y2 = snap.snap_algorithm(snap_type, img, bboxx1*ratioW, bboxy1*ratioW, bboxx2*ratioW, bboxy2*ratioW)
 
-        if snap_type == snap.SNAP_BACKGROUND_SUBTRACTION:
-            x1 = int(x1 / ratioW)
-            x2 = int(x2 / ratioW)
-            y1 = int(y1 / ratioW)
-            y2 = int(y2 / ratioW)
-            cv2.rectangle(imgvis, (x1, y1), (x2, y2), (0, 0xFF, 0), 4)
-            # cv2.imwrite(folder_name+'/img.jpg',imgvis)
+        x1 = int(x1 / ratioW)
+        x2 = int(x2 / ratioW)
+        y1 = int(y1 / ratioW)
+        y2 = int(y2 / ratioW)
+        # cv2.rectangle(imgvis, (x1, y1), (x2, y2), (0, 0xFF, 0), 4)
+        # cv2.imwrite(folder_name+'/img.jpg',imgvis)
             
         data = [x1, y1, x2, y2]
         dim = [H, W]

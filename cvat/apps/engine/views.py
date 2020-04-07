@@ -57,7 +57,6 @@ from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
 from django_filters.rest_framework import DjangoFilterBackend
 
 import cvat.apps.engine.snap_cvat as snap_cvat # EDITED for snapping algorithm
-import cv2 # EDITED for snapping algorithm
 
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
@@ -385,31 +384,38 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
 
     # EDITED FOR INTEGRATION    
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task')
-    @action(detail=True, methods=['GET'], url_path='snap/(?P<number>[^/]+)/data?')
-    def snap(self, request, pk, number):
-        frame = request.query_params.get('frame', None)
-        xtl = request.query_params.get('xtl', None)
-        ytl = request.query_params.get('ytl', None)
-        xbr = request.query_params.get('xbr', None)
-        ybr = request.query_params.get('ybr', None)
+    @action(detail=True, methods=['GET'])
+    def snap(self, request, pk):
+        objectID = request.query_params.get('objectID', None)
+        frame = request.query_params.get('frameNumber', None)
+        xtl = request.query_params.get('x1', None)
+        ytl = request.query_params.get('y1', None)
+        xbr = request.query_params.get('x2', None)
+        ybr = request.query_params.get('y2', None)
 
         # ADD code for getting the image here
+        db_task = self.get_object()
+        frame_provider = FrameProvider(db_task.data)
+        data_quality = FrameProvider.Quality.ORIGINAL
+        image, mime = frame_provider.get_frame(int(frame), data_quality)
 
         try:
-            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None):
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None):                
+                # data = snap_cvat.Snap().run(image, xtl, ytl, xbr, ybr, snap_cvat.Snap().SNAP_GRABCUT)
                 snap_points = [float(xtl)+100,float(ytl)+100,float(xbr)+100,float(ybr)+100] #replace with actual snapping function
                 
                 # snap_points = snap_cvat.Snap().run(image,xtl,ytl,xbr,ybr,snap_cvat.Snap().SNAP_GRABCUT)
                 
-                # return JsonResponse(snap_points, safe=False)
                 new_coords = {
                     "task" : pk,
-                    "object" : number,
+                    "object" : objectID,
                     "frame" : frame,
                     "points" : snap_points,
-                    "old_points" : [xtl, ytl, xbr, ybr]
+                    "old_points" : [xtl, ytl, xbr, ybr],
+                    "path" : request.build_absolute_uri(),
+                    "mimetype" : mime,
                 }
-                return Response(new_coords)
+            return Response(new_coords)
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)

@@ -306,6 +306,9 @@ class Snap:
             cv2.rectangle(imgvis, (x1, y1), (x2, y2), (0, 0xFF, 0), 4)
             # cv2.imwrite(folder_name+'/img.jpg',imgvis)
             
+        data = [x1, y1, x2, y2]
+        return data
+            
 
 snap = Snap()
                 

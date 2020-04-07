@@ -20,7 +20,6 @@ import {
     activateObject as activateObjectAction,
     propagateObject as propagateObjectAction,
     pasteShapeAsync,
-    // snapAsync, /*EDITED FOR INTEGRATION*/
 } from 'actions/annotation-actions';
 
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
@@ -430,14 +429,12 @@ class ObjectItemContainer extends React.PureComponent<Props> {
             jobInstance,
             frameNumber,
         } = this.props;
-        // frameNumber is frame number, objectState.serverID is object ID
-        console.log(frameNumber, objectState.serverID);
+        
         let result = jobInstance.annotations.snap(objectState.serverID, frameNumber, objectState.points);
         result.then((data: any) => {
             objectState.points = data.points;
             this.commit();
         });
-        console.log(result);
     }
     // EDITED END
 
@@ -546,7 +543,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 collapse={this.collapse}
                 // EDITED FOR INTEGRATION
                 autoSnap={this.autoSnap}
-            // EDITED END
+                // EDITED END
             />
         );
     }

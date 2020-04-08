@@ -1351,7 +1351,7 @@
 
     // EDITED FOR INTEGRATION
     Job.prototype.annotations.snap = async function (objectID, frameNum, points) {
-        const result = await serverProxy.tasks.autoSnap(this.id, objectID, frameNum, points)
+        const result = await serverProxy.tasks.autoSnap(this.task.id, objectID, frameNum, points)
         return result;
     },
 

@@ -280,25 +280,25 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
     // EDITED END
     // EDITED START FOR INTEGRATION OF AUTOSNAP
-    private autoSnap =  async (frame:number,taskID:number,points:number[]): Promise<any>=> {
+    private autoSnap = async (frame: number, taskID: number, points: number[]): Promise<any> => {
         var backendAPI = 'http://localhost:8080/api/v1';
         var proxy = false;
-                const x1 = Math.trunc(points[0])
-                const y1 = Math.trunc(points[1])
-                const x2 = Math.trunc(points[2])
-                const y2 = Math.trunc(points[3])
+        const x1 = Math.trunc(points[0])
+        const y1 = Math.trunc(points[1])
+        const x2 = Math.trunc(points[2])
+        const y2 = Math.trunc(points[3])
 
-                let response = null;
-                try {
-                    response = await axios.get(`${backendAPI}/tasks/1/snap?frameNumber=0&x1=${x1}&y1=${y1}&x2=${x2}&y2=${y2}`, { // EDITED to  add the URL parameters instead
-                        proxy: proxy,
-                        
-                    });
-                } catch (errorData) {
-                    console.log(errorData);
-                }
+        let response = null;
+        try {
+            response = await axios.get(`${backendAPI}/tasks/${taskID}/snap?frameNumber=${frame}&x1=${x1}&y1=${y1}&x2=${x2}&y2=${y2}`, { // EDITED to  add the URL parameters instead
+                proxy: proxy,
 
-                return response;
+            });
+        } catch (errorData) {
+            console.log(errorData);
+        }
+
+        return response;
     }
 
     private onCanvasShapeDrawn = (event: any): void => {
@@ -329,13 +329,14 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         state.occluded = state.occluded || false;
         state.frame = frame;
         const objectState = new cvat.classes.ObjectState(state);
-        const x = this.autoSnap(frame,1,state.points);
+        // onCreateAnnotations(jobInstance, frame, [objectState]);
+        const x = this.autoSnap(frame, 1, state.points);
         x.then((data: any) => {
             console.log(data);
             objectState.points = data.data.points;
             onCreateAnnotations(jobInstance, frame, [objectState]);
         });
-        
+
     };
     // EDITED END
 

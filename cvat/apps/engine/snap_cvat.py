@@ -287,7 +287,7 @@ class Snap:
         (H,W) = img.shape[:2]
         
         imgvis = imutils.resize(img, width=1028)
-        ratioW = W/1028
+        ratioW = 1
 
         x1, y1, x2, y2 = snap.snap_algorithm(snap_type, img, bboxx1*ratioW, bboxy1*ratioW, bboxx2*ratioW, bboxy2*ratioW)
 

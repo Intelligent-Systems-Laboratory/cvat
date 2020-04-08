@@ -280,7 +280,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
     // EDITED END
     // EDITED START FOR INTEGRATION OF AUTOSNAP
-    private autoSnap = async (frame: number, taskID: number, points: number[]): Promise<any> => {
+    private autoSnap = async (taskID: number, objectID: number, frame: number, points: number[]): Promise<any> => {
         var backendAPI = 'http://localhost:8080/api/v1';
         var proxy = false;
         const x1 = Math.trunc(points[0])
@@ -290,9 +290,16 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         let response = null;
         try {
-            response = await axios.get(`${backendAPI}/tasks/${taskID}/snap?frameNumber=${frame}&x1=${x1}&y1=${y1}&x2=${x2}&y2=${y2}`, { // EDITED to  add the URL parameters instead
+            response = await axios.get(`${backendAPI}/tasks/${taskID}/snap`, { // EDITED to  add the URL parameters instead
                 proxy: proxy,
-
+                params: {
+                    objectID: objectID,
+                    frameNumber: frame,
+                    x1: x1,
+                    y1: y1,
+                    x2: x2,
+                    y2: y2,
+                }
             });
         } catch (errorData) {
             console.log(errorData);
@@ -330,7 +337,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         state.frame = frame;
         const objectState = new cvat.classes.ObjectState(state);
         // onCreateAnnotations(jobInstance, frame, [objectState]);
-        const x = this.autoSnap(frame, 1, state.points);
+        console.log(activeLabelID);
+        console.log(jobInstance.id);
+        const x = this.autoSnap(jobInstance.id, activeLabelID, frame, state.points);
         x.then((data: any) => {
             console.log(data);
             objectState.points = data.data.points;

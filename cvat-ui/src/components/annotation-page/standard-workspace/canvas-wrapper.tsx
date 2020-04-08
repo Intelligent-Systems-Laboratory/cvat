@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
-import axios from 'axios';
+
 import { GlobalHotKeys, ExtendedKeyMapOptions } from 'react-hotkeys';
 
 import Tooltip from 'antd/lib/tooltip';
@@ -186,6 +186,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // EDITED START for USER STORY 2
             if (annotations.length > prevProps.annotations.length) {
                 this.contextMenuOnDraw()
+                this.autoSnap()
             }
             else {
                 this.removeContextMenu()
@@ -280,33 +281,52 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
     // EDITED END
     // EDITED START FOR INTEGRATION OF AUTOSNAP
-    private autoSnap = async (taskID: number, objectID: number, frame: number, points: number[]): Promise<any> => {
-        var backendAPI = 'http://localhost:8080/api/v1';
-        var proxy = false;
-        const x1 = Math.trunc(points[0])
-        const y1 = Math.trunc(points[1])
-        const x2 = Math.trunc(points[2])
-        const y2 = Math.trunc(points[3])
+    private autoSnap = async (/*taskID: number, objectID: number, frame: number, points: number[]*/): Promise<any> => {
+        const {
+            jobInstance,
+            frame,
+            annotations,
+            onUpdateAnnotations,
+        } = this.props;
 
-        let response = null;
-        try {
-            response = await axios.get(`${backendAPI}/tasks/${taskID}/snap`, { // EDITED to  add the URL parameters instead
-                proxy: proxy,
-                params: {
-                    objectID: objectID,
-                    frameNumber: frame,
-                    x1: x1,
-                    y1: y1,
-                    x2: x2,
-                    y2: y2,
-                }
-            });
-        } catch (errorData) {
-            console.log(errorData);
-        }
+        console.log(jobInstance);
+        console.log(frame);
+        console.log(annotations[annotations.length-1].clientID);
 
-        return response;
+        const state = annotations[annotations.length - 1];
+        let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
+        result.then((data: any) => {
+            state.points = data.points;
+            console.log(data);
+            onUpdateAnnotations([state]);
+        });
+        // var backendAPI = 'http://localhost:8080/api/v1';
+        // var proxy = false;
+        // const x1 = Math.trunc(points[0])
+        // const y1 = Math.trunc(points[1])
+        // const x2 = Math.trunc(points[2])
+        // const y2 = Math.trunc(points[3])
+
+        // let response = null;
+        // try {
+        //     response = await axios.get(`${backendAPI}/tasks/${taskID}/snap`, { // EDITED to  add the URL parameters instead
+        //         proxy: proxy,
+        //         params: {
+        //             objectID: objectID,
+        //             frameNumber: frame,
+        //             x1: x1,
+        //             y1: y1,
+        //             x2: x2,
+        //             y2: y2,
+        //         }
+        //     });
+        // } catch (errorData) {
+        //     console.log(errorData);
+        // }
+
+        // return response;
     }
+    // EDITED END
 
     private onCanvasShapeDrawn = (event: any): void => {
         const {
@@ -336,18 +356,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         state.occluded = state.occluded || false;
         state.frame = frame;
         const objectState = new cvat.classes.ObjectState(state);
-        // onCreateAnnotations(jobInstance, frame, [objectState]);
-        console.log(activeLabelID);
-        console.log(jobInstance.id);
-        const x = this.autoSnap(jobInstance.id, activeLabelID, frame, state.points);
-        x.then((data: any) => {
-            console.log(data);
-            objectState.points = data.data.points;
-            onCreateAnnotations(jobInstance, frame, [objectState]);
-        });
-
+        onCreateAnnotations(jobInstance, frame, [objectState]);
     };
-    // EDITED END
 
     private onCanvasObjectsMerged = (event: any): void => {
         const {

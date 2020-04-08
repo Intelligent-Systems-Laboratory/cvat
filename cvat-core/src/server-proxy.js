@@ -661,10 +661,10 @@
             // EDITED FOR INTEGRATION
             async function autoSnap(id, objectID, frameNumber, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
                 const { backendAPI } = config;
-                const x1 = points[0]
-                const y1 = points[1]
-                const x2 = points[2]
-                const y2 = points[3]
+                const x1 = Math.trunc(points[0])
+                const y1 = Math.trunc(points[1])
+                const x2 = Math.trunc(points[2])
+                const y2 = Math.trunc(points[3])
 
                 let response = null;
                 try {

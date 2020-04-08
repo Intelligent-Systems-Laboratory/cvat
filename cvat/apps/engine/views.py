@@ -390,10 +390,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     def snap(self, request, pk):
         objectID = request.query_params.get('objectID', None)
         frame = request.query_params.get('frameNumber', None)
-        xtl = float(request.query_params.get('x1', None))
-        ytl = float(request.query_params.get('y1', None))
-        xbr = float(request.query_params.get('x2', None))
-        ybr = float(request.query_params.get('y2', None))
+        xtl = int(request.query_params.get('x1', None))
+        ytl = int(request.query_params.get('y1', None))
+        xbr = int(request.query_params.get('x2', None))
+        ybr = int(request.query_params.get('y2', None))
 
         # ADD code for getting the image here
         db_task = self.get_object()
@@ -403,7 +403,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         img = Image.open(img)
         orig_img = np.array(img)
         image = orig_img[:, :, ::-1].copy()
-        data, dim = snap_cvat.Snap().run(image, int(xtl), int(ytl), int(xbr), int(ybr), snap_cvat.Snap().SNAP_GRABCUT)
+        data, dim = snap_cvat.Snap().run(image, xtl, ytl, xbr, ybr, snap_cvat.Snap().SNAP_GRABCUT)
 
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                

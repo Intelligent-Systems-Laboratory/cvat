@@ -40,7 +40,7 @@ COPY cvat-data/ /tmp/cvat-data/
 COPY cvat-core/ /tmp/cvat-core/
 COPY cvat-canvas/ /tmp/cvat-canvas/
 COPY cvat-ui/ /tmp/cvat-ui/
-RUN npm install axios --save
+
 RUN npm run build
 
 FROM nginx:stable-alpine

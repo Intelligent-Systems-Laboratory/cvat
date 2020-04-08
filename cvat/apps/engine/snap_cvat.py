@@ -223,9 +223,9 @@ class Snap:
         
         #snapping with grabcut implementation
         elif args[0] == 4 and len(args) == 6:
-            print("Using Grabcut Method")
+            # print("Using Grabcut Method")
             img = args[1]
-            folder_name = 'results'
+            # folder_name = 'results'
             if isinstance(args[2], (float, int)) and isinstance(args[3], (float, int)) or isinstance(args[4], (float, int)) or isinstance(args[5], (float, int)):
                 x1 = args[2]
                 y1 = args[3]
@@ -240,18 +240,18 @@ class Snap:
             fgdModel = np.zeros((1,65),np.float64)
             rect = (int(x1), int(y1), int(x2-x1), int(y2-y1))
 
-            frame_crop = img[int(y1):int(y2), int(x1):int(x2)]
+            # frame_crop = img[int(y1):int(y2), int(x1):int(x2)]
             # cv2.imwrite(folder_name+'/img_frame_crop.jpg', frame_crop)
 
             cv2.grabCut(img,mask,rect,bgdModel,fgdModel,10,cv2.GC_INIT_WITH_RECT)
             orig = img.copy()   
-            display = orig.copy()
+            # display = orig.copy()
             mask2 = np.where((mask==2)|(mask==0),0,1).astype('uint8')
             img = img*mask2[:,:,np.newaxis]
             img2  = np.where(img!=0,255,img).astype('uint8')
             img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY) 
-            img3 = cv2.threshold(img2,127,255,cv2.THRESH_BINARY)
-            print(np.shape(img3))
+            # img3 = cv2.threshold(img2,127,255,cv2.THRESH_BINARY)
+            # print(np.shape(img3))
 
             # cv2.imwrite(folder_name+'/img_mask.jpg', img)
             # cv2.imwrite(folder_name+'/img_threshold.jpg', img2)
@@ -267,10 +267,10 @@ class Snap:
                 area_list.append(cnts_area)
 
             nX, nY, w, h = cv2.boundingRect(rec_list[area_list.index(max(area_list))])
-            print("startX: ",nX, " startY: ", nY, " w: ", w, " h: ", h)
-            cv2.rectangle(display, (nX, nY), (nX + w, nY + h), (0, 0xFF, 0), 4)
+            # print("startX: ",nX, " startY: ", nY, " w: ", w, " h: ", h)
+            # cv2.rectangle(display, (nX, nY), (nX + w, nY + h), (0, 0xFF, 0), 4)
             # cv2.imwrite(folder_name+'/img_drawn.jpg',display)
-            display = display[int(y1):int(y2), int(x1):int(x2)]
+            # display = display[int(y1):int(y2), int(x1):int(x2)]
             # cv2.imwrite(folder_name+'/img_crop.jpg', display)
             return nX, nY, nX + w, nY + h
 

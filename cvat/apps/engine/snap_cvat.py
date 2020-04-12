@@ -243,8 +243,8 @@ class Snap:
             # frame_crop = img[int(y1):int(y2), int(x1):int(x2)]
             # cv2.imwrite(folder_name+'/img_frame_crop.jpg', frame_crop)
 
-            cv2.grabCut(img,mask,rect,bgdModel,fgdModel,10,cv2.GC_INIT_WITH_RECT)
-            orig = img.copy()   
+            cv2.grabCut(img,mask,rect,bgdModel,fgdModel,5,cv2.GC_INIT_WITH_RECT)
+            # orig = img.copy()   
             # display = orig.copy()
             mask2 = np.where((mask==2)|(mask==0),0,1).astype('uint8')
             img = img*mask2[:,:,np.newaxis]

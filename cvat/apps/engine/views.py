@@ -56,7 +56,7 @@ from django.utils.decorators import method_decorator
 from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
 from django_filters.rest_framework import DjangoFilterBackend
 
-import cvat.apps.engine.snap_cvat as snap_cvat # EDITED for snapping algorithm
+import cvat.apps.engine.grabcut as grabcut # EDITED for snapping algorithm
 from PIL import Image # EDITED for snapping algorithm
 import numpy as np # EDITED for snapping algorithm
 
@@ -403,11 +403,11 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         img = Image.open(img)
         orig_img = np.array(img)
         image = orig_img[:, :, ::-1].copy()
-        data, dim = snap_cvat.Snap().run(image, xtl, ytl, xbr, ybr, snap_cvat.Snap().SNAP_GRABCUT)
+        data, dim = grabcut.run(image, xtl, ytl, xbr, ybr) # ADD for cropping code
 
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                
-                snap_points = data #replace with actual snapping function
+                snap_points = data
                 
                 new_coords = {
                     "task" : pk,

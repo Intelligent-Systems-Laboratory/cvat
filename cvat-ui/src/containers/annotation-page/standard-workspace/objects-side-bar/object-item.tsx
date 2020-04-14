@@ -422,6 +422,23 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
+    // EDITED FOR INTEGRATION
+    private autoSnap = (): void => {
+        const {
+            objectState,
+            jobInstance,
+            frameNumber,
+        } = this.props;
+        
+        let result = jobInstance.annotations.snap(objectState.serverID, frameNumber, objectState.points);
+        result.then((data: any) => {
+            objectState.points = data.points;
+            console.log(data);
+            this.commit();
+        });
+    }
+    // EDITED END
+
     private commit(): void {
         const {
             objectState,
@@ -525,6 +542,9 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 changeLabel={this.changeLabel}
                 changeAttribute={this.changeAttribute}
                 collapse={this.collapse}
+                // EDITED FOR INTEGRATION
+                autoSnap={this.autoSnap}
+                // EDITED END
             />
         );
     }

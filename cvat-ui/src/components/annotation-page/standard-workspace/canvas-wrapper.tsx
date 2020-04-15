@@ -192,6 +192,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 this.removeContextMenu()
             }
             // EDITED END
+            // EDITED START FOR USER STORY 12/13
+            if (prevProps.frameData !== frameData) {
+                this.objectFollowMouse();
+            }
+            // EDITED END
         }
 
         if (prevProps.frame !== frameData.number
@@ -257,6 +262,34 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         window.removeEventListener('resize', this.fitCanvas);
     }
+
+    // EDITED START FOR USER STORY 12/13
+    private objectFollowMouse(): void {
+        const {
+            onUpdateAnnotations,
+            activatedStateID,
+            annotations,
+        } = this.props
+
+        if (activatedStateID != null) {
+            console.log(activatedStateID);
+            const [state] = annotations.filter((el: any) => (el.clientID === activatedStateID));
+            
+            const width = state.points[2] - state.points[0];
+            const height = state.points[3] - state.points[1];
+
+            console.log(width, height);
+            console.log(state.points);
+            state.points = [state.points[0] + width/2, 
+                state.points[1] + height/2, 
+                state.points[2] + width/2, 
+                state.points[3] + height/2];
+            console.log(state.points);
+            onUpdateAnnotations([state]);
+        }
+    }
+
+    // EDITED END
 
     // EDITED START for USER STORY 2
     private contextMenuOnDraw(): void {

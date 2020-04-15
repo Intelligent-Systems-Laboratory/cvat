@@ -1231,7 +1231,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     }));
                 });
                 // EDITED FOR INTEGRATION
-                this.svgShapes[state.clientID].on('dblclick.canvas', (): void => {
+                this.svgShapes[state.clientID].on('dblclick.canvas', (e: any): void => {
+                    e.stopPropagation();
                     this.canvas.dispatchEvent(new CustomEvent('canvas.dblclicked', {
                         bubbles: false,
                         cancelable: true,

@@ -422,6 +422,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
 
             this.svgShapes[state.clientID].off('click.canvas');
+            // EDITED FOR INTEGRATION
+            this.svgShapes[state.clientID].off('dblclick.canvas');
+            // EDITED END
             this.svgShapes[state.clientID].remove();
             delete this.drawnStates[state.clientID];
             // EDITED START for USER STORY 1
@@ -1227,6 +1230,17 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         },
                     }));
                 });
+                // EDITED FOR INTEGRATION
+                this.svgShapes[state.clientID].on('dblclick.canvas', (): void => {
+                    this.canvas.dispatchEvent(new CustomEvent('canvas.dblclicked', {
+                        bubbles: false,
+                        cancelable: true,
+                        detail: {
+                            state,
+                        },
+                    }));
+                });
+                // EDITED END
             }
 
             this.saveState(state);

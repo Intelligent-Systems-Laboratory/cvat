@@ -257,6 +257,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().removeEventListener('canvas.merged', this.onCanvasObjectsMerged);
         canvasInstance.html().removeEventListener('canvas.groupped', this.onCanvasObjectsGroupped);
         canvasInstance.html().removeEventListener('canvas.splitted', this.onCanvasTrackSplitted);
+        // EDITED FOR INTEGRATION
+        canvasInstance.html().removeEventListener('canvas.dblclicked', this.onShapedblClicked);
+        // EDITED END
 
         canvasInstance.html().removeEventListener('point.contextmenu', this.onCanvasPointContextMenu);
 
@@ -314,6 +317,26 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
     // EDITED END
     // EDITED START FOR INTEGRATION OF AUTOSNAP
+    private onShapedblClicked = (e: any): void => {
+        const {
+            jobInstance,
+            frame,
+            annotations,
+            onUpdateAnnotations,
+        } = this.props
+        const { clientID } = e.detail.state;
+
+        const [state] = annotations.filter((el: any) => (el.clientID === clientID))
+
+        console.log('snapping...');
+        let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
+        result.then((data: any) => {
+            state.points = data.points;
+            onUpdateAnnotations([state]);
+            console.log('done snapping...');
+        });
+    };
+
     private autoSnap = async (/*taskID: number, objectID: number, frame: number, points: number[]*/): Promise<any> => {
         const {
             jobInstance,
@@ -774,6 +797,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().addEventListener('canvas.merged', this.onCanvasObjectsMerged);
         canvasInstance.html().addEventListener('canvas.groupped', this.onCanvasObjectsGroupped);
         canvasInstance.html().addEventListener('canvas.splitted', this.onCanvasTrackSplitted);
+        // EDITED FOR INTEGRATION
+        canvasInstance.html().addEventListener('canvas.dblclicked', this.onShapedblClicked);
+        // EDITED END
 
         canvasInstance.html().addEventListener('point.contextmenu', this.onCanvasPointContextMenu);
     }

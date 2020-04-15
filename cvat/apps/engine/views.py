@@ -56,8 +56,9 @@ from django.utils.decorators import method_decorator
 from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
 from django_filters.rest_framework import DjangoFilterBackend
 
-# import cvat.apps.engine.snap_cvat as snap_cvat
-# import cv2
+import cvat.apps.engine.grabcut as grabcut # EDITED for snapping algorithm
+from PIL import Image # EDITED for snapping algorithm
+import numpy as np # EDITED for snapping algorithm
 
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
@@ -384,80 +385,45 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             instance.data.delete()
 
     # EDITED FOR INTEGRATION    
-    # @swagger_auto_schema(method='get', operation_summary='Returns the new coordinates from the result of snapping function')
+    @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task')
     @action(detail=True, methods=['GET'])
     def snap(self, request, pk):
-        xtl = request.query_params.get('xtl', None)
-        ytl = request.query_params.get('ytl', None)
-        xbr = request.query_params.get('xbr', None)
-        ybr = request.query_params.get('ybr', None)
-        snap_points = [0,0,100,100]
+        objectID = request.query_params.get('objectID', None)
+        frame = request.query_params.get('frameNumber', None)
+        xtl = int(request.query_params.get('x1', None))
+        ytl = int(request.query_params.get('y1', None))
+        xbr = int(request.query_params.get('x2', None))
+        ybr = int(request.query_params.get('y2', None))
+
+        # ADD code for getting the image here
+        db_task = self.get_object()
+        frame_provider = FrameProvider(db_task.data)
+        data_quality = FrameProvider.Quality.ORIGINAL
+        img, mime = frame_provider.get_frame(int(frame), data_quality)
+        img = Image.open(img)
+        orig_img = np.array(img)
+        image = orig_img[:, :, ::-1].copy()
+        data, dim = grabcut.run(image, xtl, ytl, xbr, ybr) # ADD for cropping code
+
         try:
-            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None):
-                snap_points = [float(xtl)+100,float(ytl)+100,float(xbr)+100,float(ybr)+100] #replace with actual snapping function
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                
+                snap_points = data
                 
-                # snap_points = snap_cvat.Snap().run(image,xtl,ytl,xbr,ybr,snap_cvat.Snap().SNAP_GRABCUT)
-                
-                # return JsonResponse(snap_points, safe=False)
-            new_coords = {
-                "task" : pk,
-                "points" : snap_points
-            }
+                new_coords = {
+                    "task" : pk,
+                    "object" : objectID,
+                    "frame" : frame,
+                    "points" : snap_points,
+                    "old_points" : [xtl, ytl, xbr, ybr],
+                    "path" : request.build_absolute_uri(),
+                    "data" : data,
+                    "dimensions" : dim,
+                }
             return Response(new_coords)
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
             
-
-
-        # data_type = request.query_params.get('type', None)
-        # data_id = request.query_params.get('number', None)
-        # data_quality = request.query_params.get('quality', 'compressed')
-
-        # possible_data_type_values = ('chunk', 'frame', 'preview')
-        # possible_quality_values = ('compressed', 'original')
-
-        # if not data_type or data_type not in possible_data_type_values:
-        #     return Response(data='data type not specified or has wrong value', status=status.HTTP_400_BAD_REQUEST)
-        # elif data_type == 'chunk' or data_type == 'frame':
-        #     if not data_id:
-        #         return Response(data='number not specified', status=status.HTTP_400_BAD_REQUEST)
-        #     elif data_quality not in possible_quality_values:
-        #         return Response(data='wrong quality value', status=status.HTTP_400_BAD_REQUEST)
-
-        # try:
-        #     db_task = self.get_object()
-        #     frame_provider = FrameProvider(db_task.data)
-
-        #     if data_type == 'chunk':
-        #         data_id = int(data_id)
-        #         data_quality = FrameProvider.Quality.COMPRESSED \
-        #             if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
-        #         path = os.path.realpath(frame_provider.get_chunk(data_id, data_quality))
-
-        #         # Follow symbol links if the chunk is a link on a real image otherwise
-        #         # mimetype detection inside sendfile will work incorrectly.
-        #         return sendfile(request, path)
-
-        #     elif data_type == 'frame':
-        #         data_id = int(data_id)
-        #         data_quality = FrameProvider.Quality.COMPRESSED \
-        #             if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
-        #         buf, mime = frame_provider.get_frame(data_id, data_quality)
-
-        #         return HttpResponse(buf.getvalue(), content_type=mime)
-
-        #     elif data_type == 'preview':
-        #         return sendfile(request, frame_provider.get_preview())
-        #     else:
-        #         return Response(data='unknown data type {}.'.format(data_type), status=status.HTTP_400_BAD_REQUEST)
-        # except APIException as e:
-        #     return Response(data=e.default_detail, status=e.status_code)
-        # except Exception as e:
-        #     msg = 'cannot get requested data type: {}, number: {}, quality: {}'.format(data_type, data_id, data_quality)
-        #     slogger.task[pk].error(msg, exc_info=True)
-        #     return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
-        
     # EDITED END
 
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',

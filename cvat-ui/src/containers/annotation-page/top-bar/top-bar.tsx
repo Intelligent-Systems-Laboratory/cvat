@@ -492,6 +492,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             SEARCH_BACKWARD: keyMap.SEARCH_BACKWARD,
             PLAY_PAUSE: keyMap.PLAY_PAUSE,
             FOCUS_INPUT_FRAME: keyMap.FOCUS_INPUT_FRAME,
+            TRACK_BOUNDING_BOX: keyMap.TRACK_BOUNDING_BOX,
         };
 
         const handlers = {
@@ -557,6 +558,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     this.inputFrameRef.current.focus();
                 }
             },
+            TRACK_BOUNDING_BOX: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                this.onSwitchPlay();
+            },
         };
 
         return (
@@ -598,6 +603,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     focusFrameInputShortcut={normalizedKeyMap.FOCUS_INPUT_FRAME}
                     onUndoClick={this.undo}
                     onRedoClick={this.redo}
+                    trackBoundingBoxShortcut={normalizedKeyMap.TRACK_BOUNDING_BOX}
                 />
             </>
         );

@@ -35,6 +35,7 @@ interface Props {
     forwardShortcut: string;
     backwardShortcut: string;
     focusFrameInputShortcut: string;
+    trackBoundingBoxShortcut: string;
     changeWorkspace(workspace: Workspace): void;
     showStatistics(): void;
     onSwitchPlay(): void;
@@ -89,6 +90,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         onURLIconClick,
         onUndoClick,
         onRedoClick,
+        trackBoundingBoxShortcut,
     } = props;
 
     return (
@@ -121,6 +123,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                         onFirstFrame={onFirstFrame}
                         onLastFrame={onLastFrame}
                         onSwitchPlay={onSwitchPlay}
+                        trackBoundingBoxShortcut={trackBoundingBoxShortcut}
                     />
                     <PlayerNavigation
                         startFrame={startFrame}

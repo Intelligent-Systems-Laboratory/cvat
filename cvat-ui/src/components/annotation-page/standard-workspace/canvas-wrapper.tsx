@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+
 import { GlobalHotKeys, ExtendedKeyMapOptions } from 'react-hotkeys';
 
 import Tooltip from 'antd/lib/tooltip';
@@ -187,9 +188,15 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // EDITED START for USER STORY 2
             if (annotations.length > prevProps.annotations.length) {
                 this.contextMenuOnDraw()
+                this.autoSnap()
             }
             else {
                 this.removeContextMenu()
+            }
+            // EDITED END
+            // EDITED START FOR USER STORY 12/13
+            if (prevProps.frameData !== frameData) {
+                this.objectFollowMouse();
             }
             // EDITED END
         }
@@ -252,11 +259,62 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().removeEventListener('canvas.merged', this.onCanvasObjectsMerged);
         canvasInstance.html().removeEventListener('canvas.groupped', this.onCanvasObjectsGroupped);
         canvasInstance.html().removeEventListener('canvas.splitted', this.onCanvasTrackSplitted);
+        // EDITED FOR INTEGRATION
+        canvasInstance.html().removeEventListener('canvas.dblclicked', this.onShapedblClicked);
+        // EDITED END
+        // EDITED FOR USER STORY 12/13
+        // TEMPORARY PLACEMENT
+        canvasInstance.html().removeEventListener('canvas.moved', this.getCursorLocation);
+        // EDITED END
 
         canvasInstance.html().removeEventListener('point.contextmenu', this.onCanvasPointContextMenu);
 
         window.removeEventListener('resize', this.fitCanvas);
     }
+
+    // EDITED START FOR USER STORY 12/13
+    // TEMPORARY IMPLEMENTATION
+    private cursorLocation = {
+        x: 0,
+        y: 0,
+    }
+
+    // TEMPORARY IMPLEMENTATION
+    private getCursorLocation = async (event: any): Promise<void> => {
+        const mx = event.detail.x;
+        const my = event.detail.y;
+
+        this.cursorLocation.x = mx;
+        this.cursorLocation.y = my;
+    };
+
+    private objectFollowMouse(): void {
+        const {
+            onUpdateAnnotations,
+            activatedStateID,
+            annotations,
+        } = this.props
+
+        if (activatedStateID != null) {
+            const [state] = annotations.filter((el: any) => (el.clientID === activatedStateID));
+            
+            const width = state.points[2] - state.points[0];
+            const height = state.points[3] - state.points[1];
+
+
+            // state.points = [state.points[0] + width/2, 
+            //     state.points[1] + height/2, 
+            //     state.points[2] + width/2, 
+            //     state.points[3] + height/2];
+            state.points = [this.cursorLocation.x - width/2,
+                this.cursorLocation.y - height/2,
+                this.cursorLocation.x + width/2,
+                this.cursorLocation.y + height/2];
+            onUpdateAnnotations([state]);
+        }
+    }
+
+    // EDITED END
 
     // EDITED START for USER STORY 2
     private contextMenuOnDraw(): void {
@@ -302,6 +360,73 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onUpdateContextMenu,
         } = this.props;
         onUpdateContextMenu(false, 10000, 10000, ContextMenuType.CANVAS_SHAPE);
+    }
+    // EDITED END
+    // EDITED START FOR INTEGRATION OF AUTOSNAP
+    private onShapedblClicked = (e: any): void => {
+        const {
+            jobInstance,
+            frame,
+            annotations,
+            onUpdateAnnotations,
+        } = this.props
+        const { clientID } = e.detail.state;
+
+        const [state] = annotations.filter((el: any) => (el.clientID === clientID))
+
+        console.log('snapping...');
+        let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
+        result.then((data: any) => {
+            state.points = data.points;
+            onUpdateAnnotations([state]);
+            console.log('done snapping...');
+        });
+    };
+
+    private autoSnap = async (/*taskID: number, objectID: number, frame: number, points: number[]*/): Promise<any> => {
+        const {
+            jobInstance,
+            frame,
+            annotations,
+            onUpdateAnnotations,
+        } = this.props;
+
+        console.log(jobInstance);
+        console.log(frame);
+        console.log(annotations[annotations.length-1].clientID);
+
+        const state = annotations[annotations.length - 1];
+        let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
+        result.then((data: any) => {
+            state.points = data.points;
+            console.log(data);
+            onUpdateAnnotations([state]);
+        });
+        // var backendAPI = 'http://localhost:8080/api/v1';
+        // var proxy = false;
+        // const x1 = Math.trunc(points[0])
+        // const y1 = Math.trunc(points[1])
+        // const x2 = Math.trunc(points[2])
+        // const y2 = Math.trunc(points[3])
+
+        // let response = null;
+        // try {
+        //     response = await axios.get(`${backendAPI}/tasks/${taskID}/snap`, { // EDITED to  add the URL parameters instead
+        //         proxy: proxy,
+        //         params: {
+        //             objectID: objectID,
+        //             frameNumber: frame,
+        //             x1: x1,
+        //             y1: y1,
+        //             x2: x2,
+        //             y2: y2,
+        //         }
+        //     });
+        // } catch (errorData) {
+        //     console.log(errorData);
+        // }
+
+        // return response;
     }
     // EDITED END
 
@@ -718,6 +843,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().addEventListener('canvas.merged', this.onCanvasObjectsMerged);
         canvasInstance.html().addEventListener('canvas.groupped', this.onCanvasObjectsGroupped);
         canvasInstance.html().addEventListener('canvas.splitted', this.onCanvasTrackSplitted);
+        // EDITED FOR INTEGRATION
+        canvasInstance.html().addEventListener('canvas.dblclicked', this.onShapedblClicked);
+        // EDITED END
+        // TEMPORARY PLACEMENT
+        canvasInstance.html().addEventListener('canvas.moved', this.getCursorLocation);
+        // EDITED END
 
         canvasInstance.html().addEventListener('point.contextmenu', this.onCanvasPointContextMenu);
     }

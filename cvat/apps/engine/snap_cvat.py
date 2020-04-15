@@ -218,14 +218,14 @@ class Snap:
                         h = bbox_list[3]
                         print("startX: ",nX, " startY: ", nY, " w: ", w, " h: ", h)
                         cv2.rectangle(frame_crop, (nX, nY), (nX + w, nY + h), (0, 0xFF, 0), 4)
-                        cv2.imwrite(folder_name+'/frame_'+str(frame_no)+'_crop.jpg', frame_crop)
+                        # cv2.imwrite(folder_name+'/frame_'+str(frame_no)+'_crop.jpg', frame_crop)
                         return x1 + nX, y1 + nY, x1 + nX + w, y1 + nY + h
         
         #snapping with grabcut implementation
         elif args[0] == 4 and len(args) == 6:
-            print("Using Grabcut Method")
+            # print("Using Grabcut Method")
             img = args[1]
-            folder_name = 'results'
+            # folder_name = 'results'
             if isinstance(args[2], (float, int)) and isinstance(args[3], (float, int)) or isinstance(args[4], (float, int)) or isinstance(args[5], (float, int)):
                 x1 = args[2]
                 y1 = args[3]
@@ -240,18 +240,18 @@ class Snap:
             fgdModel = np.zeros((1,65),np.float64)
             rect = (int(x1), int(y1), int(x2-x1), int(y2-y1))
 
-            frame_crop = img[int(y1):int(y2), int(x1):int(x2)]
+            # frame_crop = img[int(y1):int(y2), int(x1):int(x2)]
             # cv2.imwrite(folder_name+'/img_frame_crop.jpg', frame_crop)
 
-            cv2.grabCut(img,mask,rect,bgdModel,fgdModel,10,cv2.GC_INIT_WITH_RECT)
-            orig = img.copy()   
-            display = orig.copy()
+            cv2.grabCut(img,mask,rect,bgdModel,fgdModel,5,cv2.GC_INIT_WITH_RECT)
+            # orig = img.copy()   
+            # display = orig.copy()
             mask2 = np.where((mask==2)|(mask==0),0,1).astype('uint8')
             img = img*mask2[:,:,np.newaxis]
             img2  = np.where(img!=0,255,img).astype('uint8')
             img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY) 
-            img3 = cv2.threshold(img2,127,255,cv2.THRESH_BINARY)
-            print(np.shape(img3))
+            # img3 = cv2.threshold(img2,127,255,cv2.THRESH_BINARY)
+            # print(np.shape(img3))
 
             # cv2.imwrite(folder_name+'/img_mask.jpg', img)
             # cv2.imwrite(folder_name+'/img_threshold.jpg', img2)
@@ -267,12 +267,12 @@ class Snap:
                 area_list.append(cnts_area)
 
             nX, nY, w, h = cv2.boundingRect(rec_list[area_list.index(max(area_list))])
-            print("startX: ",nX, " startY: ", nY, " w: ", w, " h: ", h)
-            cv2.rectangle(display, (nX, nY), (nX + w, nY + h), (0, 0xFF, 0), 4)
+            # print("startX: ",nX, " startY: ", nY, " w: ", w, " h: ", h)
+            # cv2.rectangle(display, (nX, nY), (nX + w, nY + h), (0, 0xFF, 0), 4)
             # cv2.imwrite(folder_name+'/img_drawn.jpg',display)
-            display = display[int(y1):int(y2), int(x1):int(x2)]
+            # display = display[int(y1):int(y2), int(x1):int(x2)]
             # cv2.imwrite(folder_name+'/img_crop.jpg', display)
-            return x1 + nX, y1 + nY, x1 + nX + w, y1 + nY + h
+            return nX, nY, nX + w, nY + h
 
 
         else:
@@ -280,33 +280,24 @@ class Snap:
             return ValueError
 
 
-
-    def click(self, event, x, y, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN:
-            print("x-coor: ", x, ", y-coor:", y)
-
-    def run(self, img, bboxx1, bboxy1, bboxx2, bboxy2, snap_type):
+    def run(self,img,bboxx1,bboxy1,bboxx2,bboxy2,snap_type):
         # THE PARAMETERS TO CHANGE
         # Coordinates of the resized image, not the full size
-        folder_name = 'results'
-        if path.exists(folder_name) == False:
-            os.mkdir(folder_name)
+
         (H,W) = img.shape[:2]
-        
-        imgvis = imutils.resize(img, width=1028)
-        ratioW = W/1028
+        ratioW = 1
 
         x1, y1, x2, y2 = snap.snap_algorithm(snap_type, img, bboxx1*ratioW, bboxy1*ratioW, bboxx2*ratioW, bboxy2*ratioW)
-
-        if snap_type == snap.SNAP_BACKGROUND_SUBTRACTION:
-            x1 = int(x1 / ratioW)
-            x2 = int(x2 / ratioW)
-            y1 = int(y1 / ratioW)
-            y2 = int(y2 / ratioW)
-            cv2.rectangle(imgvis, (x1, y1), (x2, y2), (0, 0xFF, 0), 4)
-            # cv2.imwrite(folder_name+'/img.jpg', imgvis)
-        
-        return x1, y1, x2, y2
+        x1 = int(x1 / ratioW)
+        x2 = int(x2 / ratioW)
+        y1 = int(y1 / ratioW)
+        y2 = int(y2 / ratioW)
+        # cv2.rectangle(imgvis, (x1, y1), (x2, y2), (0, 0xFF, 0), 4)
+        # cv2.imwrite(folder_name+'/img.jpg',imgvis)
+            
+        data = [x1, y1, x2, y2]
+        dim = [H, W]
+        return data, dim
             
 
 snap = Snap()

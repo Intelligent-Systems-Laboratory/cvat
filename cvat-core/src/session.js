@@ -22,9 +22,9 @@
             annotations: Object.freeze({
                 value: {
                     // EDITED FOR INTEGRATION
-                    async snap(number) {
+                    async snap(objectID, frameNum, points) {
                         const result = await PluginRegistry
-                            .apiWrapper.call(this, prototype.annotations.snap, number);
+                            .apiWrapper.call(this, prototype.annotations.snap, objectID, frameNum, points);
                         return result;
                     },
                     // EDITED END
@@ -1344,20 +1344,19 @@
         redoActions,
         clearActions,
         getActions,
-        // autoSnap, /*EDITED FOR INTEGRATION*/
     } = require('./annotations');
 
     buildDublicatedAPI(Job.prototype);
     buildDublicatedAPI(Task.prototype);
 
     // EDITED FOR INTEGRATION
-    Job.prototype.annotations.snap = async function (number) {
-        const result = await serverProxy.tasks.autoSnap(this.id, number)
+    Job.prototype.annotations.snap = async function (objectID, frameNum, points) {
+        const result = await serverProxy.tasks.autoSnap(this.task.id, objectID, frameNum, points)
         return result;
     },
 
-    Task.prototype.annotations.snap = async function (number) {
-        const result = await serverProxy.tasks.autoSnap(this.id, number)
+    Task.prototype.annotations.snap = async function (objectID, frameNum, points) {
+        const result = await serverProxy.tasks.autoSnap(this.id, objectID, frameNum, points)
         return result;
     },
     // EDITED END

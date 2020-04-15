@@ -260,6 +260,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // EDITED FOR INTEGRATION
         canvasInstance.html().removeEventListener('canvas.dblclicked', this.onShapedblClicked);
         // EDITED END
+        // EDITED FOR USER STORY 12/13
+        // TEMPORARY PLACEMENT
+        canvasInstance.html().removeEventListener('canvas.moved', this.getCursorLocation);
+        // EDITED END
 
         canvasInstance.html().removeEventListener('point.contextmenu', this.onCanvasPointContextMenu);
 
@@ -267,6 +271,21 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
 
     // EDITED START FOR USER STORY 12/13
+    // TEMPORARY IMPLEMENTATION
+    private cursorLocation = {
+        x: 0,
+        y: 0,
+    }
+
+    // TEMPORARY IMPLEMENTATION
+    private getCursorLocation = async (event: any): Promise<void> => {
+        const mx = event.detail.x;
+        const my = event.detail.y;
+
+        this.cursorLocation.x = mx;
+        this.cursorLocation.y = my;
+    };
+
     private objectFollowMouse(): void {
         const {
             onUpdateAnnotations,
@@ -275,19 +294,20 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         } = this.props
 
         if (activatedStateID != null) {
-            console.log(activatedStateID);
             const [state] = annotations.filter((el: any) => (el.clientID === activatedStateID));
             
             const width = state.points[2] - state.points[0];
             const height = state.points[3] - state.points[1];
 
-            console.log(width, height);
-            console.log(state.points);
-            state.points = [state.points[0] + width/2, 
-                state.points[1] + height/2, 
-                state.points[2] + width/2, 
-                state.points[3] + height/2];
-            console.log(state.points);
+
+            // state.points = [state.points[0] + width/2, 
+            //     state.points[1] + height/2, 
+            //     state.points[2] + width/2, 
+            //     state.points[3] + height/2];
+            state.points = [this.cursorLocation.x - width/2,
+                this.cursorLocation.y - height/2,
+                this.cursorLocation.x + width/2,
+                this.cursorLocation.y + height/2];
             onUpdateAnnotations([state]);
         }
     }
@@ -799,6 +819,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().addEventListener('canvas.splitted', this.onCanvasTrackSplitted);
         // EDITED FOR INTEGRATION
         canvasInstance.html().addEventListener('canvas.dblclicked', this.onShapedblClicked);
+        // EDITED END
+        // TEMPORARY PLACEMENT
+        canvasInstance.html().addEventListener('canvas.moved', this.getCursorLocation);
         // EDITED END
 
         canvasInstance.html().addEventListener('point.contextmenu', this.onCanvasPointContextMenu);

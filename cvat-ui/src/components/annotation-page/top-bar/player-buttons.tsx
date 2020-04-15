@@ -26,6 +26,7 @@ interface Props {
     previousFrameShortcut: string;
     forwardShortcut: string;
     backwardShortcut: string;
+    onSwitchTrack();
     onSwitchPlay(): void;
     onPrevFrame(): void;
     onNextFrame(): void;

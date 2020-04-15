@@ -15,6 +15,10 @@ import PlayerNavigation from './player-navigation';
 import PlayerButtons from './player-buttons';
 
 interface Props {
+    // EDITED FOR USER STORY 12/13
+    tracking:boolean;
+    onSwitchTrack(): void;
+    // EDITED END
     playing: boolean;
     saving: boolean;
     savingStatuses: string[];
@@ -90,7 +94,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         onURLIconClick,
         onUndoClick,
         onRedoClick,
-        trackBoundingBoxShortcut,
+        onSwitchTrack,
     } = props;
 
     return (
@@ -123,7 +127,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                         onFirstFrame={onFirstFrame}
                         onLastFrame={onLastFrame}
                         onSwitchPlay={onSwitchPlay}
-                        trackBoundingBoxShortcut={trackBoundingBoxShortcut}
+                        onSwitchTrack={onSwitchTrack}// EDITED FOR USER STORY 12/13
                     />
                     <PlayerNavigation
                         startFrame={startFrame}

@@ -63,6 +63,7 @@ interface Props {
     aamZoomMargin: number;
     workspace: Workspace;
     keyMap: Record<string, ExtendedKeyMapOptions>;
+    tracking: boolean; // EDITED FOR USER STORY 12/13
     onSetupCanvas: () => void;
     onDragCanvas: (enabled: boolean) => void;
     onZoomCanvas: (enabled: boolean) => void;
@@ -89,6 +90,7 @@ interface Props {
     onChangeGridOpacity(opacity: number): void;
     onChangeGridColor(color: GridColor): void;
     onSwitchGrid(enabled: boolean): void;
+
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -131,8 +133,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             saturationLevel,
             workspace,
             frameFetching,
+            tracking,
         } = this.props;
-
+        console.log('tracking',tracking);
         if (prevProps.sidebarCollapsed !== sidebarCollapsed) {
             const [sidebar] = window.document.getElementsByClassName('cvat-objects-sidebar');
             if (sidebar) {
@@ -196,7 +199,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // EDITED END
             // EDITED START FOR USER STORY 12/13
             if (prevProps.frameData !== frameData) {
-                this.objectFollowMouse();
+                this.objectFollowMouse(prevProps.frameData.frame_number);
             }
             // EDITED END
         }
@@ -288,11 +291,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         this.cursorLocation.y = my;
     };
 
-    private objectFollowMouse(): void {
+    private objectFollowMouse(frame_number:number): void {
         const {
             onUpdateAnnotations,
             activatedStateID,
             annotations,
+            jobInstance,
         } = this.props
 
         if (activatedStateID != null) {
@@ -310,6 +314,13 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 this.cursorLocation.y - height/2,
                 this.cursorLocation.x + width/2,
                 this.cursorLocation.y + height/2];
+            console.log('annotations: ',annotations);
+            console.log('state',state);
+            this.setState({
+
+            })
+            console.log('jobInstance: ', jobInstance);
+
             onUpdateAnnotations([state]);
         }
     }

@@ -187,6 +187,7 @@ export enum AnnotationActionTypes {
     CHANGE_WORKSPACE = 'CHANGE_WORKSPACE',
     SAVE_LOGS_SUCCESS = 'SAVE_LOGS_SUCCESS',
     SAVE_LOGS_FAILED = 'SAVE_LOGS_FAILED',
+    SWITCH_TRACK = "SWITCH_TRACK"
 }
 
 export function saveLogsAsync():
@@ -653,6 +654,16 @@ export function switchPlay(playing: boolean): AnyAction {
         },
     };
 }
+// EDITED FOR USER STORY 12/13
+export function switchTrack(tracking: boolean): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_TRACK,
+        payload: {
+            tracking,
+        },
+    };
+}
+// EDITED END
 
 export function changeFrameAsync(toFrame: number, fillBuffer?: boolean, frameStep?: number):
 ThunkAction<Promise<void>, {}, {}, AnyAction> {

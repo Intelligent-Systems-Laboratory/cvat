@@ -22,6 +22,7 @@ import {
     searchAnnotationsAsync,
     changeWorkspace as changeWorkspaceAction,
     activateObject,
+    switchTrack,
 } from 'actions/annotation-actions';
 
 import AnnotationTopBarComponent from 'components/annotation-page/top-bar/top-bar';
@@ -45,11 +46,13 @@ interface StateToProps {
     workspace: Workspace;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     normalizedKeyMap: Record<string, string>;
+    tracking:boolean; // EDITED FOR USER STORY 12/13
 }
 
 interface DispatchToProps {
     onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
     onSwitchPlay(playing: boolean): void;
+    onSwitchTrack(tracking: boolean): void; // EDITED FOR USER STORY 12/13
     onSaveAnnotation(sessionInstance: any): void;
     showStatistics(sessionInstance: any): void;
     undo(sessionInstance: any, frameNumber: any): void;
@@ -62,6 +65,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
     const {
         annotation: {
             player: {
+                tracking,
                 playing,
                 frame: {
                     filename: frameFilename,
@@ -118,6 +122,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         workspace,
         keyMap,
         normalizedKeyMap,
+        tracking,// EDITED FOR USER STORY 12/13
     };
 }
 
@@ -129,6 +134,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSwitchPlay(playing: boolean): void {
             dispatch(switchPlay(playing));
         },
+        // EDITED FOR USER STORY 12/13
+        onSwitchTrack(tracking: boolean): void {
+            dispatch(switchTrack(tracking));
+        },
+        // EDITED END
         onSaveAnnotation(sessionInstance: any): void {
             dispatch(saveAnnotationsAsync(sessionInstance));
         },
@@ -199,6 +209,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             canvasIsReady,
             onSwitchPlay,
             onChangeFrame,
+            onSwitchTrack,
+            tracking,
         } = this.props;
 
 
@@ -225,6 +237,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 }, frameDelay);
             } else {
                 onSwitchPlay(false);
+                onSwitchTrack(false); // EDITED FOR USER STORY 12/13
             }
         }
     }
@@ -278,6 +291,24 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             onSwitchPlay(true);
         }
     };
+    // EDITED FOR USER STORY 12/13
+    private onSwitchTrack = (): void => {
+        const {
+            frameNumber,
+            jobInstance,
+            onSwitchTrack,
+            tracking,
+        } = this.props;
+
+        if (tracking) {
+            onSwitchTrack(false);
+        } else if (frameNumber < jobInstance.stopFrame) {
+            onSwitchTrack(true);
+        }else if( tracking == null){
+            onSwitchTrack(true);
+        }
+    };
+    // EDITED END
 
     private onFirstFrame = (): void => {
         const {
@@ -454,6 +485,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     public render(): JSX.Element {
         const {
+            tracking,// EDITED FOR USER STORY 12/13
             playing,
             saving,
             savingStatuses,
@@ -560,7 +592,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             },
             TRACK_BOUNDING_BOX: (event: KeyboardEvent | undefined) => {
                 preventDefault(event);
-                this.onSwitchPlay();
+                this.onSwitchTrack;
+                console.log('shortcut t, pressed');
             },
         };
 
@@ -583,6 +616,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     changeWorkspace={changeWorkspace}
                     workspace={workspace}
                     playing={playing}
+                    tracking={tracking}
+                    onSwitchTrack={this.onSwitchTrack}
                     saving={saving}
                     savingStatuses={savingStatuses}
                     startFrame={startFrame}

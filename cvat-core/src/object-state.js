@@ -184,8 +184,8 @@
                         } else {
                             throw new ArgumentError(
                                 'Points are expected to be an array '
-                                    + `but got ${typeof (points) === 'object'
-                                        ? points.constructor.name : typeof (points)}`,
+                                + `but got ${typeof (points) === 'object'
+                                    ? points.constructor.name : typeof (points)}`,
                             );
                         }
                     },
@@ -328,8 +328,8 @@
                         if (typeof (attributes) !== 'object') {
                             throw new ArgumentError(
                                 'Attributes are expected to be an object '
-                                    + `but got ${typeof (attributes) === 'object'
-                                        ? attributes.constructor.name : typeof (attributes)}`,
+                                + `but got ${typeof (attributes) === 'object'
+                                    ? attributes.constructor.name : typeof (attributes)}`,
                             );
                         }
 

@@ -153,7 +153,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.mode = Mode.IDLE;
     }
 
-    private onMergeDone(objects: any[]| null, duration?: number): void {
+    private onMergeDone(objects: any[] | null, duration?: number): void {
         if (objects) {
             const event: CustomEvent = new CustomEvent('canvas.merged', {
                 bubbles: false,
@@ -323,7 +323,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         }
 
         // EDITED START FOR MAGNIFYING GLASS
-        this.magnifyingGlassContainer.style.transform = `rotate(${this.geometry.angle}deg)`; 
+        this.magnifyingGlassContainer.style.transform = `rotate(${this.geometry.angle}deg)`;
         // EDITED END
 
         // Transform grid
@@ -560,6 +560,10 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     public constructor(model: CanvasModel & Master, controller: CanvasController) {
+        var trackStart = 0;
+        var startX = 0;
+        var startY = 0;
+        var counter = 0;
         this.controller = controller;
         this.geometry = controller.geometry;
         this.svgShapes = {};
@@ -605,33 +609,33 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.magnifyingGlassContainer.setAttribute('id', 'cvat_canvas_magnifying_glass_container');
         this.magnifyingGlassContainer.classList.add('cvat_canvas_hidden');
         this.magnifyingGlassForeignObject.setAttribute('id', 'cvat_canvas_foreign');
-        this.magnifyingGlassForeignObject.setAttribute('height', `${this.magnifyingGlassRadius*2}`);
-        this.magnifyingGlassForeignObject.setAttribute('width', `${this.magnifyingGlassRadius*2}`);
+        this.magnifyingGlassForeignObject.setAttribute('height', `${this.magnifyingGlassRadius * 2}`);
+        this.magnifyingGlassForeignObject.setAttribute('width', `${this.magnifyingGlassRadius * 2}`);
         this.magnifyingGlassImage.setAttribute('id', 'magnifying_glass_image');
-        this.magnifyingGlassImage.setAttribute('height', `${this.magnifyingGlassRadius*2}`);
-        this.magnifyingGlassImage.setAttribute('width', `${this.magnifyingGlassRadius*2}`);
+        this.magnifyingGlassImage.setAttribute('height', `${this.magnifyingGlassRadius * 2}`);
+        this.magnifyingGlassImage.setAttribute('width', `${this.magnifyingGlassRadius * 2}`);
 
         // define clip path for 'border'
-        var defs = window.document.createElementNS('http://www.w3.org/2000/svg','defs');
-        var clipPath = window.document.createElementNS('http://www.w3.org/2000/svg','clipPath');
-        clipPath.setAttributeNS(null,'id','clip');
-        this.circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        this.circle.setAttributeNS(null,'id','circle');
-        this.circle.setAttributeNS(null,'cx',`${this.magnifyingGlassRadius}`);
-        this.circle.setAttributeNS(null,'cy',`${this.magnifyingGlassRadius}`);
-        this.circle.setAttributeNS(null,'r',`${this.magnifyingGlassRadius}`);
-        this.circle.setAttributeNS(null,'fill','#FFFFFF');
-        this.circle.setAttributeNS(null,'fill-opacity','0.0')
+        var defs = window.document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        var clipPath = window.document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clipPath.setAttributeNS(null, 'id', 'clip');
+        this.circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        this.circle.setAttributeNS(null, 'id', 'circle');
+        this.circle.setAttributeNS(null, 'cx', `${this.magnifyingGlassRadius}`);
+        this.circle.setAttributeNS(null, 'cy', `${this.magnifyingGlassRadius}`);
+        this.circle.setAttributeNS(null, 'r', `${this.magnifyingGlassRadius}`);
+        this.circle.setAttributeNS(null, 'fill', '#FFFFFF');
+        this.circle.setAttributeNS(null, 'fill-opacity', '0.0')
         //separate circle for the border, can't use the same circle as above
-        this.border = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        this.border.setAttributeNS(null,'cx',`${this.magnifyingGlassRadius}`);
-        this.border.setAttributeNS(null,'cy',`${this.magnifyingGlassRadius}`);
-        this.border.setAttributeNS(null,'r',`${this.magnifyingGlassRadius}`);
-        this.border.setAttributeNS(null,'fill','#FFFFFF');
-        this.border.setAttributeNS(null,'style',"fill:none;stroke:#ff0000;stroke-width:3");
+        this.border = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        this.border.setAttributeNS(null, 'cx', `${this.magnifyingGlassRadius}`);
+        this.border.setAttributeNS(null, 'cy', `${this.magnifyingGlassRadius}`);
+        this.border.setAttributeNS(null, 'r', `${this.magnifyingGlassRadius}`);
+        this.border.setAttributeNS(null, 'fill', '#FFFFFF');
+        this.border.setAttributeNS(null, 'style', "fill:none;stroke:#ff0000;stroke-width:3");
 
-        var use = document.createElementNS('http://www.w3.org/2000/svg','use');
-        use.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#circle');
+        var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+        use.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#circle');
         defs.appendChild(clipPath);
         clipPath.appendChild(use);
         this.magnifyingGlassContainer.appendChild(defs);
@@ -641,7 +645,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.magnifyingGlassForeignObject.appendChild(magnifyingGlassDiv);
         this.magnifyingGlassContainer.appendChild(this.magnifyingGlassForeignObject);
         this.magnifyingGlassContainer.appendChild(this.border);
-        
+
         this.canvas.appendChild(this.magnifyingGlassContainer);
         // EDITED END
 
@@ -731,13 +735,28 @@ export class CanvasViewImpl implements CanvasView, Listener {
             e.preventDefault();
         });
 
+        // EDITED START user story 12/13
+        window.document.addEventListener('keydown', (event): void => {
+            if (event.which === 84) {
+                if (trackStart === 0) {
+                    trackStart = 1;
+                    console.log('Track is activated, t press');
+                } else if (trackStart === 2) {
+                    trackStart = 3;
+                    console.log('Track is deactivated, t press');
+                }
+
+            }
+        });
+        // EDITED END user story 12/13
+
         this.content.addEventListener('mousedown', (event): void => {
             if ([1, 2].includes(event.which)) {
                 if (![Mode.ZOOM_CANVAS, Mode.GROUP].includes(this.mode) || event.which === 2) {
                     self.controller.enableDrag(event.clientX, event.clientY);
                 }
                 // EDITED START for USER STORY 1
-                if (this.lastShapeClicked != null){
+                if (this.lastShapeClicked != null) {
                     this.focusBox(false);
                     this.lastShapeClicked = null;
                 }
@@ -764,7 +783,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 return
             }
             // EDITED END
-            
+
             const { offset } = this.controller.geometry;
             const point = translateToSVG(this.content, [event.clientX, event.clientY]);
             self.controller.zoom(point[0] - offset, point[1] - offset, event.deltaY > 0 ? -1 : 1);
@@ -776,6 +795,28 @@ export class CanvasViewImpl implements CanvasView, Listener {
         });
 
         this.content.addEventListener('mousemove', (e): void => {
+            // EDITED START User story 12/13
+            const shape = this.svgShapes[this.activeElement.clientID];
+
+            if (trackStart === 0) {
+                console.log('not tracking');
+            } else if (trackStart === 1) {
+                // startX = e.clientX
+                // startY = e.clientY
+                // self.controller.enableDrag(e.clientX, e.clientY);
+                // if (shape) {
+                //     (shape as any).draggable();
+                //     this.mode = Mode.DRAG;
+                // }
+                console.log('enabled drag');
+                trackStart = 2
+            } else if (trackStart === 3) {
+                // self.controller.disableDrag();
+                trackStart = 0;
+                console.log('disable drag');
+            }
+            // EDITED END User story 12/13
+
             self.controller.drag(e.clientX, e.clientY);
 
             // EDITED START MAGNIFYING GLASS
@@ -1014,39 +1055,39 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const [cX, cY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
         const bgX = cX - this.geometry.offset;
         const bgY = cY - this.geometry.offset;
-        
-        const theta = Math.atan2((point.getAttribute('cy') as any) - (rectbbox.height/2 as any), (point.getAttribute('cx') as any) - (rectbbox.width/2 as any));
-        const rad = Math.sqrt((width*width) + (height*height)) / 2;
+
+        const theta = Math.atan2((point.getAttribute('cy') as any) - (rectbbox.height / 2 as any), (point.getAttribute('cx') as any) - (rectbbox.width / 2 as any));
+        const rad = Math.sqrt((width * width) + (height * height)) / 2;
 
         // move magnifying glass
-        this.border.setAttributeNS(null,'cx',`${mgX + (rad * Math.cos(theta))}`);
-        this.border.setAttributeNS(null,'cy',`${mgY + (rad * Math.sin(theta))}`);
-        this.magnifyingGlassForeignObject.setAttribute('x', `${mgX-width/2 + (rad * Math.cos(theta))}`);
-        this.magnifyingGlassForeignObject.setAttribute('y', `${mgY-height/2 + (rad * Math.sin(theta))}`);
+        this.border.setAttributeNS(null, 'cx', `${mgX + (rad * Math.cos(theta))}`);
+        this.border.setAttributeNS(null, 'cy', `${mgY + (rad * Math.sin(theta))}`);
+        this.magnifyingGlassForeignObject.setAttribute('x', `${mgX - width / 2 + (rad * Math.cos(theta))}`);
+        this.magnifyingGlassForeignObject.setAttribute('y', `${mgY - height / 2 + (rad * Math.sin(theta))}`);
 
         // draw zoom        
         mgCtx.fillStyle = "#FFFFFF";
-        mgCtx.fillRect(0,0,width,height);
-        mgCtx.drawImage(this.background, 
-            bgX - (width/2)*(this.magnifyingGlassParameters.zoomScale/100), 
-            bgY - (height/2)*(this.magnifyingGlassParameters.zoomScale/100), 
-            (width)*(this.magnifyingGlassParameters.zoomScale/100), 
-            (height)*(this.magnifyingGlassParameters.zoomScale/100), 
-            0, 
-            0, 
-            width, 
+        mgCtx.fillRect(0, 0, width, height);
+        mgCtx.drawImage(this.background,
+            bgX - (width / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
+            bgY - (height / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
+            (width) * (this.magnifyingGlassParameters.zoomScale / 100),
+            (height) * (this.magnifyingGlassParameters.zoomScale / 100),
+            0,
+            0,
+            width,
             height);
         // draw crosshair
         mgCtx.strokeStyle = "red";
-        mgCtx.moveTo(width/2, 0);
-        mgCtx.lineTo(width/2, height);
+        mgCtx.moveTo(width / 2, 0);
+        mgCtx.lineTo(width / 2, height);
         mgCtx.stroke();
-        mgCtx.moveTo(0, height/2);
-        mgCtx.lineTo(width, height/2);
+        mgCtx.moveTo(0, height / 2);
+        mgCtx.lineTo(width, height / 2);
         mgCtx.stroke();
     }
     // EDITED END
-    
+
     // EDITED START for USER STORY 1
     private getFilteredBG(): void {
         var ctx = this.background.getContext("2d");
@@ -1056,14 +1097,14 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.backgroundOriginal.width,
             this.backgroundOriginal.height
         )
-        for (var index = 0; index < this.backgroundOriginal.data.length; index+=4) {
+        for (var index = 0; index < this.backgroundOriginal.data.length; index += 4) {
             this.backgroundNew.data[index] = 0;
         }
         ctx = null;
     }
 
     private focusBox(focusedBox: any): void {
-        if (focusedBox == true){
+        if (focusedBox == true) {
             if (this.lastShapeClicked == this.activeElement.clientID && this.lastShapeClicked != null) {
                 var ctx = this.background.getContext("2d");
                 var pointsBBox = this.drawnStates[this.activeElement.clientID].points;
@@ -1073,7 +1114,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 ctx = null;
             }
         }
-        else if (focusedBox == false && this.lastShapeClicked != null){
+        else if (focusedBox == false && this.lastShapeClicked != null) {
             var ctx = this.background.getContext("2d");
             ctx.putImageData(this.backgroundOriginal, 0, 0);
             ctx = null;
@@ -1387,7 +1428,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         // EDITED START for USER STORY 1
         (shape as any).on('click', (): void => {
-            if (this.lastShapeClicked != clientID){
+            if (this.lastShapeClicked != clientID) {
                 this.lastShapeClicked = clientID;
                 this.focusBox(true);
             }
@@ -1420,8 +1461,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 if (Math.sqrt(((p1.x - p2.x) ** 2) + ((p1.y - p2.y) ** 2)) >= delta) {
                     const points = pointsToArray(
                         shape.attr('points') || `${shape.attr('x')},${shape.attr('y')} `
-                            + `${shape.attr('x') + shape.attr('width')},`
-                            + `${shape.attr('y') + shape.attr('height')}`,
+                        + `${shape.attr('x') + shape.attr('width')},`
+                        + `${shape.attr('y') + shape.attr('height')}`,
                     ).map((x: number): number => x - offset);
 
                     this.drawnStates[state.clientID].points = points;
@@ -1489,8 +1530,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
                 const points = pointsToArray(
                     shape.attr('points') || `${shape.attr('x')},${shape.attr('y')} `
-                        + `${shape.attr('x') + shape.attr('width')},`
-                        + `${shape.attr('y') + shape.attr('height')}`,
+                    + `${shape.attr('x') + shape.attr('width')},`
+                    + `${shape.attr('y') + shape.attr('height')}`,
                 ).map((x: number): number => x - offset);
 
                 this.drawnStates[state.clientID].points = points;

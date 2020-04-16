@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-def run(img,bboxx1,bboxy1,bboxx2,bboxy2):
+def run(img, bboxx1, bboxy1, bboxx2, bboxy2):
     # THE PARAMETERS TO CHANGE
     # Coordinates of the resized image, not the full size
     (H,W) = img.shape[:2]
@@ -14,8 +14,11 @@ def run(img,bboxx1,bboxy1,bboxx2,bboxy2):
     y1 = int(y1 / ratioW)
     y2 = int(y2 / ratioW)
 
-        
-    data = [x1, y1, x2, y2]
+    if (x1 == 0 and y1 == 0 and x2 == 0 and y2 == 0):
+        data = [bboxx1, bboxy1, bboxx2, bboxy2]
+    else:
+        data = [x1, y1, x2, y2]
+
     dim = [H, W]
     return data, dim
 
@@ -42,6 +45,7 @@ def snap_algorithm(*args):
     y2 = int(y2)
     W = x2-x1
     H = y2-y1
+    Area = W*H
     factor = 0.2 # 10% of the bbox .get a slightly larger box only instead of the whole image as the input to grabcut
     WFactor = int(W*factor)
     HFactor = int(H*factor)
@@ -75,8 +79,13 @@ def snap_algorithm(*args):
         cnts_area = cv2.contourArea(c)
         rec_list.append(c)
         area_list.append(cnts_area)
+    
+    nX, nY, w, h = cv2.boundingRect(rec_list[area_list.index(max(area_list))])
 
-    nX = nX + xOffset
-    nY = nY + yOffset
-    return nX, nY, nX + w, nY + h
+    if (w*h) >= (0.3*Area):
+        nX = nX + xOffset
+        nY = nY + yOffset
+        return nX, nY, nX + w, nY + h
+    else:
+        return 0, 0, 0, 0
 

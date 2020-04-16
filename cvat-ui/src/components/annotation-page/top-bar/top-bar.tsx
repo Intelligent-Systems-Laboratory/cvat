@@ -39,7 +39,6 @@ interface Props {
     forwardShortcut: string;
     backwardShortcut: string;
     focusFrameInputShortcut: string;
-    trackBoundingBoxShortcut: string;
     changeWorkspace(workspace: Workspace): void;
     showStatistics(): void;
     onSwitchPlay(): void;
@@ -63,6 +62,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         savingStatuses,
         undoAction,
         redoAction,
+        tracking,// EDITED FOR USER STORY 12/13
         playing,
         frameNumber,
         frameFilename,
@@ -114,6 +114,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
             <Col className='cvat-annotation-header-player-group'>
                 <Row type='flex' align='middle'>
                     <PlayerButtons
+                        tracking={tracking}// EDITED FOR USER STORY 12/13
                         playing={playing}
                         playPauseShortcut={playPauseShortcut}
                         nextFrameShortcut={nextFrameShortcut}

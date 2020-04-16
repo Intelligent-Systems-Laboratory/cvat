@@ -209,8 +209,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             canvasIsReady,
             onSwitchPlay,
             onChangeFrame,
-            onSwitchTrack,
-            tracking,
         } = this.props;
 
 
@@ -237,7 +235,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 }, frameDelay);
             } else {
                 onSwitchPlay(false);
-                onSwitchTrack(false); // EDITED FOR USER STORY 12/13
             }
         }
     }
@@ -299,12 +296,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             onSwitchTrack,
             tracking,
         } = this.props;
-
         if (tracking) {
             onSwitchTrack(false);
         } else if (frameNumber < jobInstance.stopFrame) {
             onSwitchTrack(true);
-        }else if( tracking == null){
+        }else if(!tracking){
             onSwitchTrack(true);
         }
     };
@@ -590,11 +586,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     this.inputFrameRef.current.focus();
                 }
             },
+            // EDITED FOR USER STORY 12/13
             TRACK_BOUNDING_BOX: (event: KeyboardEvent | undefined) => {
                 preventDefault(event);
-                this.onSwitchTrack;
+                this.onSwitchTrack();
                 console.log('shortcut t, pressed');
             },
+            // EDITED END
         };
 
         return (
@@ -616,8 +614,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     changeWorkspace={changeWorkspace}
                     workspace={workspace}
                     playing={playing}
+                    // EDITED FOR USER STORY 12/13
                     tracking={tracking}
                     onSwitchTrack={this.onSwitchTrack}
+                    // EDITED END
                     saving={saving}
                     savingStatuses={savingStatuses}
                     startFrame={startFrame}
@@ -638,7 +638,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     focusFrameInputShortcut={normalizedKeyMap.FOCUS_INPUT_FRAME}
                     onUndoClick={this.undo}
                     onRedoClick={this.redo}
-                    trackBoundingBoxShortcut={normalizedKeyMap.TRACK_BOUNDING_BOX}
                 />
             </>
         );

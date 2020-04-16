@@ -320,6 +320,12 @@ const defaultKeyMap = {
         sequences: ['t'],
         action: 'keydown',
     },
+    AUTOSNAP: {
+        name: 'Autosnap',
+        description: 'Snap bounding box to edges of selected object',
+        sequences: ['s'],
+        action: 'keydown',
+    },
 } as any as Record<string, ExtendedKeyMapOptions>;
 
 

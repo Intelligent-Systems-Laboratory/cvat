@@ -23,9 +23,11 @@ import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas';
 import getCore from 'cvat-core';
 import getSnap from 'cvat-snap';
+import { CanvasController } from '../../../../../cvat-canvas/src/typescript/canvasController';
 
 const cvat = getCore();
 const snap = getSnap();
+var finishedSnapping = 0;
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
 
@@ -64,6 +66,7 @@ interface Props {
     workspace: Workspace;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     tracking: boolean; // EDITED FOR USER STORY 12/13
+    playing: boolean;
     onSetupCanvas: () => void;
     onDragCanvas: (enabled: boolean) => void;
     onZoomCanvas: (enabled: boolean) => void;
@@ -134,8 +137,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             workspace,
             frameFetching,
             tracking,
+            playing,
         } = this.props;
-        console.log('tracking',tracking);
+        console.log('tracking', tracking);
+        // console.log('playing',playing);
         if (prevProps.sidebarCollapsed !== sidebarCollapsed) {
             const [sidebar] = window.document.getElementsByClassName('cvat-objects-sidebar');
             if (sidebar) {
@@ -191,18 +196,30 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // EDITED START for USER STORY 2
             if (annotations.length > prevProps.annotations.length) {
                 this.contextMenuOnDraw()
-                this.autoSnap()
+                finishedSnapping = 1;
             }
             else {
-                this.removeContextMenu()
+                if (finishedSnapping === 1) {
+                    finishedSnapping = 0;
+                }
+                else {
+                    this.removeContextMenu()
+                }
             }
             // EDITED END
             // EDITED START FOR USER STORY 12/13
-            if (prevProps.frameData !== frameData) {
-                this.objectFollowMouse(prevProps.frameData.frame_number);
+            if (prevProps.frameData !== frameData && tracking) {
+                this.objectFollowMouse();
             }
-            // EDITED END
+
         }
+
+        if (prevProps.tracking !== tracking) {
+            console.log('tracking value changed from ', prevProps.tracking, ' to ', tracking);
+            this.objectFollowMouse();
+        }
+
+        // EDITED END
 
         if (prevProps.frame !== frameData.number
             && resetZoom
@@ -291,7 +308,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         this.cursorLocation.y = my;
     };
 
-    private objectFollowMouse(frame_number:number): void {
+    private objectFollowMouse(): void {
         const {
             onUpdateAnnotations,
             activatedStateID,
@@ -301,24 +318,15 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         if (activatedStateID != null) {
             const [state] = annotations.filter((el: any) => (el.clientID === activatedStateID));
-            
+
             const width = state.points[2] - state.points[0];
             const height = state.points[3] - state.points[1];
-
-
-            // state.points = [state.points[0] + width/2, 
-            //     state.points[1] + height/2, 
-            //     state.points[2] + width/2, 
-            //     state.points[3] + height/2];
-            state.points = [this.cursorLocation.x - width/2,
-                this.cursorLocation.y - height/2,
-                this.cursorLocation.x + width/2,
-                this.cursorLocation.y + height/2];
-            console.log('annotations: ',annotations);
-            console.log('state',state);
-            this.setState({
-
-            })
+            state.points = [this.cursorLocation.x - width / 2,
+            this.cursorLocation.y - height / 2,
+            this.cursorLocation.x + width / 2,
+            this.cursorLocation.y + height / 2];
+            console.log('annotations: ', annotations);
+            console.log('state', state);
             console.log('jobInstance: ', jobInstance);
 
             onUpdateAnnotations([state]);
@@ -333,35 +341,15 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             annotations,
             onActivateObject,
             onUpdateContextMenu,
-            
+
         } = this.props;
         onActivateObject(annotations[annotations.length - 1].clientID);
         const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
+        const state = annotations[annotations.length - 1];
         if (el) {
             const rect = el.getBoundingClientRect();
             onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
-            console.log("xtl: " + rect.left);
-            console.log("ytl: " + rect.top);
-            console.log("xbr: " + rect.right);
-            console.log("ybr: " + rect.bottom);
-            // EDITED START for SNAPPING
-            var x = snap.snapping.snapBoundingBox(rect.left, rect.top, rect.right, rect.bottom);
-            console.log(x);
-            var new_coords:any = [];
-            x.then((data: any) => {
-                new_coords = data.points;
-                console.log(new_coords);
-                //update the bbox
-            });
-            
-            // console.log(x.data)
-            // console.log(x[0].points)
-            // console.log(x['PromiseValue']);
-            // console.log(x[0]);
-            // console.log(x[1]);
-            // console.log(x[2]);
-            // console.log(x[3]);
-            // EDITED END for SNAPPING
+            this.autoSnap()
         }
 
     }
@@ -394,7 +382,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         });
     };
 
-    private autoSnap = async (/*taskID: number, objectID: number, frame: number, points: number[]*/): Promise<any> => {
+    private autoSnap = async (): Promise<any> => {
         const {
             jobInstance,
             frame,
@@ -404,7 +392,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         console.log(jobInstance);
         console.log(frame);
-        console.log(annotations[annotations.length-1].clientID);
+        console.log(annotations[annotations.length - 1].clientID);
 
         const state = annotations[annotations.length - 1];
         let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
@@ -413,31 +401,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             console.log(data);
             onUpdateAnnotations([state]);
         });
-        // var backendAPI = 'http://localhost:8080/api/v1';
-        // var proxy = false;
-        // const x1 = Math.trunc(points[0])
-        // const y1 = Math.trunc(points[1])
-        // const x2 = Math.trunc(points[2])
-        // const y2 = Math.trunc(points[3])
-
-        // let response = null;
-        // try {
-        //     response = await axios.get(`${backendAPI}/tasks/${taskID}/snap`, { // EDITED to  add the URL parameters instead
-        //         proxy: proxy,
-        //         params: {
-        //             objectID: objectID,
-        //             frameNumber: frame,
-        //             x1: x1,
-        //             y1: y1,
-        //             x2: x2,
-        //             y2: y2,
-        //         }
-        //     });
-        // } catch (errorData) {
-        //     console.log(errorData);
-        // }
-
-        // return response;
     }
     // EDITED END
 
@@ -902,6 +865,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             INCREASE_GRID_OPACITY: keyMap.INCREASE_GRID_OPACITY,
             DECREASE_GRID_OPACITY: keyMap.DECREASE_GRID_OPACITY,
             CHANGE_GRID_COLOR: keyMap.CHANGE_GRID_COLOR,
+            AUTOSNAP: keyMap.AUTOSNAP,
         };
 
         const step = 10;
@@ -977,6 +941,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 const indexOf = colors.indexOf(gridColor) + 1;
                 const color = colors[indexOf >= colors.length ? 0 : indexOf];
                 onChangeGridColor(color);
+            },
+            AUTOSNAP: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                console.log('key s pressed');
+                this.autoSnap();
             },
         };
 

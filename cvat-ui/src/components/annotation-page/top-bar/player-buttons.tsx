@@ -20,13 +20,14 @@ import {
 } from 'icons';
 
 interface Props {
+    tracking: boolean; // EDITED FOR USER STORY 12/13
     playing: boolean;
     playPauseShortcut: string;
     nextFrameShortcut: string;
     previousFrameShortcut: string;
     forwardShortcut: string;
     backwardShortcut: string;
-    onSwitchTrack();
+    onSwitchTrack(): void;
     onSwitchPlay(): void;
     onPrevFrame(): void;
     onNextFrame(): void;
@@ -38,6 +39,10 @@ interface Props {
 
 function PlayerButtons(props: Props): JSX.Element {
     const {
+        // EDITED FOR USER STORY 12/13
+        tracking,
+        onSwitchTrack,
+        // EDITED END
         playing,
         playPauseShortcut,
         nextFrameShortcut,
@@ -82,7 +87,7 @@ function PlayerButtons(props: Props): JSX.Element {
                         />
                     </Tooltip>
                 )}
-
+            
             <Tooltip title={`Go next ${nextFrameShortcut}`}>
                 <Icon component={NextIcon} onClick={onNextFrame} />
             </Tooltip>
@@ -92,6 +97,23 @@ function PlayerButtons(props: Props): JSX.Element {
             <Tooltip title='Go to the last frame'>
                 <Icon component={LastIcon} onClick={onLastFrame} />
             </Tooltip>
+            {!tracking
+                ? (
+                    <Tooltip title={`Track ['t']`}>
+                        <Icon
+                            component={PlayIcon}
+                            onClick={onSwitchTrack}
+                        />
+                    </Tooltip>
+                )
+                : (
+                    <Tooltip title={`Not Track ['t']`}>
+                        <Icon
+                            component={PauseIcon}
+                            onClick={onSwitchTrack}
+                        />
+                    </Tooltip>
+                )}
         </Col>
     );
 }

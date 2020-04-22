@@ -563,6 +563,10 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     public constructor(model: CanvasModel & Master, controller: CanvasController) {
+        var trackStart = 0;
+        var startX = 0;
+        var startY = 0;
+        var counter = 0;
         this.controller = controller;
         this.geometry = controller.geometry;
         this.svgShapes = {};
@@ -739,6 +743,21 @@ export class CanvasViewImpl implements CanvasView, Listener {
             e.preventDefault();
         });
 
+        // EDITED START user story 12/13
+        window.document.addEventListener('keydown', (event): void => {
+            if (event.which === 84) {
+                if (trackStart === 0) {
+                    trackStart = 1;
+                    console.log('Track is activated, t press');
+                } else if (trackStart === 2) {
+                    trackStart = 3;
+                    console.log('Track is deactivated, t press');
+                }
+
+            }
+        });
+        // EDITED END user story 12/13
+
         this.content.addEventListener('mousedown', (event): void => {
             if ([1, 2].includes(event.which)) {
                 if (![Mode.ZOOM_CANVAS, Mode.GROUP].includes(this.mode) || event.which === 2) {
@@ -784,6 +803,28 @@ export class CanvasViewImpl implements CanvasView, Listener {
         });
 
         this.content.addEventListener('mousemove', (e): void => {
+            // EDITED START User story 12/13
+            const shape = this.svgShapes[this.activeElement.clientID];
+
+            if (trackStart === 0) {
+                console.log('not tracking');
+            } else if (trackStart === 1) {
+                // startX = e.clientX
+                // startY = e.clientY
+                // self.controller.enableDrag(e.clientX, e.clientY);
+                // if (shape) {
+                //     (shape as any).draggable();
+                //     this.mode = Mode.DRAG;
+                // }
+                console.log('enabled drag');
+                trackStart = 2
+            } else if (trackStart === 3) {
+                // self.controller.disableDrag();
+                trackStart = 0;
+                console.log('disable drag');
+            }
+            // EDITED END User story 12/13
+
             self.controller.drag(e.clientX, e.clientY);
 
             // EDITED START MAGNIFYING GLASS
@@ -1312,6 +1353,18 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         },
                     }));
                 });
+                // EDITED FOR INTEGRATION
+                this.svgShapes[state.clientID].on('dblclick.canvas', (e: any): void => {
+                    e.stopPropagation();
+                    this.canvas.dispatchEvent(new CustomEvent('canvas.dblclicked', {
+                        bubbles: false,
+                        cancelable: true,
+                        detail: {
+                            state,
+                        },
+                    }));
+                });
+                // EDITED END
 
                 if (displayAllText) {
                     this.svgTexts[state.clientID] = this.addText(state);

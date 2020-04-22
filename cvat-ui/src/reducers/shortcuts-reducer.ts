@@ -314,6 +314,18 @@ const defaultKeyMap = {
         sequences: ['`', '~'],
         action: 'keydown',
     },
+    TRACK_BOUNDING_BOX: {
+        name: 'Track bounding box',
+        description: 'Make bounding box follow the mouse while playing',
+        sequences: ['t'],
+        action: 'keydown',
+    },
+    AUTOSNAP: {
+        name: 'Autosnap',
+        description: 'Snap bounding box to edges of selected object',
+        sequences: ['s'],
+        action: 'keydown',
+    },
 } as any as Record<string, ExtendedKeyMapOptions>;
 
 

@@ -82,6 +82,10 @@ interface StateToProps {
     contextVisible: boolean;
     contextType: ContextMenuType;
     keyMap: Record<string, ExtendedKeyMapOptions>;
+    // EDITED FOR USER STORY 12/13
+    playing:boolean;
+    tracking: boolean;
+    // EDITED END
 }
 
 interface DispatchToProps {
@@ -131,6 +135,8 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 instance: jobInstance,
             },
             player: {
+                tracking,
+                playing,
                 frame: {
                     data: frameData,
                     number: frame,
@@ -184,6 +190,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         sidebarCollapsed,
         canvasInstance,
         jobInstance,
+        playing,
         frameData,
         frameAngle: frameAngles[frame - jobInstance.startFrame],
         frameFetching,
@@ -216,6 +223,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         contextType,
         workspace,
         keyMap,
+        tracking,
     };
 }
 

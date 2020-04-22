@@ -322,6 +322,7 @@ export interface AnnotationState {
         saving: boolean;
     };
     player: {
+        tracking: boolean;
         frame: {
             number: number;
             filename: string;

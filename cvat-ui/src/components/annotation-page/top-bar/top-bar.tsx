@@ -15,6 +15,10 @@ import PlayerNavigation from './player-navigation';
 import PlayerButtons from './player-buttons';
 
 interface Props {
+    // EDITED FOR USER STORY 12/13
+    tracking:boolean;
+    onSwitchTrack(): void;
+    // EDITED END
     playing: boolean;
     saving: boolean;
     savingStatuses: string[];
@@ -58,6 +62,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         savingStatuses,
         undoAction,
         redoAction,
+        tracking,// EDITED FOR USER STORY 12/13
         playing,
         frameNumber,
         frameFilename,
@@ -89,6 +94,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         onURLIconClick,
         onUndoClick,
         onRedoClick,
+        onSwitchTrack,
     } = props;
 
     return (
@@ -108,6 +114,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
             <Col className='cvat-annotation-header-player-group'>
                 <Row type='flex' align='middle'>
                     <PlayerButtons
+                        tracking={tracking}// EDITED FOR USER STORY 12/13
                         playing={playing}
                         playPauseShortcut={playPauseShortcut}
                         nextFrameShortcut={nextFrameShortcut}
@@ -121,6 +128,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                         onFirstFrame={onFirstFrame}
                         onLastFrame={onLastFrame}
                         onSwitchPlay={onSwitchPlay}
+                        onSwitchTrack={onSwitchTrack}// EDITED FOR USER STORY 12/13
                     />
                     <PlayerNavigation
                         startFrame={startFrame}

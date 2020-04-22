@@ -49,6 +49,7 @@ const defaultState: AnnotationState = {
             delay: 0,
             changeTime: null,
         },
+        tracking: false,
         playing: false,
         frameAngles: [],
     },
@@ -320,6 +321,17 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 player: {
                     ...state.player,
                     playing,
+                },
+            };
+        }
+        case AnnotationActionTypes.SWITCH_TRACK: {
+            const { tracking } = action.payload;
+
+            return {
+                ...state,
+                player: {
+                    ...state.player,
+                    tracking,
                 },
             };
         }

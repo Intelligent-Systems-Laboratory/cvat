@@ -69,9 +69,11 @@ interface Props {
     aamZoomMargin: number;
     showObjectsTextAlways: boolean;
     workspace: Workspace;
+    automaticBordering: boolean;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     tracking: boolean; // EDITED FOR USER STORY 12/13
     playing: boolean;
+    switchableAutomaticBordering: boolean;
     onSetupCanvas: () => void;
     onDragCanvas: (enabled: boolean) => void;
     onZoomCanvas: (enabled: boolean) => void;
@@ -98,12 +100,13 @@ interface Props {
     onChangeGridOpacity(opacity: number): void;
     onChangeGridColor(color: GridColor): void;
     onSwitchGrid(enabled: boolean): void;
-
+    onSwitchAutomaticBordering(enabled: boolean): void;
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     public componentDidMount(): void {
         const {
+            automaticBordering,
             showObjectsTextAlways,
             canvasInstance,
             curZLayer,
@@ -116,6 +119,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         wrapper.appendChild(canvasInstance.html());
 
         canvasInstance.configure({
+            autoborders: automaticBordering,
             undefinedAttrValue: consts.UNDEFINED_ATTRIBUTE_VALUE,
             displayAllText: showObjectsTextAlways,
         });
@@ -151,14 +155,18 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             showObjectsTextAlways,
             tracking,
             playing,
+            automaticBordering,
         } = this.props;
         console.log('tracking', tracking);
         // console.log('playing',playing);
 
-        if (prevProps.showObjectsTextAlways !== showObjectsTextAlways) {
+        if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
+            || prevProps.automaticBordering !== automaticBordering
+        ) {
             canvasInstance.configure({
                 undefinedAttrValue: consts.UNDEFINED_ATTRIBUTE_VALUE,
                 displayAllText: showObjectsTextAlways,
+                autoborders: automaticBordering,
             });
         }
 
@@ -174,9 +182,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         if (prevProps.activatedStateID !== null
             && prevProps.activatedStateID !== activatedStateID) {
             canvasInstance.activate(null);
-        }
-
-        if (activatedStateID) {
             const el = window.document.getElementById(`cvat_canvas_shape_${prevProps.activatedStateID}`);
             if (el) {
                 (el as any).instance.fill({ opacity: opacity / 100 });
@@ -312,7 +317,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().removeEventListener('canvas.moved', this.getCursorLocation);
         // EDITED END
 
-        canvasInstance.html().removeEventListener('point.contextmenu', this.onCanvasPointContextMenu);
+        canvasInstance.html().removeEventListener('canvas.contextmenu', this.onCanvasPointContextMenu);
 
         window.removeEventListener('resize', this.fitCanvas);
     }
@@ -851,7 +856,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().addEventListener('canvas.moved', this.getCursorLocation);
         // EDITED END
 
-        canvasInstance.html().addEventListener('point.contextmenu', this.onCanvasPointContextMenu);
+        canvasInstance.html().addEventListener('canvas.contextmenu', this.onCanvasPointContextMenu);
     }
 
     public render(): JSX.Element {
@@ -864,16 +869,19 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             brightnessLevel,
             contrastLevel,
             saturationLevel,
+            keyMap,
             grid,
             gridColor,
             gridOpacity,
+            switchableAutomaticBordering,
+            automaticBordering,
             onChangeBrightnessLevel,
             onChangeSaturationLevel,
             onChangeContrastLevel,
             onChangeGridColor,
             onChangeGridOpacity,
             onSwitchGrid,
-            keyMap,
+            onSwitchAutomaticBordering,
         } = this.props;
 
         const preventDefault = (event: KeyboardEvent | undefined): void => {
@@ -893,7 +901,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             DECREASE_GRID_OPACITY: keyMap.DECREASE_GRID_OPACITY,
             CHANGE_GRID_COLOR: keyMap.CHANGE_GRID_COLOR,
             AUTOSNAP: keyMap.AUTOSNAP,
+            SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
         };
+
 
         const step = 10;
         const handlers = {
@@ -973,6 +983,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 preventDefault(event);
                 console.log('key s pressed');
                 this.autoSnap();
+            },
+            SWITCH_AUTOMATIC_BORDERING: (event: KeyboardEvent | undefined) => {
+                if (switchableAutomaticBordering) {
+                    preventDefault(event);
+                    onSwitchAutomaticBordering(!automaticBordering);
+                }
             },
         };
 

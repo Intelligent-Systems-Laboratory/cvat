@@ -25,6 +25,9 @@ import getCore from 'cvat-core';
 import getSnap from 'cvat-snap';
 import { CanvasController } from '../../../../../cvat-canvas/src/typescript/canvasController';
 
+import consts from 'consts';
+
+
 const cvat = getCore();
 const snap = getSnap();
 var finishedSnapping = 0;
@@ -47,6 +50,7 @@ interface Props {
     colorBy: ColorBy;
     selectedOpacity: number;
     blackBorders: boolean;
+    showBitmap: boolean;
     grid: boolean;
     gridSize: number;
     gridColor: GridColor;
@@ -63,6 +67,7 @@ interface Props {
     contextVisible: boolean;
     contextType: ContextMenuType;
     aamZoomMargin: number;
+    showObjectsTextAlways: boolean;
     workspace: Workspace;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     tracking: boolean; // EDITED FOR USER STORY 12/13
@@ -99,6 +104,7 @@ interface Props {
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     public componentDidMount(): void {
         const {
+            showObjectsTextAlways,
             canvasInstance,
             curZLayer,
         } = this.props;
@@ -109,7 +115,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             .getElementsByClassName('cvat-canvas-container');
         wrapper.appendChild(canvasInstance.html());
 
+        canvasInstance.configure({
+            undefinedAttrValue: consts.UNDEFINED_ATTRIBUTE_VALUE,
+            displayAllText: showObjectsTextAlways,
+        });
         canvasInstance.setZLayer(curZLayer);
+
         this.initialSetup();
         this.updateCanvas();
     }
@@ -120,6 +131,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             colorBy,
             selectedOpacity,
             blackBorders,
+            showBitmap,
             frameData,
             frameAngle,
             annotations,
@@ -136,11 +148,20 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             saturationLevel,
             workspace,
             frameFetching,
+            showObjectsTextAlways,
             tracking,
             playing,
         } = this.props;
         console.log('tracking', tracking);
         // console.log('playing',playing);
+
+        if (prevProps.showObjectsTextAlways !== showObjectsTextAlways) {
+            canvasInstance.configure({
+                undefinedAttrValue: consts.UNDEFINED_ATTRIBUTE_VALUE,
+                displayAllText: showObjectsTextAlways,
+            });
+        }
+
         if (prevProps.sidebarCollapsed !== sidebarCollapsed) {
             const [sidebar] = window.document.getElementsByClassName('cvat-objects-sidebar');
             if (sidebar) {
@@ -233,6 +254,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         if (prevProps.opacity !== opacity || prevProps.blackBorders !== blackBorders
             || prevProps.selectedOpacity !== selectedOpacity || prevProps.colorBy !== colorBy) {
             this.updateShapesView();
+        }
+
+        if (prevProps.showBitmap !== showBitmap) {
+            canvasInstance.bitmap(showBitmap);
         }
 
         if (prevProps.frameAngle !== frameAngle) {
@@ -713,6 +738,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         for (const state of annotations) {
             let shapeColor = '';
+
             if (colorBy === ColorBy.INSTANCE) {
                 shapeColor = state.color;
             } else if (colorBy === ColorBy.GROUP) {
@@ -728,6 +754,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 if (handler && handler.nested) {
                     handler.nested.fill({ color: shapeColor });
                 }
+
                 (shapeView as any).instance.fill({ color: shapeColor, opacity: opacity / 100 });
                 (shapeView as any).instance.stroke({ color: blackBorders ? 'black' : shapeColor });
             }

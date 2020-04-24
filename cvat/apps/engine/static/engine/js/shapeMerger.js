@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Intel Corporation
+ * Copyright (C) 2018-2020 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  */
@@ -75,7 +75,7 @@ class ShapeMergerModel extends Listener {
                 }
             }
 
-            let sortedFrames = Object.keys(shapeDict).map(x => +x).sort((a,b) => a - b);
+            let sortedFrames = Object.keys(shapeDict).map(x => +x).sort((a, b) => a - b);
 
             // remove all outside in begin of the track
             while (shapeDict[sortedFrames[0]].interpolation.position.outside) {
@@ -145,7 +145,7 @@ class ShapeMergerModel extends Listener {
                 let nextFrame = frame + 1;
                 let stopFrame = window.cvat.player.frames.stop;
                 let type = shapeDict[frame].shape.type;
-                if (type === 'annotation_box' && !(nextFrame in shapeDict) && nextFrame <= stopFrame) {
+                if (type.startsWith('annotation_') && !(nextFrame in shapeDict) && nextFrame <= stopFrame) {
                     let copy = Object.assign({}, object.shapes[object.shapes.length - 1]);
                     copy.outside = true;
                     copy.frame += 1;
@@ -234,7 +234,7 @@ class ShapeMergerController {
         function setupMergeShortkeys() {
             let shortkeys = window.cvat.config.shortkeys;
 
-            let switchMergeHandler = Logger.shortkeyLogDecorator(function() {
+            let switchMergeHandler = Logger.shortkeyLogDecorator(function () {
                 this.switch();
             }.bind(this));
 

@@ -304,6 +304,10 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
     }
 
     public setup(frameData: any, objectStates: any[]): void {
+        if ([Mode.EDIT, Mode.DRAG, Mode.RESIZE].includes(this.data.mode)) {
+            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+        }
+
         if (frameData.number === this.data.imageID) {
             this.data.objects = objectStates;
             this.notify(UpdateReasons.OBJECTS_UPDATED);

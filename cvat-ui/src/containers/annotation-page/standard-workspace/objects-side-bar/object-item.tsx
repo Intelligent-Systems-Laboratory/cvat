@@ -7,6 +7,7 @@ import copy from 'copy-to-clipboard';
 import { connect } from 'react-redux';
 
 import { LogType } from 'cvat-logger';
+import { Canvas, isAbleToChangeFrame } from 'cvat-canvas';
 import { ActiveControl, CombinedState, ColorBy } from 'reducers/interfaces';
 import {
     collapseObjectItems,
@@ -23,7 +24,6 @@ import {
 } from 'actions/annotation-actions';
 
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
-
 
 interface OwnProps {
     clientID: number;
@@ -44,6 +44,7 @@ interface StateToProps {
     minZLayer: number;
     maxZLayer: number;
     normalizedKeyMap: Record<string, string>;
+    canvasInstance: Canvas;
 }
 
 interface DispatchToProps {
@@ -84,6 +85,7 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
             canvas: {
                 ready,
                 activeControl,
+                instance: canvasInstance,
             },
             colors,
         },
@@ -119,6 +121,7 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
         minZLayer,
         maxZLayer,
         normalizedKeyMap,
+        canvasInstance,
     };
 }
 
@@ -166,71 +169,47 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
 type Props = StateToProps & DispatchToProps;
 class ObjectItemContainer extends React.PureComponent<Props> {
     private navigateFirstKeyframe = (): void => {
-        const {
-            objectState,
-            changeFrame,
-            frameNumber,
-        } = this.props;
+        const { objectState, frameNumber } = this.props;
 
         const { first } = objectState.keyframes;
         if (first !== frameNumber) {
-            changeFrame(first);
+            this.changeFrame(first);
         }
     };
 
     private navigatePrevKeyframe = (): void => {
-        const {
-            objectState,
-            changeFrame,
-            frameNumber,
-        } = this.props;
+        const { objectState, frameNumber } = this.props;
 
         const { prev } = objectState.keyframes;
         if (prev !== null && prev !== frameNumber) {
-            changeFrame(prev);
+            this.changeFrame(prev);
         }
     };
 
     private navigateNextKeyframe = (): void => {
-        const {
-            objectState,
-            changeFrame,
-            frameNumber,
-        } = this.props;
-
+        const { objectState, frameNumber } = this.props;
         const { next } = objectState.keyframes;
         if (next !== null && next !== frameNumber) {
-            changeFrame(next);
+            this.changeFrame(next);
         }
     };
 
     private navigateLastKeyframe = (): void => {
-        const {
-            objectState,
-            changeFrame,
-            frameNumber,
-        } = this.props;
-
+        const { objectState, frameNumber } = this.props;
         const { last } = objectState.keyframes;
         if (last !== frameNumber) {
-            changeFrame(last);
+            this.changeFrame(last);
         }
     };
 
     private copy = (): void => {
-        const {
-            objectState,
-            copyShape,
-        } = this.props;
+        const { objectState, copyShape } = this.props;
 
         copyShape(objectState);
     };
 
     private propagate = (): void => {
-        const {
-            objectState,
-            propagateObject,
-        } = this.props;
+        const { objectState, propagateObject } = this.props;
 
         propagateObject(objectState);
     };
@@ -422,6 +401,13 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
+    private changeFrame(frame: number): void {
+        const { changeFrame, canvasInstance } = this.props;
+        if (isAbleToChangeFrame(canvasInstance)) {
+            changeFrame(frame);
+        }
+    }
+
     // EDITED FOR INTEGRATION
     private autoSnap = (): void => {
         const {
@@ -429,7 +415,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
             jobInstance,
             frameNumber,
         } = this.props;
-        
+
         let result = jobInstance.annotations.snap(objectState.serverID, frameNumber, objectState.points);
         result.then((data: any) => {
             objectState.points = data.points;
@@ -544,7 +530,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 collapse={this.collapse}
                 // EDITED FOR INTEGRATION
                 autoSnap={this.autoSnap}
-                // EDITED END
+            // EDITED END
             />
         );
     }

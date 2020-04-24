@@ -799,7 +799,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             const shape = this.svgShapes[this.activeElement.clientID];
 
             if (trackStart === 0) {
-                console.log('not tracking');
+                trackStart = 0
             } else if (trackStart === 1) {
                 // startX = e.clientX
                 // startY = e.clientY
@@ -1202,7 +1202,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     (this.svgShapes[clientID] as any).clear();
                     this.svgShapes[clientID].attr('points', stringified);
 
-                    if (state.shapeType === 'points') {
+                    if (state.shapeType === 'points' && !state.hidden) {
                         this.selectize(false, this.svgShapes[clientID]);
                         this.setupPoints(this.svgShapes[clientID] as SVG.PolyLine, state);
                     }
@@ -1350,7 +1350,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             (shape as any).off('resizestart');
             (shape as any).off('resizing');
             (shape as any).off('resizedone');
-            (shape as any).resize(false);
+            (shape as any).resize('stop');
 
             // TODO: Hide text only if it is hidden by settings
             const text = this.svgTexts[clientID];
@@ -1730,6 +1730,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
         group.on('click.canvas', (event: MouseEvent): void => {
             // Need to redispatch the event on another element
             basicPolyline.fire(new MouseEvent('click', event));
+            // redispatch event to canvas to be able merge points clicking them
+            this.content.dispatchEvent(new MouseEvent('click', event));
         });
 
         group.bbox = basicPolyline.bbox.bind(basicPolyline);

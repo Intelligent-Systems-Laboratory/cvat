@@ -170,7 +170,6 @@ type Props = StateToProps & DispatchToProps;
 class ObjectItemContainer extends React.PureComponent<Props> {
     private navigateFirstKeyframe = (): void => {
         const { objectState, frameNumber } = this.props;
-
         const { first } = objectState.keyframes;
         if (first !== frameNumber) {
             this.changeFrame(first);
@@ -179,7 +178,6 @@ class ObjectItemContainer extends React.PureComponent<Props> {
 
     private navigatePrevKeyframe = (): void => {
         const { objectState, frameNumber } = this.props;
-
         const { prev } = objectState.keyframes;
         if (prev !== null && prev !== frameNumber) {
             this.changeFrame(prev);
@@ -204,13 +202,11 @@ class ObjectItemContainer extends React.PureComponent<Props> {
 
     private copy = (): void => {
         const { objectState, copyShape } = this.props;
-
         copyShape(objectState);
     };
 
     private propagate = (): void => {
         const { objectState, propagateObject } = this.props;
-
         propagateObject(objectState);
     };
 
@@ -424,6 +420,12 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         });
     }
     // EDITED END
+    private changeFrame(frame: number): void {
+        const { changeFrame, canvasInstance } = this.props;
+        if (isAbleToChangeFrame(canvasInstance)) {
+            changeFrame(frame);
+        }
+    }
 
     private commit(): void {
         const {

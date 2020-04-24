@@ -37,6 +37,8 @@ export interface CanvasController {
     drag(x: number, y: number): void;
     disableDrag(): void;
     fit(): void;
+
+    trackingElement: any; // EDITED FOR USER STORY 12/13
 }
 
 export class CanvasControllerImpl implements CanvasController {
@@ -147,4 +149,14 @@ export class CanvasControllerImpl implements CanvasController {
     public get mode(): Mode {
         return this.model.mode;
     }
+
+    // EDITED FOR USER STORY 12/13
+    public set trackingElement(value: any) {
+        this.model.trackingElement = value;
+    }
+
+    public get trackingElement(): any {
+        return this.model.trackingElement;
+    }
+    // EDITED END
 }

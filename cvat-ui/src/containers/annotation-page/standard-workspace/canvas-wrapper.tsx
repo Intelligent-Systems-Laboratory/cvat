@@ -26,6 +26,7 @@ import {
     updateCanvasContextMenu,
     addZLayer,
     switchZLayer,
+    switchTracking, // EDITED FOR USER STORY 12/13
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -82,9 +83,9 @@ interface StateToProps {
     contextVisible: boolean;
     contextType: ContextMenuType;
     keyMap: Record<string, ExtendedKeyMapOptions>;
-    // EDITED FOR USER STORY 12/13
-    playing:boolean;
+    // EDITED START FOR USER STORY 12/13
     tracking: boolean;
+    trackedStateID: number | null;
     // EDITED END
 }
 
@@ -115,6 +116,7 @@ interface DispatchToProps {
     onChangeGridOpacity(opacity: number): void;
     onChangeGridColor(color: GridColor): void;
     onSwitchGrid(enabled: boolean): void;
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null); // EDITED FOR USER STORY 12/13
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -135,8 +137,6 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 instance: jobInstance,
             },
             player: {
-                tracking,
-                playing,
                 frame: {
                     data: frameData,
                     number: frame,
@@ -155,6 +155,12 @@ function mapStateToProps(state: CombinedState): StateToProps {
                     max: maxZLayer,
                 },
             },
+            // EDITED START FOR USER STORY 12/13
+            trackobject: {
+                tracking,
+                trackedStateID,
+            },
+            // EDITED END
             sidebarCollapsed,
             workspace,
         },
@@ -190,7 +196,6 @@ function mapStateToProps(state: CombinedState): StateToProps {
         sidebarCollapsed,
         canvasInstance,
         jobInstance,
-        playing,
         frameData,
         frameAngle: frameAngles[frame - jobInstance.startFrame],
         frameFetching,
@@ -223,7 +228,10 @@ function mapStateToProps(state: CombinedState): StateToProps {
         contextType,
         workspace,
         keyMap,
+        // EDITED START FOR USER STORY 12/13
         tracking,
+        trackedStateID,
+        // EDITED END
     };
 }
 
@@ -309,6 +317,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSwitchGrid(enabled: boolean): void {
             dispatch(switchGrid(enabled));
         },
+        // EDITED FOR USER STORY 12/13
+        onSwitchTracking(tracking: boolean, trackedStateID: number | null): void {
+            dispatch(switchTracking(tracking, trackedStateID));
+        },
+        // EDITED END
     };
 }
 

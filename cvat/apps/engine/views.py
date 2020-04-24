@@ -11,7 +11,7 @@ from datetime import datetime
 from tempfile import mkstemp
 
 from django.views.generic import RedirectView
-from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.conf import settings
 from sendfile import sendfile

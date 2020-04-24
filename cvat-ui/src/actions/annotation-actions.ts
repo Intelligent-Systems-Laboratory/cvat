@@ -187,11 +187,25 @@ export enum AnnotationActionTypes {
     CHANGE_WORKSPACE = 'CHANGE_WORKSPACE',
     SAVE_LOGS_SUCCESS = 'SAVE_LOGS_SUCCESS',
     SAVE_LOGS_FAILED = 'SAVE_LOGS_FAILED',
-    SWITCH_TRACK = "SWITCH_TRACK"
+    SWITCH_TRACKING = 'SWITCH_TRACKING', // EDITED FOR USER STORY 12/13 
 }
 
+// EDITED FOR USER STORY 12/13
+export function switchTracking(tracking: boolean, trackedStateID: number | null): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_TRACKING,
+        payload: {
+            tracking,
+            trackedStateID,
+        },
+    };
+}
+// EDITED END
+
+
+
 export function saveLogsAsync():
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>) => {
         try {
             await logger.save();
@@ -308,7 +322,7 @@ export function updateCanvasContextMenu(
 }
 
 export function removeAnnotationsAsync(sessionInstance: any):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             await sessionInstance.annotations.clear();
@@ -333,7 +347,7 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 }
 
 export function uploadJobAnnotationsAsync(job: any, loader: any, file: File):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const state: CombinedState = getStore().getState();
@@ -359,8 +373,8 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 
             await job.logger.log(
                 LogType.uploadAnnotations, {
-                    ...(await jobInfoGenerator(job)),
-                },
+                ...(await jobInfoGenerator(job)),
+            },
             );
 
             // One more update to escape some problems
@@ -402,7 +416,7 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 }
 
 export function changeJobStatusAsync(jobInstance: any, status: string):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         const oldStatus = jobInstance.status;
         try {
@@ -433,7 +447,7 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 }
 
 export function collectStatisticsAsync(sessionInstance: any):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             dispatch({
@@ -539,7 +553,7 @@ export function changePropagateFrames(frames: number): AnyAction {
 }
 
 export function removeObjectAsync(sessionInstance: any, objectState: any, force: boolean):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             await sessionInstance.logger.log(LogType.deleteObject, { count: 1 });
@@ -654,19 +668,9 @@ export function switchPlay(playing: boolean): AnyAction {
         },
     };
 }
-// EDITED FOR USER STORY 12/13
-export function switchTrack(tracking: boolean): AnyAction {
-    return {
-        type: AnnotationActionTypes.SWITCH_TRACK,
-        payload: {
-            tracking,
-        },
-    };
-}
-// EDITED END
 
 export function changeFrameAsync(toFrame: number, fillBuffer?: boolean, frameStep?: number):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         const state: CombinedState = getStore().getState();
         const { instance: job } = state.annotation.job;
@@ -704,9 +708,9 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 
             await job.logger.log(
                 LogType.changeFrame, {
-                    from: frame,
-                    to: toFrame,
-                },
+                from: frame,
+                to: toFrame,
+            },
             );
             const data = await job.frames.get(toFrame, fillBuffer, frameStep);
             const states = await job.annotations.get(toFrame, showAllInterpolationTracks, filters);
@@ -758,7 +762,7 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 }
 
 export function undoActionAsync(sessionInstance: any, frame: number):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const state = getStore().getState();
@@ -801,7 +805,7 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 }
 
 export function redoActionAsync(sessionInstance: any, frame: number):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const state = getStore().getState();
@@ -939,9 +943,9 @@ export function getJobAsync(
 
             const loadJobEvent = await logger.log(
                 LogType.loadJob, {
-                    task_id: tid,
-                    job_id: jid,
-                }, true,
+                task_id: tid,
+                job_id: jid,
+            }, true,
             );
 
             // Check state if the task is already there
@@ -1000,7 +1004,7 @@ export function getJobAsync(
 }
 
 export function saveAnnotationsAsync(sessionInstance: any):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         const { filters, frame, showAllInterpolationTracks } = receiveAnnotationsParameters();
 
@@ -1116,7 +1120,7 @@ export function splitTrack(enabled: boolean): AnyAction {
 }
 
 export function updateAnnotationsAsync(statesToUpdate: any[]):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         const {
             jobInstance,
@@ -1161,7 +1165,7 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 }
 
 export function createAnnotationsAsync(sessionInstance: any, frame: number, statesToCreate: any[]):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();
@@ -1189,7 +1193,7 @@ ThunkAction<Promise<void>, {}, {}, AnyAction> {
 }
 
 export function mergeAnnotationsAsync(sessionInstance: any, frame: number, statesToMerge: any[]):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();
@@ -1263,7 +1267,7 @@ export function groupAnnotationsAsync(
 }
 
 export function splitAnnotationsAsync(sessionInstance: any, frame: number, stateToSplit: any):
-ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();
         try {

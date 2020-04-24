@@ -20,14 +20,12 @@ import {
 } from 'icons';
 
 interface Props {
-    tracking: boolean; // EDITED FOR USER STORY 12/13
     playing: boolean;
     playPauseShortcut: string;
     nextFrameShortcut: string;
     previousFrameShortcut: string;
     forwardShortcut: string;
     backwardShortcut: string;
-    onSwitchTrack(): void;
     onSwitchPlay(): void;
     onPrevFrame(): void;
     onNextFrame(): void;
@@ -35,14 +33,15 @@ interface Props {
     onBackward(): void;
     onFirstFrame(): void;
     onLastFrame(): void;
+    // EDITED FOR USER STORY 12/13
+    switchTrackShortcut: string;
+    onSwitchTracking(): void;
+    tracking: boolean;
+    // EDITED END
 }
 
 function PlayerButtons(props: Props): JSX.Element {
     const {
-        // EDITED FOR USER STORY 12/13
-        tracking,
-        onSwitchTrack,
-        // EDITED END
         playing,
         playPauseShortcut,
         nextFrameShortcut,
@@ -56,6 +55,11 @@ function PlayerButtons(props: Props): JSX.Element {
         onBackward,
         onFirstFrame,
         onLastFrame,
+        // EDITED FOR USER STORY 12/13
+        onSwitchTracking,
+        tracking,
+        switchTrackShortcut,
+        // EDITED END
     } = props;
 
     return (
@@ -87,7 +91,7 @@ function PlayerButtons(props: Props): JSX.Element {
                         />
                     </Tooltip>
                 )}
-            
+
             <Tooltip title={`Go next ${nextFrameShortcut}`}>
                 <Icon component={NextIcon} onClick={onNextFrame} />
             </Tooltip>
@@ -97,23 +101,26 @@ function PlayerButtons(props: Props): JSX.Element {
             <Tooltip title='Go to the last frame'>
                 <Icon component={LastIcon} onClick={onLastFrame} />
             </Tooltip>
+
+            {/* EDITED START FOR USER STORY 12/13 */}
             {!tracking
                 ? (
-                    <Tooltip title={`Track ['t']`}>
+                    <Tooltip title={`Track ${switchTrackShortcut}`}>
                         <Icon
                             component={PlayIcon}
-                            onClick={onSwitchTrack}
+                            onClick={onSwitchTracking}
                         />
                     </Tooltip>
                 )
                 : (
-                    <Tooltip title={`Not Track ['t']`}>
+                    <Tooltip title={`Pause Track ${switchTrackShortcut}`}>
                         <Icon
                             component={PauseIcon}
-                            onClick={onSwitchTrack}
+                            onClick={onSwitchTracking}
                         />
                     </Tooltip>
                 )}
+            {/* EDITED END */}
         </Col>
     );
 }

@@ -397,13 +397,6 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
-    private changeFrame(frame: number): void {
-        const { changeFrame, canvasInstance } = this.props;
-        if (isAbleToChangeFrame(canvasInstance)) {
-            changeFrame(frame);
-        }
-    }
-
     // EDITED FOR INTEGRATION
     private autoSnap = (): void => {
         const {
@@ -420,6 +413,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         });
     }
     // EDITED END
+
     private changeFrame(frame: number): void {
         const { changeFrame, canvasInstance } = this.props;
         if (isAbleToChangeFrame(canvasInstance)) {

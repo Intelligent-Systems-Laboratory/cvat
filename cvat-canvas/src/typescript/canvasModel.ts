@@ -107,6 +107,7 @@ export enum UpdateReasons {
     DRAG_CANVAS = 'drag_canvas',
     ZOOM_CANVAS = 'zoom_canvas',
     CONFIG_UPDATED = 'config_updated',
+    SWITCH_TRACKING = 'SWITCH_TRACKING', // EDITED START FOR USER STORY 12/13
 }
 
 export enum Mode {
@@ -163,6 +164,12 @@ export interface CanvasModel {
 
     configure(configuration: Configuration): void;
     cancel(): void;
+
+
+    // EDITED FOR USER STORY 12/13
+    trackObject(enable: boolean, trackedStateID: number | null): void;
+    trackingElement: any;
+    // EDITED END
 }
 
 export class CanvasModelImpl extends MasterImpl implements CanvasModel {
@@ -189,6 +196,24 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
         splitData: SplitData;
         selected: any;
         mode: Mode;
+        // EDITED START FOR USER STORY 12/13
+        trackingElement: {
+            enable: boolean;
+            trackID: number | null;
+            mousecoords: any[];
+            scalemode: number;
+            trackrect: any | null;
+            trackedStates: any[];
+            trackedframes: any[];
+            trackedcentroids: any[];
+            trackedwidthheight: any[];
+            interpolatekeyframes: any[];
+            frameindex: {
+                frame: number | null;
+                index: number | null;
+            }
+        }
+        // EDITED END
     };
 
     public constructor() {
@@ -244,8 +269,55 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
             },
             selected: null,
             mode: Mode.IDLE,
+
+            // EDITED START FOR USER STORY 12/13
+            trackingElement: {
+                enable: false,
+                trackID: null,
+                trackrect: null,
+                mousecoords: [],
+                scalemode: 0,
+                trackedStates: [],
+                trackedframes: [],
+                trackedcentroids: [],
+                trackedwidthheight: [],
+                interpolatekeyframes: [],
+                frameindex: {
+                    frame: null,
+                    index: null,
+                }
+            }
+            // EDITED END
         };
     }
+
+    // EDITED FOR USER STORY 12/13
+    public trackObject(enable: boolean, trackedStateID: number | null): void {
+        if (enable) {
+            this.trackingElement.enable = true;
+            this.data.trackingElement.trackID = trackedStateID;
+        } else {
+            this.data.trackingElement = {
+                enable: false,
+                trackID: null,
+                mousecoords: this.data.trackingElement.mousecoords,
+                scalemode: 0,
+                trackrect: this.data.trackingElement.trackrect,
+                trackedStates: [],
+                trackedframes: [],
+                trackedcentroids: [],
+                trackedwidthheight: [],
+                interpolatekeyframes: [],
+                frameindex: {
+                    frame: null,
+                    index: null,
+                }
+            }
+        }
+
+        this.notify(UpdateReasons.SWITCH_TRACKING);
+    }
+    // EDITED END
 
     public setZLayer(zLayer: number | null): void {
         this.data.zLayer = zLayer;
@@ -631,4 +703,14 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
     public get mode(): Mode {
         return this.data.mode;
     }
+
+    // EDITED FOR USER STORY 12/13
+    public set trackingElement(value: any) {
+        this.data.trackingElement = value;
+    }
+
+    public get trackingElement(): any {
+        return this.data.trackingElement;
+    }
+    // EDITED END
 }

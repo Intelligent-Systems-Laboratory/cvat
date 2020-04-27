@@ -550,6 +550,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             activatedStateID,
             workspace,
             onActivateObject,
+            tracking,
         } = this.props;
 
         if (workspace === Workspace.ATTRIBUTE_ANNOTATION) {
@@ -570,7 +571,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             }
 
             if (activatedStateID !== result.state.clientID) {
-                onActivateObject(result.state.clientID);
+                if (!tracking) {
+                    onActivateObject(result.state.clientID);
+                }
             }
         }
     };

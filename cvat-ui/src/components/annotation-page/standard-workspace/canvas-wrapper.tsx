@@ -66,7 +66,9 @@ interface Props {
     aamZoomMargin: number;
     showObjectsTextAlways: boolean;
     workspace: Workspace;
+    automaticBordering: boolean;
     keyMap: Record<string, ExtendedKeyMapOptions>;
+    switchableAutomaticBordering: boolean;
     onSetupCanvas: () => void;
     onDragCanvas: (enabled: boolean) => void;
     onZoomCanvas: (enabled: boolean) => void;
@@ -98,11 +100,13 @@ interface Props {
     trackedStateID: number | null;
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     // EDITED END
+    onSwitchAutomaticBordering(enabled: boolean): void;
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     public componentDidMount(): void {
         const {
+            automaticBordering,
             showObjectsTextAlways,
             canvasInstance,
             curZLayer,
@@ -115,6 +119,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         wrapper.appendChild(canvasInstance.html());
 
         canvasInstance.configure({
+            autoborders: automaticBordering,
             undefinedAttrValue: consts.UNDEFINED_ATTRIBUTE_VALUE,
             displayAllText: showObjectsTextAlways,
         });
@@ -152,12 +157,16 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             tracking,
             trackedStateID,
             // EDITED END
+            automaticBordering,
         } = this.props;
 
-        if (prevProps.showObjectsTextAlways !== showObjectsTextAlways) {
+        if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
+            || prevProps.automaticBordering !== automaticBordering
+        ) {
             canvasInstance.configure({
                 undefinedAttrValue: consts.UNDEFINED_ATTRIBUTE_VALUE,
                 displayAllText: showObjectsTextAlways,
+                autoborders: automaticBordering,
             });
         }
 
@@ -173,9 +182,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         if (prevProps.activatedStateID !== null
             && prevProps.activatedStateID !== activatedStateID) {
             canvasInstance.activate(null);
-        }
-
-        if (activatedStateID) {
             const el = window.document.getElementById(`cvat_canvas_shape_${prevProps.activatedStateID}`);
             if (el) {
                 (el as any).instance.fill({ opacity: opacity / 100 });
@@ -817,16 +823,19 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             brightnessLevel,
             contrastLevel,
             saturationLevel,
+            keyMap,
             grid,
             gridColor,
             gridOpacity,
+            switchableAutomaticBordering,
+            automaticBordering,
             onChangeBrightnessLevel,
             onChangeSaturationLevel,
             onChangeContrastLevel,
             onChangeGridColor,
             onChangeGridOpacity,
             onSwitchGrid,
-            keyMap,
+            onSwitchAutomaticBordering,
         } = this.props;
 
         const preventDefault = (event: KeyboardEvent | undefined): void => {
@@ -845,8 +854,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             INCREASE_GRID_OPACITY: keyMap.INCREASE_GRID_OPACITY,
             DECREASE_GRID_OPACITY: keyMap.DECREASE_GRID_OPACITY,
             CHANGE_GRID_COLOR: keyMap.CHANGE_GRID_COLOR,
-            AUTOSNAP: keyMap.AUTOSNAP, // EDITED FOR INTEGRATION OF AUTOSNAP
+            AUTOSNAP: keyMap.AUTOSNAP,
+            SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
         };
+
 
         const step = 10;
         const handlers = {
@@ -928,6 +939,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 this.autoSnap();
             },
             // EDITED END
+            SWITCH_AUTOMATIC_BORDERING: (event: KeyboardEvent | undefined) => {
+                if (switchableAutomaticBordering) {
+                    preventDefault(event);
+                    onSwitchAutomaticBordering(!automaticBordering);
+                }
+            },
         };
 
         return (

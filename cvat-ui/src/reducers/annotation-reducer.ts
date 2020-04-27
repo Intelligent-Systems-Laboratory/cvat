@@ -35,6 +35,7 @@ const defaultState: AnnotationState = {
     },
     job: {
         labels: [],
+        requestedId: null,
         instance: null,
         attributes: {},
         fetching: false,
@@ -127,6 +128,8 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 ...state,
                 job: {
                     ...state.job,
+                    instance: null,
+                    requestedId: action.payload.requestedId,
                     fetching: true,
                 },
             };

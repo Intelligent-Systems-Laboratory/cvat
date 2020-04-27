@@ -105,6 +105,18 @@
                         return result;
                     },
 
+                    async import(data) {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.import, data);
+                        return result;
+                    },
+
+                    async export() {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.export);
+                        return result;
+                    },
+
                     async exportDataset(format) {
                         const result = await PluginRegistry
                             .apiWrapper.call(this, prototype.annotations.exportDataset, format);
@@ -398,6 +410,28 @@
                 * @returns {boolean}
                 * @throws {module:API.cvat.exceptions.PluginError}
                 * @instance
+            */
+            /**
+                *
+                * Import raw data in a collection
+                * @method import
+                * @memberof Session.annotations
+                * @param {Object} data
+                * @throws {module:API.cvat.exceptions.PluginError}
+                * @throws {module:API.cvat.exceptions.ArgumentError}
+                * @instance
+                * @async
+            */
+            /**
+                *
+                * Export a collection as a row data
+                * @method export
+                * @memberof Session.annotations
+                * @returns {Object} data
+                * @throws {module:API.cvat.exceptions.PluginError}
+                * @throws {module:API.cvat.exceptions.ArgumentError}
+                * @instance
+                * @async
             */
             /**
                 * Export as a dataset.
@@ -703,6 +737,8 @@
                 search: Object.getPrototypeOf(this).annotations.search.bind(this),
                 upload: Object.getPrototypeOf(this).annotations.upload.bind(this),
                 select: Object.getPrototypeOf(this).annotations.select.bind(this),
+                import: Object.getPrototypeOf(this).annotations.import.bind(this),
+                export: Object.getPrototypeOf(this).annotations.export.bind(this),
                 statistics: Object.getPrototypeOf(this).annotations.statistics.bind(this),
                 hasUnsavedChanges: Object.getPrototypeOf(this)
                     .annotations.hasUnsavedChanges.bind(this),
@@ -1256,6 +1292,8 @@
                 search: Object.getPrototypeOf(this).annotations.search.bind(this),
                 upload: Object.getPrototypeOf(this).annotations.upload.bind(this),
                 select: Object.getPrototypeOf(this).annotations.select.bind(this),
+                import: Object.getPrototypeOf(this).annotations.import.bind(this),
+                export: Object.getPrototypeOf(this).annotations.export.bind(this),
                 statistics: Object.getPrototypeOf(this).annotations.statistics.bind(this),
                 hasUnsavedChanges: Object.getPrototypeOf(this)
                     .annotations.hasUnsavedChanges.bind(this),
@@ -1340,6 +1378,8 @@
         annotationsStatistics,
         uploadAnnotations,
         dumpAnnotations,
+        importAnnotations,
+        exportAnnotations,
         exportDataset,
         undoActions,
         redoActions,
@@ -1513,6 +1553,16 @@
 
     Job.prototype.annotations.upload.implementation = async function (file, loader) {
         const result = await uploadAnnotations(this, file, loader);
+        return result;
+    };
+
+    Job.prototype.annotations.import.implementation = function (data) {
+        const result = importAnnotations(this, data);
+        return result;
+    };
+
+    Job.prototype.annotations.export.implementation = function () {
+        const result = exportAnnotations(this);
         return result;
     };
 
@@ -1762,6 +1812,16 @@
 
     Task.prototype.annotations.dump.implementation = async function (name, dumper) {
         const result = await dumpAnnotations(this, name, dumper);
+        return result;
+    };
+
+    Task.prototype.annotations.import.implementation = function (data) {
+        const result = importAnnotations(this, data);
+        return result;
+    };
+
+    Task.prototype.annotations.export.implementation = function () {
+        const result = exportAnnotations(this);
         return result;
     };
 

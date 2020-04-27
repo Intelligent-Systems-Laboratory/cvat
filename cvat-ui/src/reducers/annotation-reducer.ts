@@ -50,7 +50,6 @@ const defaultState: AnnotationState = {
             delay: 0,
             changeTime: null,
         },
-        tracking: false,
         playing: false,
         frameAngles: [],
     },
@@ -84,6 +83,12 @@ const defaultState: AnnotationState = {
             cur: 0,
         },
     },
+    // EDITED FOR USER STORY 12/13
+    trackobject: {
+        tracking: false,
+        trackedStateID: null,
+    },
+    // EDITED END
     propagate: {
         objectState: null,
         frames: 50,
@@ -102,6 +107,22 @@ const defaultState: AnnotationState = {
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // EDITED FOR USER STORY 12/13
+        case AnnotationActionTypes.SWITCH_TRACKING: {
+            const { tracking, trackedStateID } = action.payload;
+
+            console.log(tracking);
+            console.log(trackedStateID);
+            return {
+                ...state,
+                trackobject: {
+                    ...state.trackobject,
+                    tracking,
+                    trackedStateID,
+                }
+            };
+        }
+        // EDITED END
         case AnnotationActionTypes.GET_JOB: {
             return {
                 ...state,
@@ -324,17 +345,6 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 player: {
                     ...state.player,
                     playing,
-                },
-            };
-        }
-        case AnnotationActionTypes.SWITCH_TRACK: {
-            const { tracking } = action.payload;
-
-            return {
-                ...state,
-                player: {
-                    ...state.player,
-                    tracking,
                 },
             };
         }

@@ -413,6 +413,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         });
     }
     // EDITED END
+
     private changeFrame(frame: number): void {
         const { changeFrame, canvasInstance } = this.props;
         if (isAbleToChangeFrame(canvasInstance)) {

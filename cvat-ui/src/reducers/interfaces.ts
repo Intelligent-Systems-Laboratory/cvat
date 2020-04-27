@@ -383,6 +383,12 @@ export interface AnnotationState {
     appearanceCollapsed: boolean;
     tabContentHeight: number;
     workspace: Workspace;
+    // EDITED FOR USER STORY 12/13
+    trackobject: {
+        tracking: boolean;
+        trackedStateID: number | null;
+    }
+    // EDITED END
 }
 
 export enum Workspace {

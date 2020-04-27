@@ -75,7 +75,7 @@ class ShapeMergerModel extends Listener {
                 }
             }
 
-            let sortedFrames = Object.keys(shapeDict).map(x => +x).sort((a,b) => a - b);
+            let sortedFrames = Object.keys(shapeDict).map(x => +x).sort((a, b) => a - b);
 
             // remove all outside in begin of the track
             while (shapeDict[sortedFrames[0]].interpolation.position.outside) {
@@ -234,7 +234,7 @@ class ShapeMergerController {
         function setupMergeShortkeys() {
             let shortkeys = window.cvat.config.shortkeys;
 
-            let switchMergeHandler = Logger.shortkeyLogDecorator(function() {
+            let switchMergeHandler = Logger.shortkeyLogDecorator(function () {
                 this.switch();
             }.bind(this));
 

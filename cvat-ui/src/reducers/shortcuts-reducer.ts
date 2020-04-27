@@ -314,18 +314,22 @@ const defaultKeyMap = {
         sequences: ['`', '~'],
         action: 'keydown',
     },
-    TRACK_BOUNDING_BOX: {
+    // EDITED START for User story 12/13
+    SWITCH_TRACKING: {
         name: 'Track bounding box',
         description: 'Make bounding box follow the mouse while playing',
         sequences: ['t'],
         action: 'keydown',
     },
+    // EDITED END
+    // EDITED START for Integration of autoSnap
     AUTOSNAP: {
         name: 'Autosnap',
         description: 'Snap bounding box to edges of selected object',
         sequences: ['s'],
         action: 'keydown',
     },
+    // EDITED END
     SWITCH_AUTOMATIC_BORDERING: {
         name: 'Switch automatic bordering',
         description: 'Switch automatic bordering for polygons and polylines during drawing/editing',

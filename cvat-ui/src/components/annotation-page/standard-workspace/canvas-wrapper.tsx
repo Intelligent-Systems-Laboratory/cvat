@@ -22,15 +22,12 @@ import {
 import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas';
 import getCore from 'cvat-core';
-import getSnap from 'cvat-snap';
-import { CanvasController } from '../../../../../cvat-canvas/src/typescript/canvasController';
 
 import consts from 'consts';
 
 
 const cvat = getCore();
-const snap = getSnap();
-var finishedSnapping = 0;
+var finishedSnapping = false; // EDITED FOR User story 2
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
 
@@ -71,8 +68,6 @@ interface Props {
     workspace: Workspace;
     automaticBordering: boolean;
     keyMap: Record<string, ExtendedKeyMapOptions>;
-    tracking: boolean; // EDITED FOR USER STORY 12/13
-    playing: boolean;
     switchableAutomaticBordering: boolean;
     onSetupCanvas: () => void;
     onDragCanvas: (enabled: boolean) => void;
@@ -100,6 +95,11 @@ interface Props {
     onChangeGridOpacity(opacity: number): void;
     onChangeGridColor(color: GridColor): void;
     onSwitchGrid(enabled: boolean): void;
+    // EDITED START FOR USER STORY 12/13
+    tracking: boolean;
+    trackedStateID: number | null;
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
+    // EDITED END
     onSwitchAutomaticBordering(enabled: boolean): void;
 }
 
@@ -153,12 +153,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             workspace,
             frameFetching,
             showObjectsTextAlways,
+            // EDITED START FOR USER STORY 12/13
             tracking,
-            playing,
+            trackedStateID,
+            // EDITED END
             automaticBordering,
         } = this.props;
-        console.log('tracking', tracking);
-        // console.log('playing',playing);
 
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
@@ -222,30 +222,18 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // EDITED START for USER STORY 2
             if (annotations.length > prevProps.annotations.length) {
                 this.contextMenuOnDraw()
-                finishedSnapping = 1;
+                finishedSnapping = true;
             }
             else {
-                if (finishedSnapping === 1) {
-                    finishedSnapping = 0;
+                if (finishedSnapping) {
+                    finishedSnapping = false;
                 }
                 else {
                     this.removeContextMenu()
                 }
             }
             // EDITED END
-            // EDITED START FOR USER STORY 12/13
-            if (prevProps.frameData !== frameData && tracking) {
-                this.objectFollowMouse();
-            }
-
         }
-
-        if (prevProps.tracking !== tracking) {
-            console.log('tracking value changed from ', prevProps.tracking, ' to ', tracking);
-            this.objectFollowMouse();
-        }
-
-        // EDITED END
 
         if (prevProps.frame !== frameData.number
             && resetZoom
@@ -268,6 +256,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         if (prevProps.frameAngle !== frameAngle) {
             canvasInstance.rotate(frameAngle);
         }
+
+        // EDITED START FOR USER STORY 12/13
+        if (prevProps.tracking !== tracking) {
+            canvasInstance.trackObject(tracking, trackedStateID);
+        }
+        // EDITED END
 
         const loadingAnimation = window.document.getElementById('cvat_canvas_loading_animation');
         if (loadingAnimation && frameFetching !== prevProps.frameFetching) {
@@ -312,58 +306,22 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // EDITED FOR INTEGRATION
         canvasInstance.html().removeEventListener('canvas.dblclicked', this.onShapedblClicked);
         // EDITED END
-        // EDITED FOR USER STORY 12/13
-        // TEMPORARY PLACEMENT
-        canvasInstance.html().removeEventListener('canvas.moved', this.getCursorLocation);
-        // EDITED END
-
-        canvasInstance.html().removeEventListener('canvas.contextmenu', this.onCanvasPointContextMenu);
-
+        canvasInstance.html().removeEventListener('point.contextmenu', this.onCanvasPointContextMenu);
+        canvasInstance.html().removeEventListener('canvas.trackingdone', this.trackingDone); // EDITED FOR USER STORY 12/13
         window.removeEventListener('resize', this.fitCanvas);
     }
 
-    // EDITED START FOR USER STORY 12/13
-    // TEMPORARY IMPLEMENTATION
-    private cursorLocation = {
-        x: 0,
-        y: 0,
-    }
-
-    // TEMPORARY IMPLEMENTATION
-    private getCursorLocation = async (event: any): Promise<void> => {
-        const mx = event.detail.x;
-        const my = event.detail.y;
-
-        this.cursorLocation.x = mx;
-        this.cursorLocation.y = my;
-    };
-
-    private objectFollowMouse(): void {
+    // EDITED FOR USER STORY 12/13
+    private trackingDone = (event: any): void => {
         const {
+            onSwitchTracking,
             onUpdateAnnotations,
-            activatedStateID,
-            annotations,
-            jobInstance,
         } = this.props
 
-        if (activatedStateID != null) {
-            const [state] = annotations.filter((el: any) => (el.clientID === activatedStateID));
-
-            const width = state.points[2] - state.points[0];
-            const height = state.points[3] - state.points[1];
-            state.points = [this.cursorLocation.x - width / 2,
-            this.cursorLocation.y - height / 2,
-            this.cursorLocation.x + width / 2,
-            this.cursorLocation.y + height / 2];
-            console.log('annotations: ', annotations);
-            console.log('state', state);
-            console.log('jobInstance: ', jobInstance);
-
-            onUpdateAnnotations([state]);
-        }
+        onUpdateAnnotations(event.detail.states);
+        onSwitchTracking(false, null);
     }
-
-    // EDITED END
+    // EDITED END    
 
     // EDITED START for USER STORY 2
     private contextMenuOnDraw(): void {
@@ -403,12 +361,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         const [state] = annotations.filter((el: any) => (el.clientID === clientID))
 
-        console.log('snapping...');
         let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
         result.then((data: any) => {
             state.points = data.points;
             onUpdateAnnotations([state]);
-            console.log('done snapping...');
         });
     };
 
@@ -420,15 +376,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onUpdateAnnotations,
         } = this.props;
 
-        console.log(jobInstance);
-        console.log(frame);
-        console.log(annotations[annotations.length - 1].clientID);
-
         const state = annotations[annotations.length - 1];
         let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
         result.then((data: any) => {
             state.points = data.points;
-            console.log(data);
             onUpdateAnnotations([state]);
         });
     }
@@ -551,11 +502,17 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         jobInstance.logger.log(LogType.dragObject, { id });
     };
 
+    // EDITED START for issue #8 fix
     private onCanvasShapeResized = (e: any): void => {
-        const { jobInstance } = this.props;
-        const { id } = e.detail;
-        jobInstance.logger.log(LogType.resizeObject, { id });
+        if (!finishedSnapping) {
+            //pass
+        } else {
+            const { jobInstance } = this.props;
+            const { id } = e.detail;
+            jobInstance.logger.log(LogType.resizeObject, { id });
+        }
     };
+    // EDITED END
 
     private onCanvasImageFitted = (): void => {
         const { jobInstance } = this.props;
@@ -852,11 +809,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // EDITED FOR INTEGRATION
         canvasInstance.html().addEventListener('canvas.dblclicked', this.onShapedblClicked);
         // EDITED END
-        // TEMPORARY PLACEMENT
-        canvasInstance.html().addEventListener('canvas.moved', this.getCursorLocation);
-        // EDITED END
-
-        canvasInstance.html().addEventListener('canvas.contextmenu', this.onCanvasPointContextMenu);
+        canvasInstance.html().addEventListener('point.contextmenu', this.onCanvasPointContextMenu);
+        canvasInstance.html().addEventListener('canvas.trackingdone', this.trackingDone); // EDITED FOR USER STORY 12/13
     }
 
     public render(): JSX.Element {
@@ -979,11 +933,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 const color = colors[indexOf >= colors.length ? 0 : indexOf];
                 onChangeGridColor(color);
             },
+            // EDITED START FOR INTEGRATION OF AUTOSNAP
             AUTOSNAP: (event: KeyboardEvent | undefined) => {
                 preventDefault(event);
-                console.log('key s pressed');
                 this.autoSnap();
             },
+            // EDITED END
             SWITCH_AUTOMATIC_BORDERING: (event: KeyboardEvent | undefined) => {
                 if (switchableAutomaticBordering) {
                     preventDefault(event);

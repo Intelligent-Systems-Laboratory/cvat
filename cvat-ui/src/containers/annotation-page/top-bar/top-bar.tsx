@@ -22,7 +22,7 @@ import {
     searchAnnotationsAsync,
     changeWorkspace as changeWorkspaceAction,
     activateObject,
-    switchTrack,
+    switchTracking, // EDITED FOR USER STORY 12/13
 } from 'actions/annotation-actions';
 import { Canvas, isAbleToChangeFrame } from 'cvat-canvas';
 
@@ -47,27 +47,30 @@ interface StateToProps {
     workspace: Workspace;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     normalizedKeyMap: Record<string, string>;
-    tracking:boolean; // EDITED FOR USER STORY 12/13
+    // EDITED FOR USER STORY 12/13
+    tracking: boolean;
+    trackedStateID: number | null;
+    activatedStateID: number | null;
+    // EDITED END
     canvasInstance: Canvas;
 }
 
 interface DispatchToProps {
     onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
     onSwitchPlay(playing: boolean): void;
-    onSwitchTrack(tracking: boolean): void; // EDITED FOR USER STORY 12/13
     onSaveAnnotation(sessionInstance: any): void;
     showStatistics(sessionInstance: any): void;
     undo(sessionInstance: any, frameNumber: any): void;
     redo(sessionInstance: any, frameNumber: any): void;
     searchAnnotations(sessionInstance: any, frameFrom: any, frameTo: any): void;
     changeWorkspace(workspace: Workspace): void;
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // EDITED FOR USER STORY 12/13
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
         annotation: {
             player: {
-                tracking,
                 playing,
                 frame: {
                     filename: frameFilename,
@@ -76,6 +79,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 },
             },
             annotations: {
+                activatedStateID, // EDITED FOR USER STORY 12/13
                 saving: {
                     uploading: saving,
                     statuses: savingStatuses,
@@ -90,6 +94,12 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 instance: canvasInstance,
             },
             workspace,
+            // EDITED FOR USER STORY 12/13
+            trackobject: {
+                tracking,
+                trackedStateID,
+            },
+            // EDITED END
         },
         settings: {
             player: {
@@ -125,24 +135,28 @@ function mapStateToProps(state: CombinedState): StateToProps {
         workspace,
         keyMap,
         normalizedKeyMap,
-        tracking,// EDITED FOR USER STORY 12/13
         canvasInstance,
+        // EDITED FOR USER STORY 12/13
+        tracking,
+        trackedStateID,
+        activatedStateID,
+        // EDITED END
     };
 }
 
 function mapDispatchToProps(dispatch: any): DispatchToProps {
     return {
+        // EDITED FOR USER STORY 12/13
+        onSwitchTracking(tracking: boolean, trackedStateID: number | null): void {
+            dispatch(switchTracking(tracking, trackedStateID));
+        },
+        // EDITED END
         onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void {
             dispatch(changeFrameAsync(frame, fillBuffer, frameStep));
         },
         onSwitchPlay(playing: boolean): void {
             dispatch(switchPlay(playing));
         },
-        // EDITED FOR USER STORY 12/13
-        onSwitchTrack(tracking: boolean): void {
-            dispatch(switchTrack(tracking));
-        },
-        // EDITED END
         onSaveAnnotation(sessionInstance: any): void {
             dispatch(saveAnnotationsAsync(sessionInstance));
         },
@@ -254,6 +268,22 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.unblock();
     }
 
+    // EDITED FOR USER STORY 12/13
+    private onSwitchTracking = (): void => {
+        const {
+            tracking,
+            onSwitchTracking,
+            activatedStateID,
+        } = this.props
+
+        if (!tracking && activatedStateID !== null) {
+            onSwitchTracking(true, activatedStateID);
+        } else {
+            onSwitchTracking(false, null);
+        }
+    }
+    // EDITED END
+
     private undo = (): void => {
         const {
             undo,
@@ -303,23 +333,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             onSwitchPlay(true);
         }
     };
-    // EDITED FOR USER STORY 12/13
-    private onSwitchTrack = (): void => {
-        const {
-            frameNumber,
-            jobInstance,
-            onSwitchTrack,
-            tracking,
-        } = this.props;
-        if (tracking) {
-            onSwitchTrack(false);
-        } else if (frameNumber < jobInstance.stopFrame) {
-            onSwitchTrack(true);
-        }else if(!tracking){
-            onSwitchTrack(true);
-        }
-    };
-    // EDITED END
 
     private onFirstFrame = (): void => {
         const {
@@ -491,7 +504,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     public render(): JSX.Element {
         const {
-            tracking,// EDITED FOR USER STORY 12/13
             playing,
             saving,
             savingStatuses,
@@ -510,6 +522,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             changeWorkspace,
             keyMap,
             normalizedKeyMap,
+            tracking, // EDITED FOR USER STORY 12/13
             canvasInstance,
         } = this.props;
 
@@ -531,7 +544,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             SEARCH_BACKWARD: keyMap.SEARCH_BACKWARD,
             PLAY_PAUSE: keyMap.PLAY_PAUSE,
             FOCUS_INPUT_FRAME: keyMap.FOCUS_INPUT_FRAME,
-            TRACK_BOUNDING_BOX: keyMap.TRACK_BOUNDING_BOX,
+            SWITCH_TRACKING: keyMap.SWITCH_TRACKING, // EDITED FOR USER STORY 12/13
         };
 
         const handlers = {
@@ -604,11 +617,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 }
             },
             // EDITED FOR USER STORY 12/13
-            TRACK_BOUNDING_BOX: (event: KeyboardEvent | undefined) => {
+            SWITCH_TRACKING: (event: KeyboardEvent | undefined) => {
                 preventDefault(event);
-                this.onSwitchTrack();
-                console.log('shortcut t, pressed');
-            },
+                this.onSwitchTracking();
+            }
             // EDITED END
         };
 
@@ -631,10 +643,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     changeWorkspace={changeWorkspace}
                     workspace={workspace}
                     playing={playing}
-                    // EDITED FOR USER STORY 12/13
-                    tracking={tracking}
-                    onSwitchTrack={this.onSwitchTrack}
-                    // EDITED END
                     saving={saving}
                     savingStatuses={savingStatuses}
                     startFrame={startFrame}
@@ -655,6 +663,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     focusFrameInputShortcut={normalizedKeyMap.FOCUS_INPUT_FRAME}
                     onUndoClick={this.undo}
                     onRedoClick={this.redo}
+                    // EDITED FOR USER STORY 12/13
+                    onSwitchTracking={this.onSwitchTracking}
+                    tracking={tracking}
+                    switchTrackingShortcut={normalizedKeyMap.SWITCH_TRACKING}
+                // EDITED END
                 />
             </>
         );

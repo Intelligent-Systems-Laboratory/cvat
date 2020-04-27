@@ -46,22 +46,22 @@
 
         let shapeModel = null;
         switch (type) {
-        case 'rectangle':
-            shapeModel = new RectangleShape(shapeData, clientID, color, injection);
-            break;
-        case 'polygon':
-            shapeModel = new PolygonShape(shapeData, clientID, color, injection);
-            break;
-        case 'polyline':
-            shapeModel = new PolylineShape(shapeData, clientID, color, injection);
-            break;
-        case 'points':
-            shapeModel = new PointsShape(shapeData, clientID, color, injection);
-            break;
-        default:
-            throw new DataError(
-                `An unexpected type of shape "${type}"`,
-            );
+            case 'rectangle':
+                shapeModel = new RectangleShape(shapeData, clientID, color, injection);
+                break;
+            case 'polygon':
+                shapeModel = new PolygonShape(shapeData, clientID, color, injection);
+                break;
+            case 'polyline':
+                shapeModel = new PolylineShape(shapeData, clientID, color, injection);
+                break;
+            case 'points':
+                shapeModel = new PointsShape(shapeData, clientID, color, injection);
+                break;
+            default:
+                throw new DataError(
+                    `An unexpected type of shape "${type}"`,
+                );
         }
 
         return shapeModel;
@@ -75,22 +75,22 @@
 
             let trackModel = null;
             switch (type) {
-            case 'rectangle':
-                trackModel = new RectangleTrack(trackData, clientID, color, injection);
-                break;
-            case 'polygon':
-                trackModel = new PolygonTrack(trackData, clientID, color, injection);
-                break;
-            case 'polyline':
-                trackModel = new PolylineTrack(trackData, clientID, color, injection);
-                break;
-            case 'points':
-                trackModel = new PointsTrack(trackData, clientID, color, injection);
-                break;
-            default:
-                throw new DataError(
-                    `An unexpected type of track "${type}"`,
-                );
+                case 'rectangle':
+                    trackModel = new RectangleTrack(trackData, clientID, color, injection);
+                    break;
+                case 'polygon':
+                    trackModel = new PolygonTrack(trackData, clientID, color, injection);
+                    break;
+                case 'polyline':
+                    trackModel = new PolylineTrack(trackData, clientID, color, injection);
+                    break;
+                case 'points':
+                    trackModel = new PointsTrack(trackData, clientID, color, injection);
+                    break;
+                default:
+                    throw new DataError(
+                        `An unexpected type of track "${type}"`,
+                    );
             }
 
             return trackModel;
@@ -374,7 +374,7 @@
                 } else {
                     throw new ArgumentError(
                         `Trying to merge unknown object type: ${object.constructor.name}. `
-                            + 'Only shapes and tracks are expected.',
+                        + 'Only shapes and tracks are expected.',
                     );
                 }
             }
@@ -738,7 +738,7 @@
                     if (!Object.values(ObjectShape).includes(state.shapeType)) {
                         throw new ArgumentError(
                             'Object shape must be one of: '
-                                + `${JSON.stringify(Object.values(ObjectShape))}`,
+                            + `${JSON.stringify(Object.values(ObjectShape))}`,
                         );
                     }
 
@@ -774,7 +774,7 @@
                     } else {
                         throw new ArgumentError(
                             'Object type must be one of: '
-                                + `${JSON.stringify(Object.values(ObjectType))}`,
+                            + `${JSON.stringify(Object.values(ObjectType))}`,
                         );
                     }
                 }

@@ -47,7 +47,7 @@ import {
     ActiveControl,
 } from 'reducers/interfaces';
 
-import { Canvas } from 'cvat-canvas';
+import { Canvas } from 'cvat-canvas-wrapper';
 
 interface StateToProps {
     sidebarCollapsed: boolean;

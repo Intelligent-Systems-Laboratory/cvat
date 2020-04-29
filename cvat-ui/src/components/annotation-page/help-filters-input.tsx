@@ -68,10 +68,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
     };
 }
 
-function filtersHelpModalContent(
-    searchForwardShortcut: string,
-    searchBackwardShortcut: string,
-): JSX.Element {
+function filtersHelpModalContent(): JSX.Element {
     return (
         <>
             <Paragraph>
@@ -106,8 +103,6 @@ function HelpFiltersInput(props: StateToProps & DispatchToProps): JSX.Element {
     const {
         annotationsFilters,
         annotationsFiltersHistory,
-        searchForwardShortcut,
-        searchBackwardShortcut,
         changeAnnotationsFilters,
     } = props;
 
@@ -131,10 +126,7 @@ function HelpFiltersInput(props: StateToProps & DispatchToProps): JSX.Element {
                                     Modal.info({
                                         width: 700,
                                         title: 'How to search a feature?',
-                                        content: filtersHelpModalContent(
-                                            searchForwardShortcut,
-                                            searchBackwardShortcut,
-                                        ),
+                                        content: filtersHelpModalContent(),
                                     });
                                 }}
                             />

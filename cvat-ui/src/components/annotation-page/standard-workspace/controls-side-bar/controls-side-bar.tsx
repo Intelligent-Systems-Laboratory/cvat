@@ -22,6 +22,7 @@ import SetupTagControl from './setup-tag-control';
 import MergeControl from './merge-control';
 import GroupControl from './group-control';
 import SplitControl from './split-control';
+import TrackControl from './track-control'; // EDITED FOR User story 12/13
 
 interface Props {
     canvasInstance: Canvas;
@@ -36,6 +37,12 @@ interface Props {
     repeatDrawShape(): void;
     pasteShape(): void;
     resetGroup(): void;
+    // EDITED START FOR USER STORY 12/13
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
+    tracking: boolean;
+    switchTrackingShortcut: string;
+    activatedStateID: number | null;
+    // EDITED END
 }
 
 export default function ControlsSideBarComponent(props: Props): JSX.Element {
@@ -52,6 +59,11 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
         resetGroup,
         normalizedKeyMap,
         keyMap,
+        // EDITED START FOR USER STORY 12/13
+        onSwitchTracking,
+        tracking,
+        activatedStateID,
+        // EDITED END
     } = props;
 
     const preventDefault = (event: KeyboardEvent | undefined): void => {
@@ -69,6 +81,7 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
         CANCEL: keyMap.CANCEL,
         CLOCKWISE_ROTATION: keyMap.CLOCKWISE_ROTATION,
         ANTICLOCKWISE_ROTATION: keyMap.ANTICLOCKWISE_ROTATION,
+        SWITCH_TRACKING: keyMap.SWITCH_TRACKING, // EDITED FOR User story 12/13
     };
 
     const handlers = {
@@ -80,7 +93,7 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
         SWITCH_DRAW_MODE: (event: KeyboardEvent | undefined) => {
             preventDefault(event);
             const drawing = [ActiveControl.DRAW_POINTS, ActiveControl.DRAW_POLYGON,
-                ActiveControl.DRAW_POLYLINE, ActiveControl.DRAW_RECTANGLE].includes(activeControl);
+            ActiveControl.DRAW_POLYLINE, ActiveControl.DRAW_RECTANGLE].includes(activeControl);
 
             if (!drawing) {
                 canvasInstance.cancel();
@@ -133,6 +146,16 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
             preventDefault(event);
             rotateFrame(Rotation.ANTICLOCKWISE90);
         },
+        // EDITED FOR USER STORY 12/13
+        SWITCH_TRACKING: (event: KeyboardEvent | undefined) => {
+            preventDefault(event);
+            if (!tracking && activatedStateID !== null) {
+                onSwitchTracking(true, activatedStateID);
+            } else {
+                onSwitchTracking(false, null);
+            }
+        }
+        // EDITED END
     };
 
     return (
@@ -203,6 +226,14 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
                 activeControl={activeControl}
                 splitTrack={splitTrack}
             />
+            {/* EDITED START FOR USER STORY 12/13 */}
+            <TrackControl
+                switchTrackingShortcut={normalizedKeyMap.SWITCH_TRACKING}
+                tracking={tracking}
+                activatedStateID={activatedStateID}
+                onSwitchTracking={onSwitchTracking}
+            />
+            {/* EDITED END */}
         </Layout.Sider>
     );
 }

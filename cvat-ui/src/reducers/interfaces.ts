@@ -266,6 +266,7 @@ export enum ActiveControl {
     GROUP = 'group',
     SPLIT = 'split',
     EDIT = 'edit',
+    TRACK = 'track',
 }
 
 export enum ShapeType {

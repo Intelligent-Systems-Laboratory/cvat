@@ -33,11 +33,6 @@ interface Props {
     onBackward(): void;
     onFirstFrame(): void;
     onLastFrame(): void;
-    // EDITED FOR USER STORY 12/13
-    switchTrackShortcut: string;
-    onSwitchTracking(): void;
-    tracking: boolean;
-    // EDITED END
 }
 
 function PlayerButtons(props: Props): JSX.Element {
@@ -55,11 +50,6 @@ function PlayerButtons(props: Props): JSX.Element {
         onBackward,
         onFirstFrame,
         onLastFrame,
-        // EDITED FOR USER STORY 12/13
-        onSwitchTracking,
-        tracking,
-        switchTrackShortcut,
-        // EDITED END
     } = props;
 
     return (
@@ -101,26 +91,6 @@ function PlayerButtons(props: Props): JSX.Element {
             <Tooltip title='Go to the last frame'>
                 <Icon component={LastIcon} onClick={onLastFrame} />
             </Tooltip>
-
-            {/* EDITED START FOR USER STORY 12/13 */}
-            {!tracking
-                ? (
-                    <Tooltip title={`Track ${switchTrackShortcut}`}>
-                        <Icon
-                            component={PlayIcon}
-                            onClick={onSwitchTracking}
-                        />
-                    </Tooltip>
-                )
-                : (
-                    <Tooltip title={`Pause Track ${switchTrackShortcut}`}>
-                        <Icon
-                            component={PauseIcon}
-                            onClick={onSwitchTracking}
-                        />
-                    </Tooltip>
-                )}
-            {/* EDITED END */}
         </Col>
     );
 }

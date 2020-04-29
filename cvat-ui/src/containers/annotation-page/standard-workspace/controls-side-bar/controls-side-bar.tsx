@@ -14,6 +14,7 @@ import {
     repeatDrawShapeAsync,
     pasteShapeAsync,
     resetAnnotationsGroup,
+    switchTracking, // EDITED FOR USER STORY 12/13
 } from 'actions/annotation-actions';
 import ControlsSideBarComponent from 'components/annotation-page/standard-workspace/controls-side-bar/controls-side-bar';
 import { ActiveControl, CombinedState, Rotation } from 'reducers/interfaces';
@@ -24,6 +25,11 @@ interface StateToProps {
     activeControl: ActiveControl;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     normalizedKeyMap: Record<string, string>;
+    // EDITED FOR USER STORY 12/13
+    tracking: boolean;
+    trackedStateID: number | null;
+    activatedStateID: number | null;
+    // EDITED END
 }
 
 interface DispatchToProps {
@@ -34,6 +40,7 @@ interface DispatchToProps {
     resetGroup(): void;
     repeatDrawShape(): void;
     pasteShape(): void;
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // EDITED FOR USER STORY 12/13
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -43,6 +50,20 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 instance: canvasInstance,
                 activeControl,
             },
+            // EDITED FOR USER STORY 12/13
+            trackobject: {
+                tracking,
+                trackedStateID,
+            },
+            annotations: {
+                activatedStateID,
+                saving: {
+                    uploading: saving,
+                    statuses: savingStatuses,
+                },
+                history,
+            },
+            // EDITED END
         },
         settings: {
             player: {
@@ -61,11 +82,21 @@ function mapStateToProps(state: CombinedState): StateToProps {
         activeControl,
         normalizedKeyMap,
         keyMap,
+        // EDITED FOR USER STORY 12/13
+        tracking,
+        trackedStateID,
+        activatedStateID,
+        // EDITED END
     };
 }
 
 function dispatchToProps(dispatch: any): DispatchToProps {
     return {
+        // EDITED FOR USER STORY 12/13
+        onSwitchTracking(tracking: boolean, trackedStateID: number | null): void {
+            dispatch(switchTracking(tracking, trackedStateID));
+        },
+        // EDITED END
         mergeObjects(enabled: boolean): void {
             dispatch(mergeObjects(enabled));
         },

@@ -50,11 +50,6 @@ interface Props {
     onURLIconClick(): void;
     onUndoClick(): void;
     onRedoClick(): void;
-    // EDITED START FOR USER STORY 12/13
-    onSwitchTracking(): void;
-    tracking: boolean;
-    switchTrackingShortcut: string;
-    // EDITED END
 }
 
 export default function AnnotationTopBarComponent(props: Props): JSX.Element {
@@ -94,11 +89,6 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         onURLIconClick,
         onUndoClick,
         onRedoClick,
-        // EDITED START FOR USER STORY 12/13
-        onSwitchTracking,
-        tracking,
-        switchTrackingShortcut,
-        // EDITED END
     } = props;
 
     return (
@@ -131,11 +121,6 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                         onFirstFrame={onFirstFrame}
                         onLastFrame={onLastFrame}
                         onSwitchPlay={onSwitchPlay}
-                        // EDITED FOR USER STORY 12/13
-                        onSwitchTracking={onSwitchTracking}
-                        tracking={tracking}
-                        switchTrackingShortcut={switchTrackingShortcut}
-                    // EDITED END
                     />
                     <PlayerNavigation
                         startFrame={startFrame}

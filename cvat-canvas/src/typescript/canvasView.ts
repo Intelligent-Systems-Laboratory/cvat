@@ -1330,9 +1330,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const rectbbox = (activeRect as any).getBBox()
 
         const mgCtx = this.magnifyingGlassImage.getContext('2d');
-        const [cX, cY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
-        const bgX = cX - this.geometry.offset;
-        const bgY = cY - this.geometry.offset;
+        //const [cX, cY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
+        //const bgX = cX - this.geometry.offset;
+        //const bgY = cY - this.geometry.offset;
 
         const theta = Math.atan2((point.getAttribute('cy') as any) - (rectbbox.height / 2 as any), (point.getAttribute('cx') as any) - (rectbbox.width / 2 as any));
         const rad = Math.sqrt((width * width) + (height * height)) / 2;
@@ -1343,12 +1343,19 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.magnifyingGlassForeignObject.setAttribute('x', `${mgX - width / 2 + (rad * Math.cos(theta))}`);
         this.magnifyingGlassForeignObject.setAttribute('y', `${mgY - height / 2 + (rad * Math.sin(theta))}`);
 
+        const rX = parseInt(activeRect.getAttribute('x')) - this.geometry.offset;
+        const rY = parseInt(activeRect.getAttribute('y')) - this.geometry.offset;
+        const ptX = parseInt(point.getAttribute('cx')) + rX;
+        const ptY = parseInt(point.getAttribute('cy')) + rY;
+        console.log(`ptX, ptY = ${ptX}, ${ptY}`);
+        console.log(`rX, rY = ${rX}, ${rY}`);
+
         // draw zoom        
         mgCtx.fillStyle = "#FFFFFF";
         mgCtx.fillRect(0, 0, width, height);
         mgCtx.drawImage(this.background,
-            bgX - (width / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
-            bgY - (height / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
+            ptX - (width / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
+            ptY - (height / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
             (width) * (this.magnifyingGlassParameters.zoomScale / 100),
             (height) * (this.magnifyingGlassParameters.zoomScale / 100),
             0,

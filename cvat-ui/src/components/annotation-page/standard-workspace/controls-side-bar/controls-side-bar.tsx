@@ -151,6 +151,7 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
             preventDefault(event);
             if (!tracking && activatedStateID !== null) {
                 onSwitchTracking(true, activatedStateID);
+                console.log('tracking');
             } else {
                 onSwitchTracking(false, null);
             }

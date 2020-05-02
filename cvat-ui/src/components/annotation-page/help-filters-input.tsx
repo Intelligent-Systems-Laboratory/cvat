@@ -120,7 +120,7 @@ function HelpFiltersInput(props: StateToProps & DispatchToProps): JSX.Element {
                     <>
                         <Tooltip title='Click to open help'>
                             <Icon
-                                type='filter'
+                                type='search'
                                 onClick={(e: React.MouseEvent) => {
                                     e.stopPropagation();
                                     Modal.info({
@@ -134,7 +134,7 @@ function HelpFiltersInput(props: StateToProps & DispatchToProps): JSX.Element {
                     </>
                 ) : (
                         <>
-                            <Icon style={{ transform: 'scale(0.9)' }} type='filter' />
+                            <Icon style={{ transform: 'scale(0.9)' }} type='search' />
                             <span style={{ marginLeft: 5 }}>Search a feature</span>
                         </>
                     )

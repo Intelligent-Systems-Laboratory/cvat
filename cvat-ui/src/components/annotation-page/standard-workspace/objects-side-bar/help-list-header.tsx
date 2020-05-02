@@ -15,13 +15,13 @@ interface Props {
     statesHidden: boolean;
 }
 
-function ObjectListHeader(props: Props): JSX.Element {
+function HelpListHeader(props: Props): JSX.Element {
     const {
         statesHidden,
     } = props;
 
     return (
-        <div className='cvat-objects-sidebar-states-header'>
+        <div className='cvat-objects-sidebar-help-header'>
             <Row>
                 <Col>
                     <HelpFiltersInput />
@@ -31,4 +31,4 @@ function ObjectListHeader(props: Props): JSX.Element {
     );
 }
 
-export default React.memo(ObjectListHeader);
+export default React.memo(HelpListHeader);

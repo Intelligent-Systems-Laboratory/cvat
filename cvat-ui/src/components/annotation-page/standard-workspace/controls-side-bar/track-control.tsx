@@ -22,7 +22,7 @@ function TrackControl(props: Props): JSX.Element {
     } = props;
 
     return (
-        <Tooltip title={`Track shape ${switchTrackingShortcut}`} placement='right'>
+        <Tooltip title={`Track rectangle with mouse ${switchTrackingShortcut}`} placement='right'>
             <Icon
                 component={TrackIcon}
                 onClick={(): void => {

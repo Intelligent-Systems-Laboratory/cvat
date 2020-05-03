@@ -41,6 +41,7 @@ import SVGBackgroundIcon from './assets/background-icon.svg';
 import SVGForegroundIcon from './assets/foreground-icon.svg';
 import SVGTrackIcon from './assets/track-icon.svg'; // EDITED FOR User story 12/13
 import SVGSearchIcon from './assets/search-icon.svg'; // EDITED FOR Help sidebar
+import SVGRotateCCIcon from './assets/rotatecc-icon.svg'; // EDITED FOR Help sidebar
 
 export const CVATLogo = React.memo(
     (): JSX.Element => <SVGCVATLogo />,
@@ -155,5 +156,8 @@ export const TrackIcon = React.memo(
 // EDITED FOR Help side bar
 export const SearchIcon = React.memo(
     (): JSX.Element => <SVGSearchIcon />,
+);
+export const RotateCCIcon = React.memo(
+    (): JSX.Element => <SVGRotateCCIcon />,
 );
 // EDITED END

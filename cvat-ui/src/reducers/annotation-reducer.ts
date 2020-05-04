@@ -111,8 +111,6 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         case AnnotationActionTypes.SWITCH_TRACKING: {
             const { tracking, trackedStateID } = action.payload;
 
-            console.log(tracking);
-            console.log(trackedStateID);
             return {
                 ...state,
                 trackobject: {

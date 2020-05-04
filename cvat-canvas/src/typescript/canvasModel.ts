@@ -203,16 +203,13 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
             trackID: number | null;
             mousecoords: any[];
             scalemode: number;
+            index: number | null;
             trackrect: any | null;
             trackedStates: any[];
             trackedframes: any[];
             trackedcentroids: any[];
             trackedwidthheight: any[];
             interpolatekeyframes: any[];
-            frameindex: {
-                frame: number | null;
-                index: number | null;
-            }
         }
         // EDITED END
     };
@@ -279,15 +276,12 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
                 trackrect: null,
                 mousecoords: [],
                 scalemode: 0,
+                index: null,
                 trackedStates: [],
                 trackedframes: [],
                 trackedcentroids: [],
                 trackedwidthheight: [],
                 interpolatekeyframes: [],
-                frameindex: {
-                    frame: null,
-                    index: null,
-                }
             }
             // EDITED END
         };
@@ -304,16 +298,13 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
                 trackID: null,
                 mousecoords: this.data.trackingElement.mousecoords,
                 scalemode: 0,
+                index: null,
                 trackrect: this.data.trackingElement.trackrect,
                 trackedStates: [],
                 trackedframes: [],
                 trackedcentroids: [],
                 trackedwidthheight: [],
                 interpolatekeyframes: [],
-                frameindex: {
-                    frame: null,
-                    index: null,
-                }
             }
         }
 

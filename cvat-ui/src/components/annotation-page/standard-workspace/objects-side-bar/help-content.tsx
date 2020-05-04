@@ -67,6 +67,7 @@ class HelpList extends React.Component {
             label2: 'Hotkey: ',
             label3: 'Icon: ',
             label4: 'Description: ',
+            animation: false,
         });
 
         if (value === 'label') {
@@ -78,6 +79,8 @@ class HelpList extends React.Component {
                 description: 'Shows a context menu with a drop-down list of labels on the top-right corner of each box after it is drawn. This is a new feature by the DLSU ISL Lab.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: null,
             });
         } else if (value === 'emphasize') {
             this.setState({
@@ -88,6 +91,8 @@ class HelpList extends React.Component {
                 description: 'Overlays the rest of the frame with a cyan mask once a bounding box is selected to prevent the annotator from being distracted by other options. This is a new feature by the DLSU ISL Lab.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: null,
             });
         } else if (value === 'zoom') {
             this.setState({
@@ -98,6 +103,9 @@ class HelpList extends React.Component {
                 description: 'Lets the user to zoom into the area around any of the eight adjusting points of a bounding box while resizing them, allowing precise manual adjustment of the boxes. This is a new feature by the DLSU ISL Lab.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/magnifying_glass.gif",
+                
             });
         } else if (value === 'cursor') {
             this.setState({
@@ -265,6 +273,9 @@ class HelpList extends React.Component {
                 description: 'Allows user to track a bounding box with his mouse as it moves throughout the frame. This is a new feature by the DLSU ISL Lab. It is also on the CVAT Controls Sidebar.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: null,
+                
             });
         } else if (value === 'save') {
             this.setState({
@@ -490,6 +501,8 @@ class HelpList extends React.Component {
                 description: 'Uses image processing techniques to detect the object and tighten the box around its edges. This is a new feature by the DLSU ISL Lab.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/snap8d5f85f023debeef.gif",
             });
         }
     };
@@ -713,25 +726,44 @@ class HelpList extends React.Component {
                             <br />
                             <Text strong style={{ fontSize: 16 }}>{this.state.label5}</Text>
                             <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[0]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[1]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[2]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[3]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[4]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[5]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[6]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[7]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[8]}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.howto[9]}</Text>
+                            
+                            {
+                            (this.state.howto.length > 0 && !this.state.animation)?
+                            
+                                <React.Fragment>
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[0]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[1]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[2]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[3]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[4]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[5]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[6]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[7]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[8]}</Text>
+                                    <br />
+                                    <Text style={{ fontSize: 14 }}>{this.state.howto[9]}</Text>
+                                    <br />
+                                </React.Fragment>
+                            
+                             : <br />
+                                  
+                            }
+                            
+                            {
+                                (this.state.animation) ? 
+                                <img src={this.state.giflink} alt="No animation yet" border="0" width = "280" />
+                                : <br />
+                                
+                            }
+                            
                         </Col>
                     </Row>
                 </div>

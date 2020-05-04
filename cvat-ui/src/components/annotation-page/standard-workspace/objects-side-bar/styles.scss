@@ -289,6 +289,15 @@
     }
 }
 
+.cvat-objects-sidebar-help-list {
+    background: $objects-bar-tabs-color;
+    padding: 5px;
+
+    > div:nth-child(1) > div:nth-child(1) {
+        height: 32px;
+    }
+}
+
 .cvat-objects-sidebar-help-content {
     padding: 5px;
 }

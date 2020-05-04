@@ -41,7 +41,6 @@ import {
     ForegroundIcon,
     RotateCCIcon,
 } from 'icons';
-const { Option, OptGroup } = Select;
 
 
 class HelpList extends React.Component {
@@ -53,6 +52,7 @@ class HelpList extends React.Component {
             icontype: null,
             description: null,
             howto: [],
+            features: null,
             label1: null,
             label2: null,
             label3: null,
@@ -79,8 +79,7 @@ class HelpList extends React.Component {
                 label5: null,
                 howto: [],
             });
-        }
-        else if (value === 'emphasize') {
+        } else if (value === 'emphasize') {
             this.setState({
                 title: 'Emphasis on object being annotated',
                 hotkey: 'n/a',
@@ -90,8 +89,7 @@ class HelpList extends React.Component {
                 label5: null,
                 howto: [],
             });
-        }
-        else if (value === 'zoom') {
+        } else if (value === 'zoom') {
             this.setState({
                 title: 'Zoom upon resize',
                 hotkey: 'n/a',
@@ -496,69 +494,203 @@ class HelpList extends React.Component {
         }
     };
 
+    public selectToolbar = (value): void => {
+        const { Option, OptGroup } = Select;
+        if (value === 'all') {
+            this.setState({
+                features:
+                    <Select
+                        showSearch
+                        style={{ width: 292 }}
+                        placeholder="Select a feature"
+                        optionFilterProp="children"
+                        onChange={this.handleChange}
+                        filterOption={(input, option) =>
+                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                    >
+                        <Option value="label">Easier label selection</Option>
+                        <Option value="emphasize">Emphasis on object being annotated</Option>
+                        <Option value="autosnap">autoSnap</Option>
+                        <Option value="zoom">Zoom upon resize</Option>
+                        <Option value="track">Track rectangle with mouse</Option>
+                        <Option value="cursor">Cursor</Option>
+                        <Option value="move">Move the image</Option>
+                        <Option value="rotatecc">Rotate clockwise</Option>
+                        <Option value="rotateac">Rotate anticlockwise</Option>
+                        <Option value="fit">Fit the image</Option>
+                        <Option value="selectroi">Select a region of interest</Option>
+                        <Option value="drawrect">Draw new rectangle</Option>
+                        <Option value="drawpgon">Draw new polygon</Option>
+                        <Option value="drawpline">Draw new polyline</Option>
+                        <Option value="drawpts">Draw new points</Option>
+                        <Option value="tag">Setup tag</Option>
+                        <Option value="merge">Merge shapes/tracks</Option>
+                        <Option value="group">Group shapes/tracks</Option>
+                        <Option value="split">Split tracks</Option>
+                        <Option value="save">Save current changes</Option>
+                        <Option value="undo">Undo</Option>
+                        <Option value="redo">Redo</Option>
+                        <Option value="first">Go to the first frame</Option>
+                        <Option value="backward">Go back with a step</Option>
+                        <Option value="prev">Go back</Option>
+                        <Option value="play">Play</Option>
+                        <Option value="pause">Pause</Option>
+                        <Option value="next">Go next</Option>
+                        <Option value="forward">Go next with a step</Option>
+                        <Option value="last">Go to the last frame</Option>
+                        <Option value="fullscreen">Fullscreen</Option>
+                        <Option value="info">Info</Option>
+                        <Option value="outside">Switch outside property</Option>
+                        <Option value="lock">Switch lock property</Option>
+                        <Option value="occluded">Switch occluded property</Option>
+                        <Option value="hidden">Switch hidden property</Option>
+                        <Option value="keyframe">Switch keyframe property</Option>
+                        <Option value="pinned">Switch pinned property</Option>
+                        <Option value="copy">Make a copy</Option>
+                        <Option value="propagate">Propagate</Option>
+                        <Option value="background">To background</Option>
+                        <Option value="foreground">To foreground</Option>
+                        <Option value="remove">Remove</Option>
+                    </Select>
+            });
+        } else if (value === 'isl') {
+            this.setState({
+                features:
+                    <Select
+                        showSearch
+                        style={{ width: 292 }}
+                        placeholder="Select a feature"
+                        optionFilterProp="children"
+                        onChange={this.handleChange}
+                        filterOption={(input, option) =>
+                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                    >
+                        <Option value="label">Easier label selection</Option>
+                        <Option value="emphasize">Emphasis on object being annotated</Option>
+                        <Option value="autosnap">autoSnap</Option>
+                        <Option value="zoom">Zoom upon resize</Option>
+                        <Option value="track">Track rectangle with mouse</Option>
+                    </Select>
+            });
+        } else if (value === 'controls') {
+            this.setState({
+                features:
+                    <Select
+                        showSearch
+                        style={{ width: 292 }}
+                        placeholder="Select a feature"
+                        optionFilterProp="children"
+                        onChange={this.handleChange}
+                        filterOption={(input, option) =>
+                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                    >
+                        <Option value="cursor">Cursor</Option>
+                        <Option value="move">Move the image</Option>
+                        <Option value="rotatecc">Rotate clockwise</Option>
+                        <Option value="rotateac">Rotate anticlockwise</Option>
+                        <Option value="fit">Fit the image</Option>
+                        <Option value="selectroi">Select a region of interest</Option>
+                        <Option value="drawrect">Draw new rectangle</Option>
+                        <Option value="drawpgon">Draw new polygon</Option>
+                        <Option value="drawpline">Draw new polyline</Option>
+                        <Option value="drawpts">Draw new points</Option>
+                        <Option value="tag">Setup tag</Option>
+                        <Option value="merge">Merge shapes/tracks</Option>
+                        <Option value="group">Group shapes/tracks</Option>
+                        <Option value="split">Split tracks</Option>
+                        <Option value="track">Track rectangle with mouse</Option>
+                    </Select>
+            });
+        } else if (value === 'top') {
+            this.setState({
+                features:
+                    <Select
+                        showSearch
+                        style={{ width: 292 }}
+                        placeholder="Select a feature"
+                        optionFilterProp="children"
+                        onChange={this.handleChange}
+                        filterOption={(input, option) =>
+                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                    >
+                        <Option value="save">Save current changes</Option>
+                        <Option value="undo">Undo</Option>
+                        <Option value="redo">Redo</Option>
+                        <Option value="first">Go to the first frame</Option>
+                        <Option value="backward">Go back with a step</Option>
+                        <Option value="prev">Go back</Option>
+                        <Option value="play">Play</Option>
+                        <Option value="pause">Pause</Option>
+                        <Option value="next">Go next</Option>
+                        <Option value="forward">Go next with a step</Option>
+                        <Option value="last">Go to the last frame</Option>
+                        <Option value="fullscreen">Fullscreen</Option>
+                        <Option value="info">Info</Option>
+                    </Select>
+            });
+        } else if (value === 'context') {
+            this.setState({
+                features:
+                    <Select
+                        showSearch
+                        style={{ width: 292 }}
+                        placeholder="Select a feature"
+                        optionFilterProp="children"
+                        onChange={this.handleChange}
+                        filterOption={(input, option) =>
+                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                    >
+                        <Option value="outside">Switch outside property</Option>
+                        <Option value="lock">Switch lock property</Option>
+                        <Option value="occluded">Switch occluded property</Option>
+                        <Option value="hidden">Switch hidden property</Option>
+                        <Option value="keyframe">Switch keyframe property</Option>
+                        <Option value="pinned">Switch pinned property</Option>
+                        <Option value="copy">Make a copy</Option>
+                        <Option value="propagate">Propagate</Option>
+                        <Option value="background">To background</Option>
+                        <Option value="foreground">To foreground</Option>
+                        <Option value="remove">Remove</Option>
+                        <Option value="autosnap">autoSnap</Option>
+                    </Select>
+            });
+        }
+    };
+
     render() {
+        const { Option, OptGroup } = Select;
+
         return (
             <>
                 <div className='cvat-objects-sidebar-help-header'>
-                    <Tooltip title={`Select the name of the feature you are looking for.`} placement='right'>
+                    <Tooltip title={`Type the name of the toolbar you want to know more about.`} placement='right'>
                         <Select
+                            showSearch
                             style={{ width: 292 }}
                             placeholder="Select a feature"
-                            onChange={this.handleChange}>
-                            <OptGroup label="New ISL Features">
-                                <Option value="label">Easier label selection</Option>
-                                <Option value="emphasize">Emphasis on object being annotated</Option>
-                                <Option value="autosnap">autoSnap</Option>
-                                <Option value="zoom">Zoom upon resize</Option>
-                                <Option value="track">Track rectangle with mouse</Option>
-                            </OptGroup>
-                            <OptGroup label="Controls Sidebar">
-                                <Option value="cursor">Cursor</Option>
-                                <Option value="move">Move the image</Option>
-                                <Option value="rotatecc">Rotate clockwise</Option>
-                                <Option value="rotateac">Rotate anticlockwise</Option>
-                                <Option value="fit">Fit the image</Option>
-                                <Option value="selectroi">Select a region of interest</Option>
-                                <Option value="drawrect">Draw new rectangle</Option>
-                                <Option value="drawpgon">Draw new polygon</Option>
-                                <Option value="drawpline">Draw new polyline</Option>
-                                <Option value="drawpts">Draw new points</Option>
-                                <Option value="tag">Setup tag</Option>
-                                <Option value="merge">Merge shapes/tracks</Option>
-                                <Option value="group">Group shapes/tracks</Option>
-                                <Option value="split">Split tracks</Option>
-                                <Option value="track">Track rectangle with mouse</Option>
-                            </OptGroup>
-                            <OptGroup label="Top bar">
-                                <Option value="save">Save current changes</Option>
-                                <Option value="undo">Undo</Option>
-                                <Option value="redo">Redo</Option>
-                                <Option value="first">Go to the first frame</Option>
-                                <Option value="backward">Go back with a step</Option>
-                                <Option value="prev">Go back</Option>
-                                <Option value="play">Play</Option>
-                                <Option value="pause">Pause</Option>
-                                <Option value="next">Go next</Option>
-                                <Option value="forward">Go next with a step</Option>
-                                <Option value="last">Go to the last frame</Option>
-                                <Option value="fullscreen">Fullscreen</Option>
-                                <Option value="info">Info</Option>
-                            </OptGroup>
-                            <OptGroup label="Objects Sidebar/Context Menu">
-                                <Option value="outside">Switch outside property</Option>
-                                <Option value="lock">Switch lock property</Option>
-                                <Option value="occluded">Switch occluded property</Option>
-                                <Option value="hidden">Switch hidden property</Option>
-                                <Option value="keyframe">Switch keyframe property</Option>
-                                <Option value="pinned">Switch pinned property</Option>
-                                <Option value="copy">Make a copy</Option>
-                                <Option value="propagate">Propagate</Option>
-                                <Option value="background">To background</Option>
-                                <Option value="foreground">To foreground</Option>
-                                <Option value="remove">Remove</Option>
-                                <Option value="autosnap">autoSnap</Option>
-                            </OptGroup>
-                        </Select>
+                            optionFilterProp="children"
+                            onChange={this.selectToolbar}
+                            filterOption={(input, option) =>
+                                option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                        >
+                            <Option value="all">All features</Option>
+                            <Option value="isl">New ISL Features</Option>
+                            <Option value="controls">Controls Sidebar</Option>
+                            <Option value="top">Top Bar</Option>
+                            <Option value="context">Objects Sidebar/Context Menu</Option>
+                        </Select>;
+                    </Tooltip>
+                </div>
+
+                <div className='cvat-objects-sidebar-help-list'>
+                    <Tooltip title={`Type the name of the feature you are looking for.`} placement='right'>
+                        {this.state.features}
                     </Tooltip>
                 </div>
 

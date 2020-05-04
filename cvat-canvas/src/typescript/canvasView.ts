@@ -1194,6 +1194,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }));
         } else if (event.which === 2) {
             this.trackingElement.scalemode = (this.trackingElement.scalemode + 1) % 3;
+            if (this.trackingElement.scalemode == 0) {
+                this.canvas.style.cursor = 'move';
+            } else if (this.trackingElement.scalemode == 1) {
+                this.canvas.style.cursor = 'ew-resize';
+            } else if (this.trackingElement.scalemode == 2) {
+                this.canvas.style.cursor = 'ns-resize';
+            }
         }
         event.preventDefault();
     }
@@ -1291,6 +1298,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         this.canvas.addEventListener('canvas.moved', this.trackingMouseMoveEventHandler, true);
         this.content.addEventListener('mousedown', this.trackingMouseClickEventHandler, true);
+
+        this.canvas.style.cursor = 'move';
     }
 
     private stopTracking(): void {
@@ -1301,6 +1310,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.trackingElement.trackrect.remove();
             this.trackingElement.trackrect = null;
         }
+
+        this.canvas.style.cursor = '';
     }
     // EDITED END
 

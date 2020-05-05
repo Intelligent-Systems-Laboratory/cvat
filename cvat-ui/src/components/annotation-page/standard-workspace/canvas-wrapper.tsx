@@ -324,8 +324,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         } = this.props;
         onActivateObject(annotations[annotations.length - 1].clientID);
         const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
+        const state = annotations[annotations.length - 1];
 
-        if (el) {
+        if (el && state.shapeType === ShapeType.RECTANGLE) {
             const rect = el.getBoundingClientRect();
             onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
         }
@@ -355,7 +356,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         } = this.props;
 
         const [state] = annotations.filter((el: any) => (el.clientID === clientID));
-        if (state) {
+        if (state && state.shapeType === ShapeType.RECTANGLE) {
             onAutoSnap(jobInstance, state, frame);
         }
     }

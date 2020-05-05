@@ -300,5 +300,13 @@
 
 .cvat-objects-sidebar-help-content {
     padding: 5px;
+    height: 800px;
+    text-align: justify;
+}
+
+.cvat-objects-sidebar-help-container {
+    background-color: $background-color-2;
+    height: 100%;
+    overflow-y: scroll;
 }
 // EDITED END

@@ -105,7 +105,7 @@ class HelpList extends React.Component {
                 howto: [],
                 animation: true,
                 giflink: "https://s6.gifyu.com/images/magnifying_glass.gif",
-                
+
             });
         } else if (value === 'cursor') {
             this.setState({
@@ -115,6 +115,8 @@ class HelpList extends React.Component {
                 description: 'Allows user to track a bounding box with his mouse as it moves throughout the frame.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/cursor.gif",
             });
         } else if (value === 'move') {
             this.setState({
@@ -124,6 +126,8 @@ class HelpList extends React.Component {
                 description: 'Moves the image being annotated by clicking and dragging it.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/move.gif",
             });
         } else if (value === 'rotatecc') {
             this.setState({
@@ -133,6 +137,8 @@ class HelpList extends React.Component {
                 description: 'Rotates the current frame clockwise.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/rotatecc.gif",
             });
         } else if (value === 'rotateac') {
             this.setState({
@@ -142,6 +148,8 @@ class HelpList extends React.Component {
                 description: 'Rotates the current frame anticlockwise.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/rotateac.gif",
             });
         } else if (value === 'fit') {
             this.setState({
@@ -151,6 +159,8 @@ class HelpList extends React.Component {
                 description: 'Fits the frame being annotated to the width of the screen.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/fit.gif",
             });
         } else if (value === 'selectroi') {
             this.setState({
@@ -160,6 +170,8 @@ class HelpList extends React.Component {
                 description: 'Click and drag over the region of interest to select it. This feature will then zoom into this region.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/roi.gif",
             });
         } else if (value === 'drawrect') {
             this.setState({
@@ -179,7 +191,9 @@ class HelpList extends React.Component {
                     '- Shape will merely draw the rectangle',
                     '- Track will interpolate the path of the rectangle in between keyframes',
                     '(5) Draw the rectangle',
-                ]
+                ],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/draw_rect.gif",
             });
         } else if (value === 'drawpgon') {
             this.setState({
@@ -195,7 +209,9 @@ class HelpList extends React.Component {
                     '(3) Input the number of vertices of the desired polygon',
                     '(4) Click on the \'Shape\' button',
                     '(5) Draw the polygon by clicking on the locations where you intend to place the vertices',
-                ]
+                ],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/draw_polygon.gif",
             });
         } else if (value === 'drawpline') {
             this.setState({
@@ -211,7 +227,9 @@ class HelpList extends React.Component {
                     '(3) Input the desired number of points for the polyline',
                     '(4) Click on the \'Shape\' button',
                     '(5) Click on the points where you want each vertex of the polyline to be located',
-                ]
+                ],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/draw_polyline.gif",
             });
         } else if (value === 'drawpts') {
             this.setState({
@@ -227,7 +245,9 @@ class HelpList extends React.Component {
                     '(3) Input the desired number of points to be drawn',
                     '(4) Click on the \'Shape\' button',
                     '(5) Click on the locations where you want to place the points',
-                ]
+                ],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/draw_points.gif",
             });
         } else if (value === 'tag') {
             this.setState({
@@ -275,7 +295,7 @@ class HelpList extends React.Component {
                 howto: [],
                 animation: true,
                 giflink: null,
-                
+
             });
         } else if (value === 'save') {
             this.setState({
@@ -402,6 +422,8 @@ class HelpList extends React.Component {
                 description: 'Turns the outside property on or off. This property is activated when the object being annotated becomes too small or disappears from the frame.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/outside.gif",
             });
         } else if (value === 'lock') {
             this.setState({
@@ -411,6 +433,8 @@ class HelpList extends React.Component {
                 description: 'Turns the lock property on or off. When activated, this property blocks modification of the shape.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/locked.gif",
             });
         } else if (value === 'occluded') {
             this.setState({
@@ -420,6 +444,8 @@ class HelpList extends React.Component {
                 description: 'Turns the occluded property on or off. This is activated when the object is partially obscured or occluded. Such shapes have dashed boundaries.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/occluded.gif",
             });
         } else if (value === 'hidden') {
             this.setState({
@@ -429,6 +455,8 @@ class HelpList extends React.Component {
                 description: 'Turns the hidden property on or off. When activated, this hides the selected shape.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/hidden.gif",
             });
         } else if (value === 'keyframe') {
             this.setState({
@@ -447,6 +475,8 @@ class HelpList extends React.Component {
                 description: 'Turns the pinned property on or off. When activated, this does not allow the selected shape to be moved. However, this shape can still be resized.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/pinned.gif",
             });
         } else if (value === 'copy') {
             this.setState({
@@ -456,6 +486,8 @@ class HelpList extends React.Component {
                 description: 'Copies the selected shape, and pastes it to the location where the user clicks.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/copy.gif",
             });
         } else if (value === 'propagate') {
             this.setState({
@@ -465,6 +497,8 @@ class HelpList extends React.Component {
                 description: 'Copies the selected shape once per frame, for n consecutive frames as set by the user.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/propagate.gif",
             });
         } else if (value === 'background') {
             this.setState({
@@ -474,6 +508,8 @@ class HelpList extends React.Component {
                 description: 'Sends the selected shape backwards.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/background3ecde8eee00ff9f0.gif",
             });
         } else if (value === 'foreground') {
             this.setState({
@@ -483,6 +519,8 @@ class HelpList extends React.Component {
                 description: 'Sends the selected shape forwards/',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/foreground.gif",
             });
         } else if (value === 'remove') {
             this.setState({
@@ -492,6 +530,8 @@ class HelpList extends React.Component {
                 description: 'Deletes the selected object.',
                 label5: null,
                 howto: [],
+                animation: true,
+                giflink: "https://s6.gifyu.com/images/remove.gif",
             });
         } else if (value === 'autosnap') {
             this.setState({
@@ -697,7 +737,7 @@ class HelpList extends React.Component {
                             <Option value="controls">Controls Sidebar</Option>
                             <Option value="top">Top Bar</Option>
                             <Option value="context">Objects Sidebar/Context Menu</Option>
-                        </Select>;
+                        </Select>
                     </Tooltip>
                 </div>
 
@@ -707,65 +747,50 @@ class HelpList extends React.Component {
                     </Tooltip>
                 </div>
 
-                <div className='cvat-objects-sidebar-help-content'>
-                    <Row>
-                        <Col span={30}>
-                            <Text strong style={{ fontSize: 16 }}>{this.state.label1}</Text>
-                            <Text style={{ fontSize: 16 }}>{this.state.title}</Text>
-                            <br />
-                            <Text strong style={{ fontSize: 16 }}>{this.state.label2}</Text>
-                            <Text style={{ fontSize: 16 }}>{this.state.hotkey}</Text>
-                            <br />
-                            <Text strong style={{ fontSize: 16 }}>{this.state.label3}</Text>
-                            <Icon component={this.state.icontype} height={10} width={10} />
-                            <Icon type={this.state.icontype} />
-                            <br />
-                            <Text strong style={{ fontSize: 16 }}>{this.state.label4}</Text>
-                            <br />
-                            <Text style={{ fontSize: 14 }}>{this.state.description}</Text>
-                            <br />
-                            <Text strong style={{ fontSize: 16 }}>{this.state.label5}</Text>
-                            <br />
-                            
-                            {
-                            (this.state.howto.length > 0 && !this.state.animation)?
-                            
-                                <React.Fragment>
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[0]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[1]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[2]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[3]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[4]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[5]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[6]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[7]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[8]}</Text>
-                                    <br />
-                                    <Text style={{ fontSize: 14 }}>{this.state.howto[9]}</Text>
-                                    <br />
-                                </React.Fragment>
-                            
-                             : <br />
-                                  
-                            }
-                            
-                            {
-                                (this.state.animation) ? 
-                                <img src={this.state.giflink} alt="No animation yet" border="0" width = "280" />
-                                : <br />
-                                
-                            }
-                            
-                        </Col>
-                    </Row>
+                <div className='cvat-objects-sidebar-help-container'>
+                    <div className='cvat-objects-sidebar-help-content'>
+                        <Row>
+                            <Col span={30}>
+                                <Text strong style={{ fontSize: 16 }}>{this.state.label1}</Text>
+                                <Text style={{ fontSize: 16 }}>{this.state.title}</Text>
+                                <br />
+                                <Text strong style={{ fontSize: 16 }}>{this.state.label2}</Text>
+                                <Text style={{ fontSize: 16 }}>{this.state.hotkey}</Text>
+                                <br />
+                                <Text strong style={{ fontSize: 16 }}>{this.state.label3}</Text>
+                                <Icon component={this.state.icontype} width="5" />
+                                <Icon type={this.state.icontype} />
+                                <br />
+                                <Text strong style={{ fontSize: 16 }}>{this.state.label4}</Text>
+                                <br />
+                                <Text style={{ fontSize: 14 }}>{this.state.description}</Text>
+                                <br />
+                                <Text strong style={{ fontSize: 16 }}>{this.state.label5}</Text>
+                                <br />
+
+                                {
+                                    (this.state.howto.length > 0) ?
+
+                                        <React.Fragment>
+                                            {this.state.howto.map((value, index) => {
+                                                return <li key={index}>{value}</li>
+                                            })}
+                                        </React.Fragment>
+
+                                        : <br />
+
+                                }
+
+                                {
+                                    (this.state.animation) ?
+                                        <img src={this.state.giflink} alt="No animation yet" border="0" width="280" />
+                                        : <br />
+
+                                }
+
+                            </Col>
+                        </Row>
+                    </div>
                 </div>
             </>
         );

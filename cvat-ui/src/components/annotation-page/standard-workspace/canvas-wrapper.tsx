@@ -333,7 +333,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         onActivateObject(annotations[annotations.length - 1].clientID);
         const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
         const state = annotations[annotations.length - 1];
-        if (el) {
+        if (el && state.shapeType === ShapeType.RECTANGLE) {
             const rect = el.getBoundingClientRect();
             onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
             this.autoSnap()

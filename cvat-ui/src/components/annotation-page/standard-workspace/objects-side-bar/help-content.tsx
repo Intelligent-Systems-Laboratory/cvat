@@ -80,7 +80,7 @@ class HelpList extends React.Component {
                 label5: null,
                 howto: [],
                 animation: true,
-                giflink: null,
+                giflink: "https://s6.gifyu.com/images/label.gif",
             });
         } else if (value === 'emphasize') {
             this.setState({
@@ -92,7 +92,7 @@ class HelpList extends React.Component {
                 label5: null,
                 howto: [],
                 animation: true,
-                giflink: null,
+                giflink: "https://s6.gifyu.com/images/emphasis.gif" ,
             });
         } else if (value === 'zoom') {
             this.setState({
@@ -294,7 +294,7 @@ class HelpList extends React.Component {
                 label5: null,
                 howto: [],
                 animation: true,
-                giflink: null,
+                giflink: "https://s6.gifyu.com/images/tracking06b32fbf0d837f12.gif",
 
             });
         } else if (value === 'save') {

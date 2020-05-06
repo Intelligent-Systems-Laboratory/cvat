@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 import { CombinedState, ContextMenuType } from 'reducers/interfaces';
 
 import CanvasContextMenuComponent from 'components/annotation-page/standard-workspace/canvas-context-menu';
+import CanvasInitialContextMenuComponent from 'components/annotation-page/standard-workspace/canvas-initial-context-menu';
 
 interface StateToProps {
     activatedStateID: number | null;
@@ -183,7 +184,7 @@ class CanvasContextMenuContainer extends React.PureComponent<Props, State> {
 
         return (
             <>
-                { type === ContextMenuType.CANVAS_SHAPE && (
+                {type === ContextMenuType.CANVAS_SHAPE && (
                     <CanvasContextMenuComponent
                         left={left}
                         top={top}
@@ -191,6 +192,17 @@ class CanvasContextMenuContainer extends React.PureComponent<Props, State> {
                         activatedStateID={activatedStateID}
                     />
                 )}
+
+                {/*EDITED START for labels user story*/}
+                {type === ContextMenuType.CANVAS_SHAPE_FIRST && (
+                    <CanvasInitialContextMenuComponent
+                        left={left}
+                        top={top}
+                        visible={visible}
+                        activatedStateID={activatedStateID}
+                    />
+                )}
+                {/*EDITED END*/}
             </>
         );
     }

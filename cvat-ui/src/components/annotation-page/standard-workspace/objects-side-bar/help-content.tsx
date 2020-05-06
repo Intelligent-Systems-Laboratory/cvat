@@ -92,7 +92,7 @@ class HelpList extends React.Component {
                 label5: null,
                 howto: [],
                 animation: true,
-                giflink: "https://s6.gifyu.com/images/emphasis.gif" ,
+                giflink: "https://s6.gifyu.com/images/emphasis.gif",
             });
         } else if (value === 'zoom') {
             this.setState({
@@ -533,12 +533,12 @@ class HelpList extends React.Component {
                 animation: true,
                 giflink: "https://s6.gifyu.com/images/remove.gif",
             });
-        } else if (value === 'autosnap') {
+        } else if (value === 'autofit') {
             this.setState({
-                title: 'autoSnap',
+                title: 'autoFit',
                 hotkey: '[S]',
                 icontype: 'import',
-                description: 'Uses image processing techniques to detect the object and tighten the box around its edges. This is a new feature by the DLSU ISL Lab.',
+                description: 'Uses image processing techniques to detect the object and fit the selected bounding box around its edges. This is a new feature by the DLSU ISL Lab.',
                 label5: null,
                 howto: [],
                 animation: true,
@@ -554,6 +554,7 @@ class HelpList extends React.Component {
                 features:
                     <Select
                         showSearch
+                        autoFocus
                         style={{ width: 292 }}
                         placeholder="Select a feature"
                         optionFilterProp="children"
@@ -564,7 +565,7 @@ class HelpList extends React.Component {
                     >
                         <Option value="label">Easier label selection</Option>
                         <Option value="emphasize">Emphasis on object being annotated</Option>
-                        <Option value="autosnap">autoSnap</Option>
+                        <Option value="autofit">autoFit</Option>
                         <Option value="zoom">Zoom upon resize</Option>
                         <Option value="track">Track rectangle with mouse</Option>
                         <Option value="cursor">Cursor</Option>
@@ -612,6 +613,7 @@ class HelpList extends React.Component {
                 features:
                     <Select
                         showSearch
+                        autoFocus
                         style={{ width: 292 }}
                         placeholder="Select a feature"
                         optionFilterProp="children"
@@ -622,7 +624,7 @@ class HelpList extends React.Component {
                     >
                         <Option value="label">Easier label selection</Option>
                         <Option value="emphasize">Emphasis on object being annotated</Option>
-                        <Option value="autosnap">autoSnap</Option>
+                        <Option value="autofit">autoFit</Option>
                         <Option value="zoom">Zoom upon resize</Option>
                         <Option value="track">Track rectangle with mouse</Option>
                     </Select>
@@ -632,6 +634,7 @@ class HelpList extends React.Component {
                 features:
                     <Select
                         showSearch
+                        autoFocus
                         style={{ width: 292 }}
                         placeholder="Select a feature"
                         optionFilterProp="children"
@@ -662,6 +665,7 @@ class HelpList extends React.Component {
                 features:
                     <Select
                         showSearch
+                        autoFocus
                         style={{ width: 292 }}
                         placeholder="Select a feature"
                         optionFilterProp="children"
@@ -690,6 +694,7 @@ class HelpList extends React.Component {
                 features:
                     <Select
                         showSearch
+                        autoFocus
                         style={{ width: 292 }}
                         placeholder="Select a feature"
                         optionFilterProp="children"
@@ -709,7 +714,7 @@ class HelpList extends React.Component {
                         <Option value="background">To background</Option>
                         <Option value="foreground">To foreground</Option>
                         <Option value="remove">Remove</Option>
-                        <Option value="autosnap">autoSnap</Option>
+                        <Option value="autofit">autoFit</Option>
                     </Select>
             });
         }
@@ -724,6 +729,7 @@ class HelpList extends React.Component {
                     <Tooltip title={`Type the name of the toolbar you want to know more about.`} placement='right'>
                         <Select
                             showSearch
+                            autoFocus
                             style={{ width: 292 }}
                             placeholder="Select a feature"
                             optionFilterProp="children"

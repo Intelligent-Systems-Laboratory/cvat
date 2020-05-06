@@ -335,7 +335,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         const state = annotations[annotations.length - 1];
         if (el && state.shapeType === ShapeType.RECTANGLE) {
             const rect = el.getBoundingClientRect();
-            onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
+            onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE_FIRST); // EDITED for labels user story
             this.autoSnap()
         }
 
@@ -345,7 +345,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         const {
             onUpdateContextMenu,
         } = this.props;
-        onUpdateContextMenu(false, 10000, 10000, ContextMenuType.CANVAS_SHAPE);
+        onUpdateContextMenu(false, 10000, 10000, ContextMenuType.CANVAS_SHAPE_FIRST); // EDITED for labels user story
     }
     // EDITED END
     // EDITED START FOR INTEGRATION OF AUTOSNAP

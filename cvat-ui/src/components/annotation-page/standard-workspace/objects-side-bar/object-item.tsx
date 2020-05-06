@@ -120,13 +120,13 @@ function ItemMenu(
             </Menu.Item>
             {/* EDITED FOR INTEGRATION */}
             <Menu.Item>
-                <Tooltip title={`Detects the object and snaps the box around its edges.`}>
+                <Tooltip title={`Detects the object and fits the selected bounding box around its edges.`}>
                     <Button
                         type='link'
                         icon='import'
                         onClick={autoSnap}
                     >
-                        autoSnap
+                        autoFit
                     </Button>
                 </Tooltip>
             </Menu.Item>

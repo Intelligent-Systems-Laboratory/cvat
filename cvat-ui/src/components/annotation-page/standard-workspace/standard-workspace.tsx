@@ -12,6 +12,9 @@ import ObjectSideBarContainer from 'containers/annotation-page/standard-workspac
 import PropagateConfirmContainer from 'containers/annotation-page/standard-workspace/propagate-confirm';
 import CanvasContextMenuContainer from 'containers/annotation-page/standard-workspace/canvas-context-menu';
 import CanvasPointContextMenuContainer from 'containers/annotation-page/standard-workspace/canvas-point-context-menu';
+// EDITED FOR LABEL MENU
+import CanvasLabelMenuContainer from 'containers/annotation-page/standard-workspace/canvas-label-menu'
+// EDITED END
 
 export default function StandardWorkspaceComponent(): JSX.Element {
     return (
@@ -22,6 +25,7 @@ export default function StandardWorkspaceComponent(): JSX.Element {
             <PropagateConfirmContainer />
             <CanvasContextMenuContainer />
             <CanvasPointContextMenuContainer />
+            <CanvasLabelMenuContainer />   {/* EDited for Label Menu */}
         </Layout>
     );
 }

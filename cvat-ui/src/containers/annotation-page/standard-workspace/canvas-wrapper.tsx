@@ -27,6 +27,7 @@ import {
     addZLayer,
     switchZLayer,
     switchTracking, // EDITED FOR USER STORY 12/13
+    updateCanvasLabelMenu, //EDITED FOR LABEL MENU
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -120,8 +121,10 @@ interface DispatchToProps {
     onChangeGridOpacity(opacity: number): void;
     onChangeGridColor(color: GridColor): void;
     onSwitchGrid(enabled: boolean): void;
-    onSwitchTracking(tracking: boolean, trackedStateID: number | null); // EDITED FOR USER STORY 12/13 // check again later
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // EDITED FOR USER STORY 12/13 // check again later
     onSwitchAutomaticBordering(enabled: boolean): void;
+    onUpdateLabelMenu(visible: boolean, left: number, top: number,
+        pointID?: number): void; // EDITED FOR LABEL MENU
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -336,6 +339,12 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSwitchAutomaticBordering(enabled: boolean): void {
             dispatch(switchAutomaticBordering(enabled));
         },
+        // EDITED FOR LABEL MENU
+        onUpdateLabelMenu(visible: boolean, left: number, top: number, pointID?: number): void {
+            console.log('updating label menu container');
+            dispatch(updateCanvasLabelMenu(visible, left, top, pointID));
+        },
+        // EDITED END
     };
 }
 

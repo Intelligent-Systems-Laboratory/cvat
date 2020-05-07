@@ -307,6 +307,14 @@ export interface AnnotationState {
         };
     };
     canvas: {
+        // EDITED FOR LABEL MENU
+        labelMenu: {
+            visible: boolean;
+            top: number;
+            left: number;
+            pointID: number | null;
+        }
+        // EDITED END
         contextMenu: {
             visible: boolean;
             top: number;

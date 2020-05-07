@@ -29,6 +29,14 @@ const defaultState: AnnotationState = {
             type: ContextMenuType.CANVAS_SHAPE,
             pointID: null,
         },
+        // EDITED FOR LABEL MENU
+        labelMenu: {
+            label_visible: false,
+            label_left: 0,
+            label_top: 0,
+            label_pointID: null,
+        },
+        // EDITED END
         instance: new Canvas(),
         ready: false,
         activeControl: ActiveControl.CURSOR,
@@ -107,6 +115,30 @@ const defaultState: AnnotationState = {
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // EDITED FOR LABEL MENU
+        case AnnotationActionTypes.UPDATE_CANVAS_LABEL_MENU: {
+            const {
+                visible,
+                left,
+                top,
+                pointID,
+            } = action.payload;
+            console.log('updating label menu reducer');
+            return {
+                ...state,
+                canvas: {
+                    ...state.canvas,
+                    labelMenu: {
+                        ...state.canvas.labelMenu,
+                        visible,
+                        left,
+                        top,
+                        pointID,
+                    },
+                },
+            };
+        }
+        // EDITED END
         // EDITED FOR USER STORY 12/13
         case AnnotationActionTypes.SWITCH_TRACKING: {
             const { tracking, trackedStateID } = action.payload;

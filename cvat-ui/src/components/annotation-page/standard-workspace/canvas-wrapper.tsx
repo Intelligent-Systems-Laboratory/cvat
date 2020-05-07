@@ -99,6 +99,8 @@ interface Props {
     trackedStateID: number | null;
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     // EDITED END
+    onUpdateLabelMenu(visible: boolean, left: number, top: number,
+        pointID?: number): void;// EDITED FOR LABEL MENU
     onSwitchAutomaticBordering(enabled: boolean): void;
 }
 
@@ -328,14 +330,15 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             annotations,
             onActivateObject,
             onUpdateContextMenu,
-
+            onUpdateLabelMenu,
         } = this.props;
         onActivateObject(annotations[annotations.length - 1].clientID);
         const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
         const state = annotations[annotations.length - 1];
         if (el && state.shapeType === ShapeType.RECTANGLE) {
             const rect = el.getBoundingClientRect();
-            onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
+            // onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
+            onUpdateLabelMenu(true, rect.right, rect.top);
             this.autoSnap()
         }
 
@@ -344,8 +347,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     private removeContextMenu(): void {
         const {
             onUpdateContextMenu,
+            onUpdateLabelMenu,
         } = this.props;
-        onUpdateContextMenu(false, 10000, 10000, ContextMenuType.CANVAS_SHAPE);
+        // onUpdateContextMenu(false, 10000, 10000, ContextMenuType.CANVAS_SHAPE);
+        onUpdateLabelMenu(false, 0, 0);
     }
     // EDITED END
     // EDITED START FOR INTEGRATION OF AUTOSNAP

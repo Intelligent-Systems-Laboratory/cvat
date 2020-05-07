@@ -14,7 +14,6 @@ interface StateToProps {
     visible: boolean;
     top: number;
     left: number;
-    type: ContextMenuType;
     collapsed: boolean | undefined;
 }
 
@@ -26,11 +25,10 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 collapsed,
             },
             canvas: {
-                contextMenu: {
+                labelMenu: {
                     visible,
                     top,
                     left,
-                    type,
                 },
             },
         },
@@ -42,7 +40,6 @@ function mapStateToProps(state: CombinedState): StateToProps {
         visible,
         left,
         top,
-        type,
     };
 }
 
@@ -178,19 +175,17 @@ class CanvasLabelMenuContainer extends React.PureComponent<Props, State> {
         const {
             visible,
             activatedStateID,
-            type,
         } = this.props;
 
         return (
             <>
-                { type === ContextMenuType.CANVAS_SHAPE && (
-                    <CanvasLabelMenuComponent
-                        left={left}
-                        top={top}
-                        visible={visible}
-                        activatedStateID={activatedStateID}
-                    />
-                )}
+                <CanvasLabelMenuComponent
+                    left={left}
+                    top={top}
+                    visible={visible}
+                    activatedStateID={activatedStateID}
+                />
+                )
             </>
         );
     }

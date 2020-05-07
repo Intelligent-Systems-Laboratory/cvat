@@ -188,7 +188,28 @@ export enum AnnotationActionTypes {
     SAVE_LOGS_SUCCESS = 'SAVE_LOGS_SUCCESS',
     SAVE_LOGS_FAILED = 'SAVE_LOGS_FAILED',
     SWITCH_TRACKING = 'SWITCH_TRACKING', // EDITED FOR USER STORY 12/13 
+    UPDATE_CANVAS_LABEL_MENU = 'UPDATE_CANVAS_LABEL_MENU', //EDITED FOR LABEL MENU
 }
+
+// EDITED FOR LABEL MENU
+export function updateCanvasLabelMenu(
+    visible: boolean,
+    left: number,
+    top: number,
+    pointID: number | null = null,
+): AnyAction {
+    console.log('updating label menu action');
+    return {
+        type: AnnotationActionTypes.UPDATE_CANVAS_LABEL_MENU,
+        payload: {
+            visible,
+            left,
+            top,
+            pointID,
+        },
+    };
+}
+// EDITED END
 
 // EDITED FOR USER STORY 12/13
 export function switchTracking(tracking: boolean, trackedStateID: number | null): AnyAction {
@@ -201,8 +222,6 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
     };
 }
 // EDITED END
-
-
 
 export function saveLogsAsync():
     ThunkAction<Promise<void>, {}, {}, AnyAction> {

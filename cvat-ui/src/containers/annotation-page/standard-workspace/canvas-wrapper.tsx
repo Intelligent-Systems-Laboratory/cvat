@@ -296,6 +296,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onActivateObject(activatedStateID: number | null): void {
             if (activatedStateID === null) {
                 dispatch(updateCanvasContextMenu(false, 0, 0));
+                dispatch(updateCanvasLabelMenu(false, 0, 0)); // EDITED FOR LABEL MENU
             }
 
             dispatch(activateObject(activatedStateID, null));

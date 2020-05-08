@@ -198,7 +198,7 @@ export function updateCanvasLabelMenu(
     top: number,
     pointID: number | null = null,
 ): AnyAction {
-    console.log('updating label menu action');
+    
     return {
         type: AnnotationActionTypes.UPDATE_CANVAS_LABEL_MENU,
         payload: {

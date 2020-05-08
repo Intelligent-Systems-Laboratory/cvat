@@ -31,10 +31,10 @@ const defaultState: AnnotationState = {
         },
         // EDITED FOR LABEL MENU
         labelMenu: {
-            label_visible: false,
-            label_left: 0,
-            label_top: 0,
-            label_pointID: null,
+            visible: false,
+            left: 0,
+            top: 0,
+            pointID: null,
         },
         // EDITED END
         instance: new Canvas(),
@@ -123,7 +123,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 top,
                 pointID,
             } = action.payload;
-            console.log('updating label menu reducer');
+
             return {
                 ...state,
                 canvas: {

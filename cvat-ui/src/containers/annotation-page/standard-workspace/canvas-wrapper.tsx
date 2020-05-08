@@ -342,7 +342,6 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         // EDITED FOR LABEL MENU
         onUpdateLabelMenu(visible: boolean, left: number, top: number, pointID?: number): void {
-            console.log('updating label menu container');
             dispatch(updateCanvasLabelMenu(visible, left, top, pointID));
         },
         // EDITED END

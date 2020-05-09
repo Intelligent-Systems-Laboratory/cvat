@@ -35,7 +35,7 @@ export default function CanvasLabelMenu(props: Props): JSX.Element | null {
       };
 
     return ReactDOM.createPortal(
-        <div className='cvat-canvas-context-menu' style={ divStyle }>
+        <div className='cvat-canvas-label-menu' style={ divStyle }>
             <Button type='link' icon='delete'>
                 Label Menu
             </Button>

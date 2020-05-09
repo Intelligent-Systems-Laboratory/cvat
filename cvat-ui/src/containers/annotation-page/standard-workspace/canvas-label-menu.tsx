@@ -5,7 +5,7 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { CombinedState, ContextMenuType } from 'reducers/interfaces';
+import { CombinedState } from 'reducers/interfaces';
 
 import CanvasLabelMenuComponent from 'components/annotation-page/standard-workspace/canvas-label-menu';
 
@@ -14,7 +14,7 @@ interface StateToProps {
     visible: boolean;
     top: number;
     left: number;
-    collapsed: boolean | undefined;
+    // collapsed: boolean | undefined;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -22,7 +22,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         annotation: {
             annotations: {
                 activatedStateID,
-                collapsed,
+                // collapsed,
             },
             canvas: {
                 labelMenu: {
@@ -36,7 +36,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
 
     return {
         activatedStateID,
-        collapsed: activatedStateID !== null ? collapsed[activatedStateID] : undefined,
+        // collapsed: activatedStateID !== null ? collapsed[activatedStateID] : undefined,
         visible,
         left,
         top,
@@ -89,18 +89,22 @@ class CanvasLabelMenuContainer extends React.PureComponent<Props, State> {
 
     public componentDidMount(): void {
         this.updatePositionIfOutOfScreen();
-        window.addEventListener('mousemove', this.moveContextMenu);
+        window.addEventListener('mousemove', this.moveLabelMenu);
     }
 
     public componentDidUpdate(prevProps: Props): void {
-        const { collapsed } = this.props;
+        // const { collapsed } = this.props;
 
-        const [element] = window.document.getElementsByClassName('cvat-canvas-context-menu');
-        if (collapsed !== prevProps.collapsed && element) {
-            element.addEventListener('transitionend', () => {
-                this.updatePositionIfOutOfScreen();
-            }, { once: true });
-        } else if (element) {
+        const [element] = window.document.getElementsByClassName('cvat-canvas-label-menu');
+        // if (collapsed !== prevProps.collapsed && element) {
+        //     element.addEventListener('transitionend', () => {
+        //         this.updatePositionIfOutOfScreen();
+        //     }, { once: true });
+        // } else if (element) {
+        //     this.updatePositionIfOutOfScreen();
+        // }
+
+        if (element) {
             this.updatePositionIfOutOfScreen();
         }
 
@@ -120,10 +124,10 @@ class CanvasLabelMenuContainer extends React.PureComponent<Props, State> {
     }
 
     public componentWillUnmount(): void {
-        window.removeEventListener('mousemove', this.moveContextMenu);
+        window.removeEventListener('mousemove', this.moveLabelMenu);
     }
 
-    private moveContextMenu = (e: MouseEvent): void => {
+    private moveLabelMenu = (e: MouseEvent): void => {
         if (this.dragging) {
             this.setState((state) => {
                 const value = {
@@ -152,7 +156,7 @@ class CanvasLabelMenuContainer extends React.PureComponent<Props, State> {
             innerHeight,
         } = window;
 
-        const [element] = window.document.getElementsByClassName('cvat-canvas-context-menu');
+        const [element] = window.document.getElementsByClassName('cvat-canvas-label-menu');
         if (element) {
             const height = element.clientHeight;
             const width = element.clientWidth;

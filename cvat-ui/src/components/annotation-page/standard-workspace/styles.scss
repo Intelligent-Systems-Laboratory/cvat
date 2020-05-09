@@ -184,3 +184,18 @@
         }
     }
 }
+
+// EDITED FOR LABEL MENU
+.cvat-canvas-label-menu {
+    opacity: 1;
+    position: fixed;
+    width: 300px;
+    z-index: 10;
+    max-height: 50%;
+    overflow-y: auto;
+
+    // &:hover {
+    //     opacity: 1;
+    // }
+}
+// EDITED END

@@ -59,6 +59,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 import cvat.apps.engine.grabcut_improved as grabcut # EDITED for snapping algorithm
 from PIL import Image # EDITED for snapping algorithm
 import numpy as np # EDITED for snapping algorithm
+import cvat.apps.engine.tracker# EDITED for tracking
 
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
@@ -385,7 +386,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             instance.data.delete()
 
     # EDITED FOR INTEGRATION    
-    @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task')
+    @swagger_auto_schema(method='get', operation_summary='Returns automatically snapped or fitted coordinates of a box')
     @action(detail=True, methods=['GET'])
     def snap(self, request, pk):
         objectID = request.query_params.get('objectID', None)
@@ -418,6 +419,50 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     "path" : request.build_absolute_uri(),
                     "data" : data,
                     "dimensions" : dim,
+                }
+            return Response(new_coords)
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+            
+    # EDITED END
+
+    # EDITED FOR TRACKING  
+    @swagger_auto_schema(method='get', operation_summary='Returns tracker coordinates')
+    @action(detail=True, methods=['GET'])
+    def tracking(self, request, pk):
+        frameList = []
+        objectID = request.query_params.get('objectID', None)
+        frameStart = int(request.query_params.get('frameStart', None))
+        frameEnd = int(request.query_params.get('frameEnd', None))
+        xtl = int(request.query_params.get('x1', None))
+        ytl = int(request.query_params.get('y1', None))
+        xbr = int(request.query_params.get('x2', None))
+        ybr = int(request.query_params.get('y2', None))
+
+        # ADD code for getting the image here
+        db_task = self.get_object()
+        frame_provider = FrameProvider(db_task.data)
+        data_quality = FrameProvider.Quality.ORIGINAL
+        for x in range(frameStart, frameEnd+1):
+            img, mime = frame_provider.get_frame(x, data_quality)
+            img = Image.open(img)
+            orig_img = np.array(img)
+            image = orig_img[:, :, ::-1].copy()
+            frameList.append(image)
+        data = (xtl, ytl, xbr, ybr)
+        results = cvat.apps.engine.tracker.track(frameList, data)
+
+
+        try:
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                                
+                new_coords = {
+                    "object" : objectID,
+                    "frameStart" : frameStart,
+                    "frameEnd" : frameEnd,
+                    "old_points" : [xtl, ytl, xbr, ybr],
+                    "path" : request.build_absolute_uri(),
+                    "tracker_coords" : results,
                 }
             return Response(new_coords)
         except Exception as e:

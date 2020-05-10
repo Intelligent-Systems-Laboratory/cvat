@@ -41,6 +41,8 @@ import {
     Configuration,
 } from './canvasModel';
 
+import { Job, Task } from '../../../cvat-core/src/session';
+
 export interface CanvasView {
     html(): HTMLDivElement;
 }
@@ -445,7 +447,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 let resizeheight: any = trackstate.points[3] - trackstate.points[1];
 
                 if (this.trackingElement.interpolatekeyframes.length != 0) {
-                    let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a-b));
+                    let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a - b));
                     if (!interpolatekeyframes.includes(Math.min(...this.trackingElement.trackedframes))) {
                         interpolatekeyframes = [Math.min(...this.trackingElement.trackedframes), ...interpolatekeyframes];
                     }
@@ -454,7 +456,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     for (let i = 0; i < interpolatekeyframes.length; i++) {
                         if (trackstate.frame >= interpolatekeyframes[i]) {
                             leftframe = interpolatekeyframes[i];
-                        } else if (trackstate.frame < interpolatekeyframes[i]){
+                        } else if (trackstate.frame < interpolatekeyframes[i]) {
                             rightframe = interpolatekeyframes[i];
                             break;
                         }
@@ -485,7 +487,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         .center(this.trackingElement.mousecoords[0] + offset, this.trackingElement.mousecoords[1] + offset);
                 }
             } else {
-                this.trackingElement.index= null;
+                this.trackingElement.index = null;
             }
         }
         // EDITED END
@@ -1145,7 +1147,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
             for (var i = 0; i < this.trackingElement.trackedframes.length; i++) {
                 if (this.trackingElement.interpolatekeyframes.length != 0) {
-                    let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a-b));
+                    let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a - b));
                     if (!interpolatekeyframes.includes(Math.min(...this.trackingElement.trackedframes))) {
                         interpolatekeyframes = [Math.min(...this.trackingElement.trackedframes), ...interpolatekeyframes];
                     }
@@ -1157,7 +1159,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     for (let k = 0; k < interpolatekeyframes.length; k++) {
                         if (states[i].frame >= interpolatekeyframes[k]) {
                             leftframe = interpolatekeyframes[k];
-                        } else if (states[i].frame < interpolatekeyframes[k]){
+                        } else if (states[i].frame < interpolatekeyframes[k]) {
                             rightframe = interpolatekeyframes[k];
                             break;
                         }
@@ -1184,6 +1186,20 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     this.trackingElement.trackedcentroids[i][1] + this.trackingElement.trackedwidthheight[i][1] / 2,
                 ];
             }
+
+            // EDITED FOR TRACKING
+            console.log('clicked');
+            console.log(this.trackingElement.trackedframes[0]);
+            console.log(this.trackingElement.trackedframes[this.trackingElement.trackedframes.length - 1]);
+            console.log('track ID and coords');
+            console.log(states[0].points);
+            console.log(states[this.trackingElement.trackedframes.length - 1].points);
+
+            let result = Job.prototype.annotations.tracking(this.trackingElement.trackID, this.trackingElement.trackedframes[0], this.trackingElement.trackedframes[this.trackingElement.trackedframes.length - 1], states[0].points);
+            result.then((data: any) => {
+                console.log(data);
+            });
+            // EDITED END
 
             this.canvas.dispatchEvent(new CustomEvent('canvas.trackingdone', {
                 bubbles: false,

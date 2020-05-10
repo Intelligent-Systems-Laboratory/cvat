@@ -206,8 +206,8 @@
                     authenticationResponse = await Axios.post(
                         `${config.backendAPI}/auth/login`,
                         authenticationData, {
-                            proxy: config.proxy,
-                        },
+                        proxy: config.proxy,
+                    },
                     );
                 } catch (errorData) {
                     throw generateError(errorData);
@@ -687,6 +687,36 @@
             }
             // EDITED END
 
+            // EDITED FOR TRACKING
+            async function tracking(id, objectID, frameStart, frameEnd, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
+                const { backendAPI } = config;
+                const x1 = Math.trunc(points[0])
+                const y1 = Math.trunc(points[1])
+                const x2 = Math.trunc(points[2])
+                const y2 = Math.trunc(points[3])
+
+                let response = null;
+                try {
+                    response = await Axios.get(`${backendAPI}/tasks/${id}/tracking`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                        params: {
+                            objectID: objectID,
+                            frameStart: frameStart,
+                            frameEnd: frameEnd,
+                            x1: x1,
+                            y1: y1,
+                            x2: x2,
+                            y2: y2,
+                        }
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+
+                return response.data;
+            }
+            // EDITED END
+
             Object.defineProperties(this, Object.freeze({
                 server: {
                     value: Object.freeze({
@@ -712,6 +742,7 @@
                         deleteTask,
                         exportDataset,
                         autoSnap,           /*EDITED FOR INTEGRATION*/
+                        tracking,           /*EDITED FOR TRACKING*/
                     }),
                     writable: false,
                 },

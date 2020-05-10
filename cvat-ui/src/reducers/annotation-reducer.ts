@@ -34,7 +34,7 @@ const defaultState: AnnotationState = {
             visible: false,
             left: 0,
             top: 0,
-            pointID: null,
+            objectID: null,
         },
         // EDITED END
         instance: new Canvas(),
@@ -121,7 +121,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 visible,
                 left,
                 top,
-                pointID,
+                objectID,
             } = action.payload;
 
             return {
@@ -133,7 +133,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                         visible,
                         left,
                         top,
-                        pointID,
+                        objectID,
                     },
                 },
             };

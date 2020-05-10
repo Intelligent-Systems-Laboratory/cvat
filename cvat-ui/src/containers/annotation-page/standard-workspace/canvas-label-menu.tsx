@@ -7,6 +7,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { CombinedState } from 'reducers/interfaces';
 
+import {
+    updateAnnotationsAsync,
+} from 'actions/annotation-actions';
+
+import { LogType } from 'cvat-logger';
+
 import CanvasLabelMenuComponent from 'components/annotation-page/standard-workspace/canvas-label-menu';
 
 interface StateToProps {
@@ -14,25 +20,63 @@ interface StateToProps {
     visible: boolean;
     top: number;
     left: number;
+    
+    objectID: number | null;
     // collapsed: boolean | undefined;
+
+
+    objectState: any;
+    labels: any[];
+    attributes: any[];
+    // attributes: Record<number, any[]>;
+    jobInstance: any;
+}
+
+interface DispatchToProps {
+    updateState(objectState: any): void;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
+        // annotation: {
+        //     annotations: {
+        //         activatedStateID,
+        //         // collapsed,
+        //     },
+        //     canvas: {
+        //         labelMenu: {
+        //             visible,
+        //             top,
+        //             left,
+        //         },
+        //     },
+        // },
+
         annotation: {
             annotations: {
+                states,
                 activatedStateID,
-                // collapsed,
+            },
+            job: {
+                attributes: jobAttributes,
+                instance: jobInstance,
+                labels,
             },
             canvas: {
                 labelMenu: {
                     visible,
                     top,
                     left,
+                    objectID,
                 },
             },
         },
     } = state;
+
+    const index = states
+        .map((_state: any): number => _state.clientID)
+        .indexOf(objectID !== null ? objectID : 0);
+
 
     return {
         activatedStateID,
@@ -40,10 +84,25 @@ function mapStateToProps(state: CombinedState): StateToProps {
         visible,
         left,
         top,
+        objectID,
+
+        objectState: objectID !== null ? states[index] : null,
+        labels,
+        attributes: objectID !== null ? jobAttributes[states[index].label.id] : [],
+        // attributes: jobAttributes,
+        jobInstance,
     };
 }
 
-type Props = StateToProps;
+function mapDispatchToProps(dispatch: any): DispatchToProps {
+    return {
+        updateState(state: any): void {
+            dispatch(updateAnnotationsAsync([state]));
+        },
+    }
+}
+
+type Props = StateToProps & DispatchToProps;
 
 interface State {
     latestLeft: number;
@@ -170,15 +229,61 @@ class CanvasLabelMenuContainer extends React.PureComponent<Props, State> {
         }
     }
 
+    private changeLabel = (labelID: string): void => {
+        const {
+            objectState,
+            labels,
+        } = this.props;
+
+        const [label] = labels.filter((_label: any): boolean => _label.id === +labelID);
+        objectState.label = label;
+        this.commit();
+    };
+
+    private changeAttribute = (id: number, value: string): void => {
+        const { objectState, jobInstance } = this.props;
+        jobInstance.logger.log(LogType.changeAttribute, {
+            id,
+            value,
+            object_id: objectState.clientID,
+        });
+        const attr: Record<number, string> = {};
+        attr[id] = value;
+        objectState.attributes = attr;
+        this.commit();
+    };
+
+    private commit(): void {
+        const {
+            objectState,
+            updateState,
+        } = this.props;
+
+        updateState(objectState);
+    }
+
     public render(): JSX.Element {
         const {
             left,
             top,
         } = this.state;
 
+        // const {
+        //     visible,
+        //     activatedStateID,
+        // } = this.props;
+
         const {
-            visible,
             activatedStateID,
+            visible,
+            
+            objectID,
+        
+        
+            objectState,
+            labels,
+            attributes,
+            jobInstance,
         } = this.props;
 
         return (
@@ -188,6 +293,12 @@ class CanvasLabelMenuContainer extends React.PureComponent<Props, State> {
                     top={top}
                     visible={visible}
                     activatedStateID={activatedStateID}
+                    objectState={objectState}
+                    labels={labels}
+                    attributes={attributes}
+                    objectID={objectID}
+                    changeAttribute={this.changeAttribute}
+                    changeLabel={this.changeLabel}
                 />
                 )
             </>
@@ -197,4 +308,5 @@ class CanvasLabelMenuContainer extends React.PureComponent<Props, State> {
 
 export default connect(
     mapStateToProps,
+    mapDispatchToProps,
 )(CanvasLabelMenuContainer);

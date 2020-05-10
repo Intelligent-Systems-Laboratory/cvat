@@ -99,8 +99,10 @@ interface Props {
     trackedStateID: number | null;
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     // EDITED END
+    // EDITED FOR LABEL MENU
     onUpdateLabelMenu(visible: boolean, left: number, top: number,
-        pointID?: number): void;// EDITED FOR LABEL MENU
+        objectID?: number): void; 
+    // EDITED END
     onSwitchAutomaticBordering(enabled: boolean): void;
 }
 

@@ -312,7 +312,7 @@ export interface AnnotationState {
             visible: boolean;
             top: number;
             left: number;
-            pointID: number | null;
+            objectID: number | null;
         }
         // EDITED END
         contextMenu: {

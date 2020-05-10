@@ -196,7 +196,7 @@ export function updateCanvasLabelMenu(
     visible: boolean,
     left: number,
     top: number,
-    pointID: number | null = null,
+    objectID: number | null = null,
 ): AnyAction {
     
     return {
@@ -205,7 +205,7 @@ export function updateCanvasLabelMenu(
             visible,
             left,
             top,
-            pointID,
+            objectID,
         },
     };
 }

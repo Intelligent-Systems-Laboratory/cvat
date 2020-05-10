@@ -124,7 +124,7 @@ interface DispatchToProps {
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // EDITED FOR USER STORY 12/13 // check again later
     onSwitchAutomaticBordering(enabled: boolean): void;
     onUpdateLabelMenu(visible: boolean, left: number, top: number,
-        pointID?: number): void; // EDITED FOR LABEL MENU
+        objectID?: number): void; // EDITED FOR LABEL MENU
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -341,8 +341,8 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(switchAutomaticBordering(enabled));
         },
         // EDITED FOR LABEL MENU
-        onUpdateLabelMenu(visible: boolean, left: number, top: number, pointID?: number): void {
-            dispatch(updateCanvasLabelMenu(visible, left, top, pointID));
+        onUpdateLabelMenu(visible: boolean, left: number, top: number, objectID?: number): void {
+            dispatch(updateCanvasLabelMenu(visible, left, top, objectID));
         },
         // EDITED END
     };

@@ -283,7 +283,6 @@ class CanvasLabelMenuContainer extends React.PureComponent<Props, State> {
             objectState,
             labels,
             attributes,
-            jobInstance,
         } = this.props;
 
         return (

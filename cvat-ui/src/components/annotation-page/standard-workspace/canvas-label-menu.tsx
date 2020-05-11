@@ -109,7 +109,7 @@ export default function CanvasLabelMenu(props: Props): JSX.Element | null {
                     </Row>
                 ))
                 }
-            <ObjectItemContainer clientID={activatedStateID} />
+            {/* <ObjectItemContainer clientID={activatedStateID} /> */}
         </div>,
         window.document.body,
     );

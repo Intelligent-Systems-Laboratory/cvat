@@ -1410,40 +1410,40 @@
         return result;
     },
 
-        Task.prototype.annotations.snap = async function (objectID, frameNum, points) {
-            const result = await serverProxy.tasks.autoSnap(this.id, objectID, frameNum, points)
-            return result;
-        },
-        // EDITED END
+    Task.prototype.annotations.snap = async function (objectID, frameNum, points) {
+        const result = await serverProxy.tasks.autoSnap(this.id, objectID, frameNum, points)
+        return result;
+    },
+    // EDITED END
 
-        // EDITED FOR TRACKING 
-        Job.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
-            const result = await serverProxy.tasks.tracking(2, objectID, frameStart, frameEnd, points)
-            return result;
-        },
+    // EDITED FOR TRACKING 
+    Job.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
+        const result = await serverProxy.tasks.tracking(this.task.id, objectID, frameStart, frameEnd, points)
+        return result;
+    },
 
-        Task.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
-            const result = await serverProxy.tasks.tracking(2, objectID, frameStart, frameEnd, points)
-            return result;
-        },
-        // EDITED END
+    Task.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
+        const result = await serverProxy.tasks.tracking(this.id, objectID, frameStart, frameEnd, points)
+        return result;
+    },
+    // EDITED END
 
-        Job.prototype.save.implementation = async function () {
-            // TODO: Add ability to change an assignee
-            if (this.id) {
-                const jobData = {
-                    status: this.status,
-                    assignee: this.assignee ? this.assignee.id : null,
-                };
+    Job.prototype.save.implementation = async function () {
+        // TODO: Add ability to change an assignee
+        if (this.id) {
+            const jobData = {
+                status: this.status,
+                assignee: this.assignee ? this.assignee.id : null,
+            };
 
-                await serverProxy.jobs.saveJob(this.id, jobData);
-                return this;
-            }
+            await serverProxy.jobs.saveJob(this.id, jobData);
+            return this;
+        }
 
-            throw new ArgumentError(
-                'Can not save job without and id',
-            );
-        };
+        throw new ArgumentError(
+            'Can not save job without and id',
+        );
+    };
 
     Job.prototype.frames.get.implementation = async function (frame, isPlaying, step) {
         if (!Number.isInteger(frame) || frame < 0) {

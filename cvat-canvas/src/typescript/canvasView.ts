@@ -861,6 +861,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
         });
 
+        // EDITED START for window resize bug fix
+        window.addEventListener('resize', (event): void => {
+            console.log('Resizing browser...');
+            this.magnifyingGlassContainer.classList.add('cvat_canvas_hidden');
+        });
+       //EDITED END
+
         this.content.addEventListener('wheel', (event): void => {
             // EDITED START FOR MAGNIFYING GLASS
             if (this.mode == Mode.RESIZE) {

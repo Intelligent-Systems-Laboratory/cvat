@@ -398,16 +398,6 @@ function ObjectItemInitialComponent(props: Props): JSX.Element {
                 labels={labels}
                 changeLabel={changeLabel}
             />
-            {!!attributes.length
-                && (
-                    <ItemAttributes
-                        collapsed={collapsed}
-                        attributes={attributes}
-                        values={attrValues}
-                        collapse={collapse}
-                        changeAttribute={changeAttribute}
-                    />
-                )}
         </div>
     );
 }

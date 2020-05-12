@@ -30,9 +30,9 @@
                     // EDITED END
 
                     // EDITED FOR TRACKING
-                    async tracking(objectID, frameNum, points) {
+                    async tracking(objectID, frameStart, frameEnd, points) {
                         const result = await PluginRegistry
-                            .apiWrapper.call(this, prototype.annotations.tracking, objectID, frameNum, points);
+                            .apiWrapper.call(this, prototype.annotations.tracking, objectID, frameStart, frameEnd, points);
                         return result;
                     },
                     // EDITED END
@@ -1418,7 +1418,7 @@
 
     // EDITED FOR TRACKING 
     Job.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
-        const result = await serverProxy.tasks.tracking(this.task.id, objectID, frameStart, frameEnd, points)
+        const result = await serverProxy.tasks.tracking(2, objectID, frameStart, frameEnd, points)
         return result;
     },
 

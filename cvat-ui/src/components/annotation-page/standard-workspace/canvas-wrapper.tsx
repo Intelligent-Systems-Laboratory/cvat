@@ -315,6 +315,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         const {
             onSwitchTracking,
             onUpdateAnnotations,
+            annotations,
         } = this.props
 
         onUpdateAnnotations(event.detail.states);
@@ -380,6 +381,34 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         result.then((data: any) => {
             state.points = data.points;
             onUpdateAnnotations([state]);
+            // this.csrtTrack()
+        });
+    }
+    // EDITED END
+
+    // EDITED FOR TRACKING
+    private csrtTrack = async (): Promise<any> => {
+        const {
+            jobInstance,
+            frame,
+            annotations,
+            onUpdateAnnotations,
+        } = this.props;
+
+        var trackerState = new Array()
+        const state = annotations[annotations.length - 1];
+        let result = jobInstance.annotations.tracking(state.clientID, frame, frame + 10, state.points);
+        result.then((data: any) => {
+            console.log(data);
+            for (let i = 0; i < 10; i++) {
+                state.frame = frame + i;
+                state.points = data.tracker_coords[i];
+                trackerState.push(state)
+                console.log(trackerState[i].frame);
+                console.log(trackerState[i].points);
+            }
+            console.log(trackerState);
+            onUpdateAnnotations([trackerState]);
         });
     }
     // EDITED END

@@ -83,12 +83,16 @@ const defaultState: AnnotationState = {
             cur: 0,
         },
     },
+    // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+    autoSnapObjects: [],
+    // EDITED END
     // EDITED FOR USER STORY 12/13
     trackobject: {
         tracking: false,
         trackedStateID: null,
     },
     // EDITED END
+    // EDITED FOR LOADING ANIMATION WHILE SNAPPING
     propagate: {
         objectState: null,
         frames: 50,
@@ -107,6 +111,30 @@ const defaultState: AnnotationState = {
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+        case AnnotationActionTypes.START_AUTO_SNAP: {
+            const { clientID } = action.payload;
+
+            const newAutoSnapObjects = [...state.autoSnapObjects];
+            newAutoSnapObjects.push(clientID);
+            console.log(newAutoSnapObjects);
+            return {
+                ...state,
+                autoSnapObjects: newAutoSnapObjects,
+            };
+        }
+        case AnnotationActionTypes.STOP_AUTO_SNAP: {
+            const { clientID } = action.payload;
+
+            const newAutoSnapObjects = [...state.autoSnapObjects];
+            newAutoSnapObjects.splice(state.autoSnapObjects.indexOf(clientID), 1);
+            console.log(newAutoSnapObjects);
+            return {
+                ...state,
+                autoSnapObjects: newAutoSnapObjects,
+            };
+        }
+        // EDITED END
         // EDITED FOR USER STORY 12/13
         case AnnotationActionTypes.SWITCH_TRACKING: {
             const { tracking, trackedStateID } = action.payload;

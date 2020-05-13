@@ -188,6 +188,10 @@ export enum AnnotationActionTypes {
     SAVE_LOGS_SUCCESS = 'SAVE_LOGS_SUCCESS',
     SAVE_LOGS_FAILED = 'SAVE_LOGS_FAILED',
     SWITCH_TRACKING = 'SWITCH_TRACKING', // EDITED FOR USER STORY 12/13 
+    // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+    START_AUTO_SNAP = 'START_AUTO_SNAP',
+    STOP_AUTO_SNAP = 'STOP_AUTO_SNAP',
+    // EDITED END
 }
 
 // EDITED FOR USER STORY 12/13
@@ -207,12 +211,31 @@ export function autoSnap(jobInstance: any, stateToSnap: any, frame: number): Any
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const state = stateToSnap;
+            dispatch({
+                type: AnnotationActionTypes.START_AUTO_SNAP,
+                payload: {
+                    clientID: state.clientID,
+                },
+            });
             jobInstance.annotations.snap(state.clientID, frame, state.points).then((data: any) => {
                 stateToSnap.points = data.points;
                 dispatch(updateAnnotationsAsync([stateToSnap]));
+                dispatch({
+                    type: AnnotationActionTypes.STOP_AUTO_SNAP,
+                    payload: {
+                        clientID: state.clientID,
+                    },
+                });
             });
         } catch (error) {
             console.log('Error Occured While Snapping', error);
+            const state = stateToSnap;
+            dispatch({
+                type: AnnotationActionTypes.STOP_AUTO_SNAP,
+                payload: {
+                    clientID: state.clientID,
+                },
+            });
         }
     };
 }

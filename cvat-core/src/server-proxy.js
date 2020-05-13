@@ -680,9 +680,12 @@
                         }
                     });
                 } catch (errorData) {
-                    throw generateError(errorData);
+                    // throw generateError(errorData);
+                    console.log('Error receiving snapped coordinates, returning 0');
+                    return {
+                        points: [0, 0, 0, 0],
+                    };
                 }
-
                 return response.data;
             }
             // EDITED END

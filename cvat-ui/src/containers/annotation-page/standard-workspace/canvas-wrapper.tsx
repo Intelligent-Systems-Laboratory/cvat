@@ -92,6 +92,7 @@ interface StateToProps {
     tracking: boolean;
     trackedStateID: number | null;
     // EDITED END
+    autoSnapObjects: any[]; // EDITED FOR LOADING ANIMATION WHILE SNAPPING
 }
 
 interface DispatchToProps {
@@ -169,6 +170,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 trackedStateID,
             },
             // EDITED END
+            autoSnapObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
             sidebarCollapsed,
             workspace,
         },
@@ -242,6 +244,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         tracking,
         trackedStateID,
         // EDITED END
+        autoSnapObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
         switchableAutomaticBordering: activeControl === ActiveControl.DRAW_POLYGON
             || activeControl === ActiveControl.DRAW_POLYLINE
             || activeControl === ActiveControl.EDIT,

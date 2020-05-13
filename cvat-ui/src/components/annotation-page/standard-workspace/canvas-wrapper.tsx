@@ -99,6 +99,7 @@ interface Props {
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     // EDITED END
     onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void; // EDITED FOR AUTOSNAP
+    autoSnapObjects: any[]; // EDITED FOR LOADING ANIMATION WHILE SNAPPING
     onSwitchAutomaticBordering(enabled: boolean): void;
 }
 
@@ -157,6 +158,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             trackedStateID,
             // EDITED END
             automaticBordering,
+            autoSnapObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
         } = this.props;
 
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
@@ -255,6 +257,16 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // EDITED END
 
         const loadingAnimation = window.document.getElementById('cvat_canvas_loading_animation');
+        // EDITED START FOR LOADING ANIMATION WHILE SNAPPING
+        if (loadingAnimation && autoSnapObjects !== prevProps.autoSnapObjects) {
+            if (autoSnapObjects.length > 0 && prevProps.autoSnapObjects.length == 0) {
+                loadingAnimation.classList.remove('cvat_canvas_hidden');
+            } else if (autoSnapObjects.length == 0) {
+                loadingAnimation.classList.add('cvat_canvas_hidden');
+            }
+        }
+        // EDITED END
+
         if (loadingAnimation && frameFetching !== prevProps.frameFetching) {
             if (frameFetching) {
                 loadingAnimation.classList.remove('cvat_canvas_hidden');

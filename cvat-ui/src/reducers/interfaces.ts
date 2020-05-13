@@ -389,6 +389,9 @@ export interface AnnotationState {
         trackedStateID: number | null;
     }
     // EDITED END
+    // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+    autoSnapObjects: any[];
+    // EDITED END
 }
 
 export enum Workspace {

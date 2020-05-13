@@ -26,7 +26,8 @@ import consts from 'consts';
 
 
 const cvat = getCore();
-var finishedSnapping = false; // EDITED FOR User story 2
+var snapping = false; // EDITED FOR User story 2
+
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
 
@@ -221,11 +222,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // EDITED START for USER STORY 2
             if (annotations.length > prevProps.annotations.length) {
                 this.contextMenuOnDraw()
-                finishedSnapping = true;
+                snapping = true;
             }
             else {
-                if (finishedSnapping) {
-                    finishedSnapping = false;
+                if (snapping) {
+                    snapping = false;
                 }
                 else {
                     this.removeContextMenu()
@@ -352,36 +353,44 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     // EDITED START FOR INTEGRATION OF AUTOSNAP
     private onShapedblClicked = (e: any): void => {
         const {
-            jobInstance,
-            frame,
             annotations,
-            onUpdateAnnotations,
         } = this.props
         const { clientID } = e.detail.state;
 
         const [state] = annotations.filter((el: any) => (el.clientID === clientID))
-
-        let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
-        result.then((data: any) => {
-            state.points = data.points;
-            onUpdateAnnotations([state]);
-        });
+        this.snapHelper(state);
+        
     };
 
     private autoSnap = async (): Promise<any> => {
         const {
-            jobInstance,
-            frame,
             annotations,
-            onUpdateAnnotations,
         } = this.props;
 
         const state = annotations[annotations.length - 1];
+        this.snapHelper(state);
+        
+    }
+    private snapHelper = async (state:any): Promise<any> => {
+        const {
+            jobInstance,
+            frame,
+            onUpdateAnnotations,
+        } = this.props;
         let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
+        snapping = true;
+        const loadingAnimation = window.document.getElementById('cvat_canvas_loading_animation');
+        if (loadingAnimation) {
+            loadingAnimation.classList.remove('cvat_canvas_hidden');
+        }
         result.then((data: any) => {
             state.points = data.points;
             onUpdateAnnotations([state]);
             // this.csrtTrack()
+            snapping = false;
+            if(loadingAnimation){
+                loadingAnimation.classList.add('cvat_canvas_hidden');
+            }
         });
     }
     // EDITED END
@@ -532,7 +541,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
     // EDITED START for issue #8 fix
     private onCanvasShapeResized = (e: any): void => {
-        if (!finishedSnapping) {
+        if (!snapping) {
             //pass
         } else {
             const { jobInstance } = this.props;

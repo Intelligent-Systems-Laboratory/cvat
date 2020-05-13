@@ -22,7 +22,7 @@ def track(frameList, initBB):
             # check to see if the tracking was a success
             if success:
                 (x, y, w, h) = [int(v) for v in box]
-                coords.append([x, y, w, h])
+                coords.append([x, y, x + w, y + h])
         
         start = start + 1
     

@@ -450,7 +450,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             orig_img = np.array(img)
             image = orig_img[:, :, ::-1].copy()
             frameList.append(image)
-        data = (xtl, ytl, xbr, ybr)
+        data = (xtl, ytl, xbr-xtl, ybr-ytl)
         results = cvat.apps.engine.tracker.track(frameList, data)
 
 

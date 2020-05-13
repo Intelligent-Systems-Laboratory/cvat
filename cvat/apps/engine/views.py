@@ -56,7 +56,7 @@ from django.utils.decorators import method_decorator
 from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
 from django_filters.rest_framework import DjangoFilterBackend
 
-import cvat.apps.engine.grabcut_improved as grabcut # EDITED for snapping algorithm
+import cvat.apps.engine.grabcut as grabcut # EDITED for snapping algorithm
 from PIL import Image # EDITED for snapping algorithm
 import numpy as np # EDITED for snapping algorithm
 

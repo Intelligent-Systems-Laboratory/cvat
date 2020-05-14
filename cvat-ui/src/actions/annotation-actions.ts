@@ -206,11 +206,8 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
 export function autoSnap(jobInstance: any, stateToSnap: any, frame: number): AnyAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
-            console.log('AutoSnap');
             const state = stateToSnap;
-            console.log(state.points)
             jobInstance.annotations.snap(state.clientID, frame, state.points).then((data: any) => {
-                console.log(data.points)
                 stateToSnap.points = data.points;
                 dispatch(updateAnnotationsAsync([stateToSnap]));
             });

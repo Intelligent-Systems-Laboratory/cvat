@@ -495,17 +495,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         jobInstance.logger.log(LogType.dragObject, { id });
     };
 
-    // EDITED START for issue #8 fix
     private onCanvasShapeResized = (e: any): void => {
-        if (!finishedSnapping) {
-            //pass
-        } else {
-            const { jobInstance } = this.props;
-            const { id } = e.detail;
-            jobInstance.logger.log(LogType.resizeObject, { id });
-        }
+        const { jobInstance } = this.props;
+        const { id } = e.detail;
+        jobInstance.logger.log(LogType.resizeObject, { id });
     };
-    // EDITED END
 
     private onCanvasImageFitted = (): void => {
         const { jobInstance } = this.props;

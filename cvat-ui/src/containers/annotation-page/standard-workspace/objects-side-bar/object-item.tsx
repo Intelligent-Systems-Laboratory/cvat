@@ -408,7 +408,6 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         let result = jobInstance.annotations.snap(objectState.serverID, frameNumber, objectState.points);
         result.then((data: any) => {
             objectState.points = data.points;
-            console.log(data);
             this.commit();
         });
     }

@@ -1144,65 +1144,56 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private trackingMouseClickEventHandler = (event: any): void => {
         if (event.which === 1) {
             const states = this.trackingElement.trackedStates;
-            let result = Job.prototype.annotations.tracking(this.trackingElement.trackID, this.trackingElement.trackedframes[0], this.trackingElement.trackedframes[this.trackingElement.trackedframes.length - 1] + 1, states[0].points);
-            result.then((data: any) => {
-                console.log(data);
-                for (var i = 0; i < this.trackingElement.trackedframes.length; i++) {
-                    if (this.trackingElement.interpolatekeyframes.length != 0) {
-                        let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a - b));
-                        if (!interpolatekeyframes.includes(Math.min(...this.trackingElement.trackedframes))) {
-                            interpolatekeyframes = [Math.min(...this.trackingElement.trackedframes), ...interpolatekeyframes];
-                        }
-                        if (!interpolatekeyframes.includes(Math.max(...this.trackingElement.trackedframes))) {
-                            interpolatekeyframes = [...interpolatekeyframes, Math.max(...this.trackingElement.trackedframes)];
-                        }
-                        let leftframe = null;
-                        let rightframe = null;
-                        for (let k = 0; k < interpolatekeyframes.length; k++) {
-                            if (states[i].frame >= interpolatekeyframes[k]) {
-                                leftframe = interpolatekeyframes[k];
-                            } else if (states[i].frame < interpolatekeyframes[k]) {
-                                rightframe = interpolatekeyframes[k];
-                                break;
-                            }
-                        }
-                        this.trackingElement.trackedwidthheight[i][0] = this.interpolateSize(
-                            states[i].frame,
-                            leftframe,
-                            (leftframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(leftframe)][0] : null,
-                            rightframe,
-                            (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][0] : null,
-                        );
-                        this.trackingElement.trackedwidthheight[i][1] = this.interpolateSize(
-                            states[i].frame,
-                            leftframe,
-                            (leftframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(leftframe)][1] : null,
-                            rightframe,
-                            (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][1] : null,
-                        );
+            for (var i = 0; i < this.trackingElement.trackedframes.length; i++) {
+                if (this.trackingElement.interpolatekeyframes.length != 0) {
+                    let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a - b));
+                    if (!interpolatekeyframes.includes(Math.min(...this.trackingElement.trackedframes))) {
+                        interpolatekeyframes = [Math.min(...this.trackingElement.trackedframes), ...interpolatekeyframes];
                     }
-
-                    // EDITED FOR TRACKING
-                    // states[i].points = [
-                    //     this.trackingElement.trackedcentroids[i][0] - this.trackingElement.trackedwidthheight[i][0] / 2,
-                    //     this.trackingElement.trackedcentroids[i][1] - this.trackingElement.trackedwidthheight[i][1] / 2,
-                    //     this.trackingElement.trackedcentroids[i][0] + this.trackingElement.trackedwidthheight[i][0] / 2,
-                    //     this.trackingElement.trackedcentroids[i][1] + this.trackingElement.trackedwidthheight[i][1] / 2,
-                    // ];
-
-                    console.log(data.tracker_coords[i]);
-                    states[i].points = data.tracker_coords[i];
-                    // EDITED END
+                    if (!interpolatekeyframes.includes(Math.max(...this.trackingElement.trackedframes))) {
+                        interpolatekeyframes = [...interpolatekeyframes, Math.max(...this.trackingElement.trackedframes)];
+                    }
+                    let leftframe = null;
+                    let rightframe = null;
+                    for (let k = 0; k < interpolatekeyframes.length; k++) {
+                        if (states[i].frame >= interpolatekeyframes[k]) {
+                            leftframe = interpolatekeyframes[k];
+                        } else if (states[i].frame < interpolatekeyframes[k]) {
+                            rightframe = interpolatekeyframes[k];
+                            break;
+                        }
+                    }
+                    this.trackingElement.trackedwidthheight[i][0] = this.interpolateSize(
+                        states[i].frame,
+                        leftframe,
+                        (leftframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(leftframe)][0] : null,
+                        rightframe,
+                        (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][0] : null,
+                    );
+                    this.trackingElement.trackedwidthheight[i][1] = this.interpolateSize(
+                        states[i].frame,
+                        leftframe,
+                        (leftframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(leftframe)][1] : null,
+                        rightframe,
+                        (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][1] : null,
+                    );
                 }
 
-                this.canvas.dispatchEvent(new CustomEvent('canvas.trackingdone', {
-                    bubbles: false,
-                    cancelable: true,
-                    detail: {
-                        states,
-                    },
-                }));
-            });
+                states[i].points = [
+                    this.trackingElement.trackedcentroids[i][0] - this.trackingElement.trackedwidthheight[i][0] / 2,
+                    this.trackingElement.trackedcentroids[i][1] - this.trackingElement.trackedwidthheight[i][1] / 2,
+                    this.trackingElement.trackedcentroids[i][0] + this.trackingElement.trackedwidthheight[i][0] / 2,
+                    this.trackingElement.trackedcentroids[i][1] + this.trackingElement.trackedwidthheight[i][1] / 2,
+                ];
+            }
+
+            this.canvas.dispatchEvent(new CustomEvent('canvas.trackingdone', {
+                bubbles: false,
+                cancelable: true,
+                detail: {
+                    states,
+                },
+            }));
         } else if (event.which === 2) {
             this.trackingElement.scalemode = (this.trackingElement.scalemode + 1) % 3;
             if (this.trackingElement.scalemode == 0) {

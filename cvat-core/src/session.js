@@ -1418,7 +1418,7 @@
 
     // EDITED FOR TRACKING 
     Job.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
-        const result = await serverProxy.tasks.tracking(2, objectID, frameStart, frameEnd, points)
+        const result = await serverProxy.tasks.tracking(this.task.id, objectID, frameStart, frameEnd, points)
         return result;
     },
 

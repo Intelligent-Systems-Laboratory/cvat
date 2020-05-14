@@ -317,10 +317,25 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onSwitchTracking,
             onUpdateAnnotations,
             annotations,
+            jobInstance,
         } = this.props
 
-        onUpdateAnnotations(event.detail.states);
-        onSwitchTracking(false, null);
+        let result = jobInstance.annotations.tracking(event.detail.states[0].clientID, event.detail.states[0].frame, event.detail.states[event.detail.states.length - 1].frame + 1, event.detail.states[0].points);
+        const loadingAnimation = window.document.getElementById('cvat_canvas_loading_animation');
+        if (loadingAnimation) {
+            loadingAnimation.classList.remove('cvat_canvas_hidden');
+        }
+        result.then((data: any) => {
+            for (let i = 0; i < event.detail.states.length; i++) {
+                event.detail.states[i].points = data.tracker_coords[i];
+            }
+            onUpdateAnnotations(event.detail.states);
+            onSwitchTracking(false, null);
+            if (loadingAnimation) {
+                loadingAnimation.classList.add('cvat_canvas_hidden');
+            }
+        });
+
     }
     // EDITED END    
 
@@ -359,7 +374,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         const [state] = annotations.filter((el: any) => (el.clientID === clientID))
         this.snapHelper(state);
-        
+
     };
 
     private autoSnap = async (): Promise<any> => {
@@ -369,9 +384,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         const state = annotations[annotations.length - 1];
         this.snapHelper(state);
-        
+
     }
-    private snapHelper = async (state:any): Promise<any> => {
+    private snapHelper = async (state: any): Promise<any> => {
         const {
             jobInstance,
             frame,
@@ -386,38 +401,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         result.then((data: any) => {
             state.points = data.points;
             onUpdateAnnotations([state]);
-            // this.csrtTrack()
             snapping = false;
-            if(loadingAnimation){
+            if (loadingAnimation) {
                 loadingAnimation.classList.add('cvat_canvas_hidden');
             }
-        });
-    }
-    // EDITED END
-
-    // EDITED FOR TRACKING
-    private csrtTrack = async (): Promise<any> => {
-        const {
-            jobInstance,
-            frame,
-            annotations,
-            onUpdateAnnotations,
-        } = this.props;
-
-        var trackerState = new Array()
-        const state = annotations[annotations.length - 1];
-        let result = jobInstance.annotations.tracking(state.clientID, frame, frame + 10, state.points);
-        result.then((data: any) => {
-            console.log(data);
-            for (let i = 0; i < 10; i++) {
-                state.frame = frame + i;
-                state.points = data.tracker_coords[i];
-                trackerState.push(state)
-                console.log(trackerState[i].frame);
-                console.log(trackerState[i].points);
-            }
-            console.log(trackerState);
-            onUpdateAnnotations([trackerState]);
         });
     }
     // EDITED END

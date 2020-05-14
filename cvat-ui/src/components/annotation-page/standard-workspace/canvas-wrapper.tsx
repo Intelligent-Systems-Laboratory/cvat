@@ -221,8 +221,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         if (prevProps.annotations !== annotations || prevProps.frameData !== frameData) {
             this.updateCanvas();
             // EDITED START for USER STORY 2
-            if (annotations.length > prevProps.annotations.length) {
+            if (annotations.length > prevProps.annotations.length && prevProps.frameData === frameData) {
                 this.contextMenuOnDraw()
+                this.autoSnapLastDrawn()
                 finishedSnapping = true;
             }
             else {
@@ -338,7 +339,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         if (el) {
             const rect = el.getBoundingClientRect();
             onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
-            this.autoSnap()
         }
 
     }
@@ -365,7 +365,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         onAutoSnap(jobInstance, state, frame)
     };
 
-    private autoSnap = (): void => {
+    private autoSnapLastDrawn = (): void => {
         const {
             jobInstance,
             frame,

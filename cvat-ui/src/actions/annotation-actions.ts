@@ -202,7 +202,24 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
 }
 // EDITED END
 
-
+// EDITED FOR AUTOSNAP
+export function autoSnap(jobInstance: any, stateToSnap: any, frame: number): AnyAction {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            console.log('AutoSnap');
+            const state = stateToSnap;
+            console.log(state.points)
+            jobInstance.annotations.snap(state.clientID, frame, state.points).then((data: any) => {
+                console.log(data.points)
+                stateToSnap.points = data.points;
+                dispatch(updateAnnotationsAsync([stateToSnap]));
+            });
+        } catch (error) {
+            console.log('Error Occured While Snapping', error);
+        }
+    };
+}
+// EDITED END
 
 export function saveLogsAsync():
     ThunkAction<Promise<void>, {}, {}, AnyAction> {

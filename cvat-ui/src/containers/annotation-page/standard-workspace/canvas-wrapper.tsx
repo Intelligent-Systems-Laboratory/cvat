@@ -27,6 +27,7 @@ import {
     addZLayer,
     switchZLayer,
     switchTracking, // EDITED FOR USER STORY 12/13
+    autoSnap, // EDITED FOR AUTOSNAP
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -120,8 +121,9 @@ interface DispatchToProps {
     onChangeGridOpacity(opacity: number): void;
     onChangeGridColor(color: GridColor): void;
     onSwitchGrid(enabled: boolean): void;
-    onSwitchTracking(tracking: boolean, trackedStateID: number | null); // EDITED FOR USER STORY 12/13 // check again later
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // EDITED FOR USER STORY 12/13
     onSwitchAutomaticBordering(enabled: boolean): void;
+    onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void; // EDITED FOR USER STORY 12/13
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -336,6 +338,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSwitchAutomaticBordering(enabled: boolean): void {
             dispatch(switchAutomaticBordering(enabled));
         },
+        // EDITED FOR USER STORY 12/13
+        onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void {
+            dispatch(autoSnap(jobInstance, stateToSnap, frame));
+        },
+        // EDITED END
     };
 }
 

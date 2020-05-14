@@ -23,6 +23,7 @@ import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas-wrapper';
 import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
+import { autoSnap } from 'actions/annotation-actions';
 
 
 const cvat = getCore();
@@ -99,6 +100,7 @@ interface Props {
     trackedStateID: number | null;
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     // EDITED END
+    onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void; // EDITED FOR AUTOSNAP
     onSwitchAutomaticBordering(enabled: boolean): void;
 }
 
@@ -354,33 +356,25 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             jobInstance,
             frame,
             annotations,
-            onUpdateAnnotations,
+            onAutoSnap,
         } = this.props
         const { clientID } = e.detail.state;
 
         const [state] = annotations.filter((el: any) => (el.clientID === clientID))
 
-        let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
-        result.then((data: any) => {
-            state.points = data.points;
-            onUpdateAnnotations([state]);
-        });
+        onAutoSnap(jobInstance, state, frame)
     };
 
-    private autoSnap = async (): Promise<any> => {
+    private autoSnap = (): void => {
         const {
             jobInstance,
             frame,
             annotations,
-            onUpdateAnnotations,
+            onAutoSnap,
         } = this.props;
 
         const state = annotations[annotations.length - 1];
-        let result = jobInstance.annotations.snap(state.clientID, frame, state.points);
-        result.then((data: any) => {
-            state.points = data.points;
-            onUpdateAnnotations([state]);
-        });
+        onAutoSnap(jobInstance, state, frame);
     }
     // EDITED END
 

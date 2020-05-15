@@ -220,8 +220,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             this.updateCanvas();
             // EDITED START for USER STORY 2
             if (annotations.length > prevProps.annotations.length && prevProps.frameData === frameData) {
-                this.contextMenuOnDraw()
-                this.autoSnapLastDrawn()
+                this.contextMenuOnDraw();
+                this.autoSnap(annotations[annotations.length - 1].clientID);
             }
             // EDITED END
         }
@@ -324,7 +324,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         } = this.props;
         onActivateObject(annotations[annotations.length - 1].clientID);
         const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
-        const state = annotations[annotations.length - 1];
+
         if (el) {
             const rect = el.getBoundingClientRect();
             onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
@@ -343,11 +343,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         const { clientID } = e.detail.state;
 
         const [state] = annotations.filter((el: any) => (el.clientID === clientID))
-
         onAutoSnap(jobInstance, state, frame)
     };
 
-    private autoSnapLastDrawn = (): void => {
+    private autoSnap = (clientID: number): void => {
         const {
             jobInstance,
             frame,
@@ -355,8 +354,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onAutoSnap,
         } = this.props;
 
-        const state = annotations[annotations.length - 1];
-        onAutoSnap(jobInstance, state, frame);
+        const [state] = annotations.filter((el: any) => (el.clientID === clientID));
+        if (state) {
+            onAutoSnap(jobInstance, state, frame);
+        }
     }
     // EDITED END
 
@@ -816,6 +817,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onChangeGridOpacity,
             onSwitchGrid,
             onSwitchAutomaticBordering,
+            activatedStateID, // EDITED FOR AUTOSNAP
         } = this.props;
 
         const preventDefault = (event: KeyboardEvent | undefined): void => {
@@ -916,7 +918,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // EDITED START FOR INTEGRATION OF AUTOSNAP
             AUTOSNAP: (event: KeyboardEvent | undefined) => {
                 preventDefault(event);
-                this.autoSnap();
+                if (activatedStateID){
+                    this.autoSnap(activatedStateID);
+                } 
             },
             // EDITED END
             SWITCH_AUTOMATIC_BORDERING: (event: KeyboardEvent | undefined) => {

@@ -23,11 +23,9 @@ import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas-wrapper';
 import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
-import { autoSnap } from 'actions/annotation-actions';
 
 
 const cvat = getCore();
-var finishedSnapping = false; // EDITED FOR User story 2
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
 
@@ -224,15 +222,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             if (annotations.length > prevProps.annotations.length && prevProps.frameData === frameData) {
                 this.contextMenuOnDraw()
                 this.autoSnapLastDrawn()
-                finishedSnapping = true;
-            }
-            else {
-                if (finishedSnapping) {
-                    finishedSnapping = false;
-                }
-                else {
-                    this.removeContextMenu()
-                }
             }
             // EDITED END
         }
@@ -341,13 +330,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
         }
 
-    }
-
-    private removeContextMenu(): void {
-        const {
-            onUpdateContextMenu,
-        } = this.props;
-        onUpdateContextMenu(false, 10000, 10000, ContextMenuType.CANVAS_SHAPE);
     }
     // EDITED END
     // EDITED START FOR INTEGRATION OF AUTOSNAP
@@ -490,15 +472,23 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasShapeDragged = (e: any): void => {
-        const { jobInstance } = this.props;
+        const { 
+            jobInstance,
+            onUpdateContextMenu, // EDITED REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE 
+        } = this.props;
         const { id } = e.detail;
         jobInstance.logger.log(LogType.dragObject, { id });
+        onUpdateContextMenu(false, 0, 0); // EDITED REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
     };
 
     private onCanvasShapeResized = (e: any): void => {
-        const { jobInstance } = this.props;
+        const { 
+            jobInstance,
+            onUpdateContextMenu, // EDITED REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
+        } = this.props;
         const { id } = e.detail;
         jobInstance.logger.log(LogType.resizeObject, { id });
+        onUpdateContextMenu(false, 0, 0); // EDITED REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
     };
 
     private onCanvasImageFitted = (): void => {

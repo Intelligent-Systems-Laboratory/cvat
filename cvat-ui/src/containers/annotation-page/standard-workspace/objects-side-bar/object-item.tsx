@@ -21,6 +21,7 @@ import {
     activateObject as activateObjectAction,
     propagateObject as propagateObjectAction,
     pasteShapeAsync,
+    autoSnap, // EDITED FOR AUTOSNAP
 } from 'actions/annotation-actions';
 
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
@@ -58,6 +59,7 @@ interface DispatchToProps {
     propagateObject: (objectState: any) => void;
     changeLabelColor(sessionInstance: any, frameNumber: number, label: any, color: string): void;
     changeGroupColor(group: number, color: string): void;
+    onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void; // EDITED FOR AUTOSNAP
 }
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
@@ -163,6 +165,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         changeGroupColor(group: number, color: string): void {
             dispatch(changeGroupColorAsync(group, color));
         },
+        // EDITED FOR AUTOSNAP
+        onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void {
+            dispatch(autoSnap(jobInstance, stateToSnap, frame));
+        },
+        // EDITED END
     };
 }
 
@@ -403,13 +410,10 @@ class ObjectItemContainer extends React.PureComponent<Props> {
             objectState,
             jobInstance,
             frameNumber,
+            onAutoSnap,
         } = this.props;
 
-        let result = jobInstance.annotations.snap(objectState.serverID, frameNumber, objectState.points);
-        result.then((data: any) => {
-            objectState.points = data.points;
-            this.commit();
-        });
+        onAutoSnap(jobInstance, objectState, frameNumber);
     }
     // EDITED END
 

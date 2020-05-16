@@ -120,10 +120,10 @@ function ItemMenu(
             </Menu.Item>
             {/* EDITED FOR INTEGRATION */}
             <Menu.Item>
-                <Tooltip title={`Snap`}>
+                <Tooltip title={`Detects the object and snaps the box around its edges.`}>
                     <Button
                         type='link'
-                        icon='delete'
+                        icon='import'
                         onClick={autoSnap}   
                     >
                         autoSnap

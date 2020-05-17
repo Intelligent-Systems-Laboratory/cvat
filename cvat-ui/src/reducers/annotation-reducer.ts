@@ -117,7 +117,6 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
 
             const newAutoFitObjects = [...state.autoFitObjects];
             newAutoFitObjects.push(clientID);
-            console.log(newAutoFitObjects);
             return {
                 ...state,
                 autoFitObjects: newAutoFitObjects,
@@ -128,7 +127,6 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
 
             const newAutoFitObjects = [...state.autoFitObjects];
             newAutoFitObjects.splice(state.autoFitObjects.indexOf(clientID), 1);
-            console.log(newAutoFitObjects);
             return {
                 ...state,
                 autoFitObjects: newAutoFitObjects,

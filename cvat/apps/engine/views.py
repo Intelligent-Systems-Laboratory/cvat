@@ -410,14 +410,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                 snap_points = data
                 
                 new_coords = {
-                    "task" : pk,
-                    "object" : objectID,
-                    "frame" : frame,
                     "points" : snap_points,
-                    "old_points" : [xtl, ytl, xbr, ybr],
-                    "path" : request.build_absolute_uri(),
-                    "data" : data,
-                    "dimensions" : dim,
                 }
             return Response(new_coords)
         except Exception as e:

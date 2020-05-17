@@ -22,9 +22,9 @@
             annotations: Object.freeze({
                 value: {
                     // ISL AUTOFIT
-                    async autoFit(objectID, frameNum, points) {
+                    async autoFit(frameNum, points) {
                         const result = await PluginRegistry
-                            .apiWrapper.call(this, prototype.annotations.autoFit, objectID, frameNum, points);
+                            .apiWrapper.call(this, prototype.annotations.autoFit, frameNum, points);
                         return result;
                     },
                     // ISL END
@@ -1391,13 +1391,13 @@
     buildDublicatedAPI(Task.prototype);
 
     // ISL AUTOFIT
-    Job.prototype.annotations.autoFit = async function (objectID, frameNum, points) {
-        const result = await serverProxy.tasks.autoFit(this.task.id, objectID, frameNum, points)
+    Job.prototype.annotations.autoFit = async function (frameNum, points) {
+        const result = await serverProxy.tasks.autoFit(this.task.id, frameNum, points)
         return result;
     },
 
-    Task.prototype.annotations.autoFit = async function (objectID, frameNum, points) {
-        const result = await serverProxy.tasks.autoFit(this.id, objectID, frameNum, points)
+    Task.prototype.annotations.autoFit = async function (frameNum, points) {
+        const result = await serverProxy.tasks.autoFit(this.id, frameNum, points)
         return result;
     },
     // ISL END

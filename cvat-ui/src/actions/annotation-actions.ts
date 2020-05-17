@@ -219,7 +219,7 @@ export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAc
                     clientID: state.clientID,
                 },
             });
-            jobInstance.annotations.autoFit(state.clientID, frame, state.points).then((data: any) => {
+            jobInstance.annotations.autoFit(frame, state.points).then((data: any) => {
                 stateToFit.points = data.points;
                 dispatch(updateAnnotationsAsync([stateToFit]));
                 dispatch({

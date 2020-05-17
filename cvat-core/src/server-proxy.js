@@ -659,7 +659,7 @@
             }
 
             // ISL AUTOFIT
-            async function autoFit(id, objectID, frameNumber, points) {
+            async function autoFit(id, frameNumber, points) {
                 const { backendAPI } = config;
                 const x1 = Math.trunc(points[0])
                 const y1 = Math.trunc(points[1])
@@ -671,7 +671,6 @@
                     response = await Axios.get(`${backendAPI}/tasks/${id}/autofit`, {
                         proxy: config.proxy,
                         params: {
-                            objectID: objectID,
                             frameNumber: frameNumber,
                             x1: x1,
                             y1: y1,

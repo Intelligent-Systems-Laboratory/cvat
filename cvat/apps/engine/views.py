@@ -390,7 +390,6 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task')
     @action(detail=True, methods=['GET'])
     def autofit(self, request, pk):
-        objectID = request.query_params.get('objectID', None)
         frame = request.query_params.get('frameNumber', None)
         xtl = int(request.query_params.get('x1', None))
         ytl = int(request.query_params.get('y1', None))

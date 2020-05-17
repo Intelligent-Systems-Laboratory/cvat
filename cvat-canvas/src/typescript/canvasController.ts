@@ -38,7 +38,9 @@ export interface CanvasController {
     disableDrag(): void;
     fit(): void;
 
-    trackingElement: any; // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
+    trackingElement: any; 
+    // END
 }
 
 export class CanvasControllerImpl implements CanvasController {
@@ -150,7 +152,7 @@ export class CanvasControllerImpl implements CanvasController {
         return this.model.mode;
     }
 
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     public set trackingElement(value: any) {
         this.model.trackingElement = value;
     }
@@ -158,5 +160,5 @@ export class CanvasControllerImpl implements CanvasController {
     public get trackingElement(): any {
         return this.model.trackingElement;
     }
-    // EDITED END
+    // ISL END
 }

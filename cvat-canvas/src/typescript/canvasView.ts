@@ -72,22 +72,22 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private activeElement: ActiveElement;
     private configuration: Configuration;
 
-    // EDITED START for USER STORY 1
+    // ISL BACKGROUND FILTER
     private backgroundOriginal: any;
     private backgroundNew: any;
     private lastShapeClicked: number;
-    // EDITED END
+    // ISL END
 
-    // EDITED START FOR MAGNIFYING GLASS
+    // ISL MAGNIFYING GLASS
     private magnifyingGlassContainer: SVGSVGElement;
     private magnifyingGlassForeignObject: SVGForeignObjectElement;
     private magnifyingGlassImage: HTMLCanvasElement;
     private circle: SVGCircleElement;
     private border: SVGCircleElement;
     private magnifyingGlassRadius: number;
-    // EDITED END
+    // ISL END
 
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     public set trackingElement(value: any) {
         this.controller.trackingElement = value;
     }
@@ -95,7 +95,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     public get trackingElement(): any {
         return this.controller.trackingElement;
     }
-    // EDITED END
+    // ISL END
 
     private set mode(value: Mode) {
         this.controller.mode = value;
@@ -333,9 +333,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
             obj.style.transform = `scale(${this.geometry.scale}) rotate(${this.geometry.angle}deg)`;
         }
 
-        // EDITED START FOR MAGNIFYING GLASS
+        // ISL MAGNIFYING GLASS
         this.magnifyingGlassContainer.style.transform = `rotate(${this.geometry.angle}deg)`;
-        // EDITED END
+        // ISL END
 
         // Transform grid
         this.gridPath.setAttribute('stroke-width', `${consts.BASE_GRID_WIDTH / (this.geometry.scale)}px`);
@@ -424,7 +424,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             .filter((id: number): boolean => !newIDs.includes(id))
             .map((id: number): any => this.drawnStates[id]);
 
-        // EDITED START FOR USER STORY 12/13
+        // ISL MANUAL TRACKING
         if (this.trackingElement.enable !== false) {
             if (newIDs.includes(this.trackingElement.trackID)) {
                 const [trackstate] = states.filter((el: any) => (el.clientID === this.trackingElement.trackID));
@@ -488,7 +488,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.trackingElement.index= null;
             }
         }
-        // EDITED END
+        // ISL END
 
         if (deleted.length || updated.length || created.length) {
             if (this.activeElement.clientID !== null) {
@@ -504,12 +504,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.svgShapes[state.clientID].remove();
                 delete this.drawnStates[state.clientID];
 
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 if (state.clientID == this.lastShapeClicked) {
                     this.focusBox(false);
                     this.lastShapeClicked = null;
                 }
-                // EDITED END
+                // ISL END
             }
 
             this.addObjects(created, translate);
@@ -525,9 +525,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
             this.autoborderHandler.updateObjects();
         }
-        // EDITED START for USER STORY 1
+        // ISL BACKGROUND FILTER
         this.focusBox(true);
-        // EDITED END
+        // ISL END
     }
 
     private selectize(value: boolean, shape: SVG.Element): void {
@@ -677,7 +677,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const gridRect: SVGRectElement = window.document
             .createElementNS('http://www.w3.org/2000/svg', 'rect');
 
-        // EDITED START FOR MAGNIFYING GLASS
+        // ISL MAGNIFYING GLASS
         this.magnifyingGlassRadius = 75;
         this.magnifyingGlassContainer = window.document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.magnifyingGlassForeignObject = window.document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -725,7 +725,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.magnifyingGlassContainer.appendChild(this.border);
 
         this.canvas.appendChild(this.magnifyingGlassContainer);
-        // EDITED END
+        // ISL END
 
         // Setup loading animation
         this.loadingAnimation.setAttribute('id', 'cvat_canvas_loading_animation');
@@ -828,12 +828,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 ) {
                     self.controller.enableDrag(event.clientX, event.clientY);
                 }
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 if (this.lastShapeClicked != null) {
                     this.focusBox(false);
                     this.lastShapeClicked = null;
                 }
-                // EDITED END
+                // ISL END
             }
         });
 
@@ -844,7 +844,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         });
 
         this.content.addEventListener('wheel', (event): void => {
-            // EDITED START FOR MAGNIFYING GLASS
+            // ISL MAGNIFYING GLASS
             if (this.mode == Mode.RESIZE) {
                 if (event.deltaY < 0 && this.magnifyingGlassParameters.zoomScale > 30) {
                     this.magnifyingGlassParameters.zoomScale -= 5;
@@ -855,7 +855,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 }
                 return
             }
-            // EDITED END
+            // ISL END
 
             const { offset } = this.controller.geometry;
             const point = translateToSVG(this.content, [event.clientX, event.clientY]);
@@ -870,14 +870,14 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.content.addEventListener('mousemove', (e): void => {
             self.controller.drag(e.clientX, e.clientY);
 
-            // EDITED START MAGNIFYING GLASS
+            // ISL MAGNIFYING GLASS
             this.magnifyingGlassParameters.cursorX = e.clientX;
             this.magnifyingGlassParameters.cursorY = e.clientY;
 
             if (this.mode == Mode.RESIZE) {
                 this.updateMagnifyingGlass();
             }
-            // EDITED END
+            // ISL END
 
             if (this.mode !== Mode.IDLE) return;
             if (e.ctrlKey || e.shiftKey) return;
@@ -885,9 +885,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
             const { offset } = this.controller.geometry;
             const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
 
-            // EDITED START FOR USER STORY 12/13
+            // ISL MANUAL TRACKING
             this.trackingElement.mousecoords = [x - offset, y - offset];
-            // EDITED END
+            // ISL END
 
             const event: CustomEvent = new CustomEvent('canvas.moved', {
                 bubbles: false,
@@ -951,9 +951,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.moveCanvas();
                 this.resizeCanvas();
                 this.transformCanvas();
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 this.getFilteredBG();
-                // EDITED END
+                // ISL END
             }
         } else if (reason === UpdateReasons.FITTED_CANVAS) {
             // Canvas geometry is going to be changed. Old object positions aren't valid any more
@@ -1075,14 +1075,14 @@ export class CanvasViewImpl implements CanvasView, Listener {
             } else if (this.mode === Mode.GROUP) {
                 this.groupHandler.select(this.controller.selected);
             }
-            // EDITED START FOR USER STORY 12/13
+            // ISL MANUAL TRACKING
         } else if (reason === UpdateReasons.SWITCH_TRACKING) {
             if (this.trackingElement.enable) {
                 this.startTracking();
             } else {
                 this.stopTracking();
             }
-            // EDITED END
+            // ISL END
         } else if (reason === UpdateReasons.CANCEL) {
             if (this.mode === Mode.DRAW) {
                 this.drawHandler.cancel();
@@ -1124,7 +1124,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         return this.canvas;
     }
 
-    // EDITED START FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     private interpolateSize = (targetframe: number, leftframe: number | null, leftsize: number, rightframe: number | null, rightsize: number): number => {
         if (leftframe !== null && rightframe !== null) {
             if (leftframe == rightframe) {
@@ -1313,9 +1313,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         this.canvas.style.cursor = '';
     }
-    // EDITED END
+    // ISL END
 
-    // EDITED START FOR MAGNIFYING GLASS
+    // ISL MAGNIFYING GLASS
     private magnifyingGlassParameters = {
         cursorX: 0,
         cursorY: 0,
@@ -1374,9 +1374,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         mgCtx.lineTo(width, height / 2);
         mgCtx.stroke();
     }
-    // EDITED END
+    // ISL END
 
-    // EDITED START for USER STORY 1
+    // ISL BACKGROUND FILTER
     private getFilteredBG(): void {
         var ctx = this.background.getContext("2d");
         this.backgroundOriginal = ctx.getImageData(0, 0, this.background.width, this.background.height);
@@ -1408,7 +1408,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             ctx = null;
         };
     }
-    // EDITED END
+    // ISL END
     private redrawBitmap(): void {
         const width = +this.background.style.width.slice(0, -2);
         const height = +this.background.style.height.slice(0, -2);
@@ -1612,7 +1612,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         },
                     }));
                 });
-                // EDITED FOR INTEGRATION
+                // ISL AUTOFIT
                 this.svgShapes[state.clientID].on('dblclick.canvas', (e: any): void => {
                     e.stopPropagation();
                     this.canvas.dispatchEvent(new CustomEvent('canvas.dblclicked', {
@@ -1623,7 +1623,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         },
                     }));
                 });
-                // EDITED END
+                // ISL END
 
                 if (displayAllText) {
                     this.svgTexts[state.clientID] = this.addText(state);
@@ -1777,22 +1777,22 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.content.append(shape.node);
         }
 
-        // EDITED START for USER STORY 1
+        // ISL BACKGROUND FILTER
         (shape as any).on('click', (): void => {
             if (this.lastShapeClicked != clientID) {
                 this.lastShapeClicked = clientID;
                 this.focusBox(true);
             }
         })
-        // EDITED END
+        // ISL END
 
         if (!state.pinned) {
             shape.addClass('cvat_canvas_shape_draggable');
             (shape as any).draggable().on('dragstart', (): void => {
                 this.mode = Mode.DRAG;
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 this.focusBox(false);
-                // EDITED END
+                // ISL END
                 if (text) {
                     text.addClass('cvat_canvas_hidden');
                 }
@@ -1827,9 +1827,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     }));
                     this.onEditDone(state, points);
                 }
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 this.focusBox(true);
-                // EDITED END
+                // ISL END
             });
         }
 
@@ -1841,9 +1841,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         let resized = false;
         (shape as any).resize().on('resizestart', (): void => {
             this.mode = Mode.RESIZE;
-            // EDITED START for USER STORY 1
+            // ISL BACKGROUND FILTER
             this.focusBox(false);
-            // EDITED END
+            // ISL END
             if (state.shapeType === 'rectangle') {
                 shapeSizeElement = displayShapeSize(this.adoptedContent, this.adoptedText);
             }
@@ -1851,12 +1851,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
             if (text) {
                 text.addClass('cvat_canvas_hidden');
             }
-            // EDITED START FOR MAGNIFYING GLASS
+            // ISL MAGNIFYING GLASS
             this.magnifyingGlassParameters.resizePointID = window.document.getElementsByClassName('cvat_canvas_selected_point')[0].id
             this.magnifyingGlassParameters.resizeRectID = window.document.getElementsByClassName('cvat_canvas_shape_activated')[0].id
             this.magnifyingGlassContainer.classList.remove('cvat_canvas_hidden');
             this.updateMagnifyingGlass()
-            // EDITED END
+            // ISL END
         }).on('resizing', (): void => {
             resized = true;
             if (shapeSizeElement) {
@@ -1896,10 +1896,10 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 }));
                 this.onEditDone(state, points);
             }
-            // EDITED START for USER STORY 1
+            // ISL BACKGROUND FILTER
             this.magnifyingGlassContainer.classList.add('cvat_canvas_hidden');
             this.focusBox(true);
-            // EDITED END
+            // ISL END
         });
 
         this.activeElement = {

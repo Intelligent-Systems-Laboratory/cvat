@@ -22,7 +22,7 @@ import SetupTagControl from './setup-tag-control';
 import MergeControl from './merge-control';
 import GroupControl from './group-control';
 import SplitControl from './split-control';
-import TrackControl from './track-control'; // EDITED FOR User story 12/13
+import TrackControl from './track-control'; // ISL MANUAL TRACKING
 
 interface Props {
     canvasInstance: Canvas;
@@ -37,12 +37,12 @@ interface Props {
     repeatDrawShape(): void;
     pasteShape(): void;
     resetGroup(): void;
-    // EDITED START FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     tracking: boolean;
     switchTrackingShortcut: string;
     activatedStateID: number | null;
-    // EDITED END
+    // ISL END
 }
 
 export default function ControlsSideBarComponent(props: Props): JSX.Element {
@@ -59,11 +59,11 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
         resetGroup,
         normalizedKeyMap,
         keyMap,
-        // EDITED START FOR USER STORY 12/13
+        // ISL MANUAL TRACKING
         onSwitchTracking,
         tracking,
         activatedStateID,
-        // EDITED END
+        // ISL END
     } = props;
 
     const preventDefault = (event: KeyboardEvent | undefined): void => {
@@ -81,7 +81,9 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
         CANCEL: keyMap.CANCEL,
         CLOCKWISE_ROTATION: keyMap.CLOCKWISE_ROTATION,
         ANTICLOCKWISE_ROTATION: keyMap.ANTICLOCKWISE_ROTATION,
-        SWITCH_TRACKING: keyMap.SWITCH_TRACKING, // EDITED FOR User story 12/13
+        // ISL MANUAL TRACKING
+        SWITCH_TRACKING: keyMap.SWITCH_TRACKING, 
+        // ISL END
     };
 
     const handlers = {
@@ -146,7 +148,7 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
             preventDefault(event);
             rotateFrame(Rotation.ANTICLOCKWISE90);
         },
-        // EDITED FOR USER STORY 12/13
+        // ISL MANUAL TRACKING
         SWITCH_TRACKING: (event: KeyboardEvent | undefined) => {
             preventDefault(event);
             if (!tracking && activatedStateID !== null) {
@@ -155,7 +157,7 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
                 onSwitchTracking(false, null);
             }
         }
-        // EDITED END
+        // ISL END
     };
 
     return (
@@ -226,14 +228,14 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
                 activeControl={activeControl}
                 splitTrack={splitTrack}
             />
-            {/* EDITED START FOR USER STORY 12/13 */}
+            {/* ISL MANUAL TRACKING */}
             <TrackControl
                 switchTrackingShortcut={normalizedKeyMap.SWITCH_TRACKING}
                 tracking={tracking}
                 activatedStateID={activatedStateID}
                 onSwitchTracking={onSwitchTracking}
             />
-            {/* EDITED END */}
+            {/* ISL END */}
         </Layout.Sider>
     );
 }

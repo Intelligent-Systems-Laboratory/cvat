@@ -21,13 +21,13 @@
         Object.defineProperties(prototype, {
             annotations: Object.freeze({
                 value: {
-                    // EDITED FOR INTEGRATION
+                    // ISL AUTOFIT
                     async autoFit(objectID, frameNum, points) {
                         const result = await PluginRegistry
                             .apiWrapper.call(this, prototype.annotations.autoFit, objectID, frameNum, points);
                         return result;
                     },
-                    // EDITED END
+                    // ISL END
 
                     async upload(file, loader) {
                         const result = await PluginRegistry
@@ -742,9 +742,9 @@
                 statistics: Object.getPrototypeOf(this).annotations.statistics.bind(this),
                 hasUnsavedChanges: Object.getPrototypeOf(this)
                     .annotations.hasUnsavedChanges.bind(this),
-                // EDITED FOR INTEGRATION
+                // ISL AUTOFIT
                 autoFit: Object.getPrototypeOf(this).annotations.autoFit.bind(this),
-                // EDITED END
+                // ISL END
             };
 
             this.actions = {
@@ -1299,9 +1299,9 @@
                     .annotations.hasUnsavedChanges.bind(this),
                 exportDataset: Object.getPrototypeOf(this)
                     .annotations.exportDataset.bind(this),
-                // EDITED FOR INTEGRATION
+                // ISL AUTOFIT
                 autoFit: Object.getPrototypeOf(this).annotations.autoFit.bind(this),
-                // EDITED END
+                // ISL END
             };
 
             this.actions = {
@@ -1390,7 +1390,7 @@
     buildDublicatedAPI(Job.prototype);
     buildDublicatedAPI(Task.prototype);
 
-    // EDITED FOR INTEGRATION
+    // ISL AUTOFIT
     Job.prototype.annotations.autoFit = async function (objectID, frameNum, points) {
         const result = await serverProxy.tasks.autoFit(this.task.id, objectID, frameNum, points)
         return result;
@@ -1400,7 +1400,7 @@
         const result = await serverProxy.tasks.autoFit(this.id, objectID, frameNum, points)
         return result;
     },
-    // EDITED END
+    // ISL END
 
     Job.prototype.save.implementation = async function () {
         // TODO: Add ability to change an assignee

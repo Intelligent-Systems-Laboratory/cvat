@@ -187,14 +187,16 @@ export enum AnnotationActionTypes {
     CHANGE_WORKSPACE = 'CHANGE_WORKSPACE',
     SAVE_LOGS_SUCCESS = 'SAVE_LOGS_SUCCESS',
     SAVE_LOGS_FAILED = 'SAVE_LOGS_FAILED',
-    SWITCH_TRACKING = 'SWITCH_TRACKING', // EDITED FOR USER STORY 12/13 
-    // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+    // ISL MANUAL TRACKING
+    SWITCH_TRACKING = 'SWITCH_TRACKING', 
+    // ISL END
+    // ISL AUTOFIT
     START_AUTO_FIT = 'START_AUTO_FIT',
     STOP_AUTO_FIT = 'STOP_AUTO_FIT',
-    // EDITED END
+    // ISL END
 }
 
-// EDITED FOR USER STORY 12/13
+// ISL MANUAL TRACKING
 export function switchTracking(tracking: boolean, trackedStateID: number | null): AnyAction {
     return {
         type: AnnotationActionTypes.SWITCH_TRACKING,
@@ -204,9 +206,9 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
         },
     };
 }
-// EDITED END
+// ISL END
 
-// EDITED FOR AUTOSNAP
+// ISL AUTOFIT
 export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
@@ -239,7 +241,7 @@ export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAc
         }
     };
 }
-// EDITED END
+// ISL END
 
 export function saveLogsAsync():
     ThunkAction<Promise<void>, {}, {}, AnyAction> {

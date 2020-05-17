@@ -21,7 +21,7 @@ import {
     activateObject as activateObjectAction,
     propagateObject as propagateObjectAction,
     pasteShapeAsync,
-    autoFit, // EDITED FOR AUTOSNAP
+    autoFit, // ISL AUTOFIT
 } from 'actions/annotation-actions';
 
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
@@ -59,7 +59,7 @@ interface DispatchToProps {
     propagateObject: (objectState: any) => void;
     changeLabelColor(sessionInstance: any, frameNumber: number, label: any, color: string): void;
     changeGroupColor(group: number, color: string): void;
-    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // EDITED FOR AUTOSNAP
+    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
 }
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
@@ -165,11 +165,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         changeGroupColor(group: number, color: string): void {
             dispatch(changeGroupColorAsync(group, color));
         },
-        // EDITED FOR AUTOSNAP
+        // ISL AUTOFIT
         onAutoFit(jobInstance: any, stateToFit: any, frame: number): void {
             dispatch(autoFit(jobInstance, stateToFit, frame));
         },
-        // EDITED END
+        // ISL END
     };
 }
 
@@ -404,7 +404,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
-    // EDITED FOR INTEGRATION
+    // ISL AUTOFIT
     private autoFit = (): void => {
         const {
             objectState,
@@ -415,7 +415,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
 
         onAutoFit(jobInstance, objectState, frameNumber);
     }
-    // EDITED END
+    // ISL END
 
     private changeFrame(frame: number): void {
         const { changeFrame, canvasInstance } = this.props;
@@ -527,9 +527,9 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 changeLabel={this.changeLabel}
                 changeAttribute={this.changeAttribute}
                 collapse={this.collapse}
-                // EDITED FOR INTEGRATION
+                // ISL AUTOFIT
                 autoFit={this.autoFit}
-            // EDITED END
+                // ISL END
             />
         );
     }

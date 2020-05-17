@@ -83,16 +83,15 @@ const defaultState: AnnotationState = {
             cur: 0,
         },
     },
-    // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+    // ISL AUTOFIT
     autoFitObjects: [],
-    // EDITED END
-    // EDITED FOR USER STORY 12/13
+    // ISL END
+    // ISL MANUAL TRACKING
     trackobject: {
         tracking: false,
         trackedStateID: null,
     },
-    // EDITED END
-    // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+    // ISL END
     propagate: {
         objectState: null,
         frames: 50,
@@ -111,7 +110,7 @@ const defaultState: AnnotationState = {
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
-        // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+        // ISL AUTOFIT
         case AnnotationActionTypes.START_AUTO_FIT: {
             const { clientID } = action.payload;
 
@@ -132,8 +131,8 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 autoFitObjects: newAutoFitObjects,
             };
         }
-        // EDITED END
-        // EDITED FOR USER STORY 12/13
+        // ISL END
+        // ISL MANUAL TRACKING
         case AnnotationActionTypes.SWITCH_TRACKING: {
             const { tracking, trackedStateID } = action.payload;
 
@@ -146,7 +145,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 }
             };
         }
-        // EDITED END
+        // ISL END
         case AnnotationActionTypes.GET_JOB: {
             return {
                 ...state,

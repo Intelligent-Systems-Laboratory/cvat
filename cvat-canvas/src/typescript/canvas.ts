@@ -56,9 +56,9 @@ interface Canvas {
 
     mode(): Mode;
     cancel(): void;
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     trackObject(enable: boolean, objectID: number | null): void;
-    // EDITED END
+    // END
     configure(configuration: Configuration): void;
 }
 
@@ -77,11 +77,11 @@ class CanvasImpl implements Canvas {
         return this.view.html();
     }
 
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     public trackObject(enable: boolean, objectID: number | null): void {
         this.model.trackObject(enable, objectID);
     }
-    // EDITED END
+    // ISL END
 
     public setZLayer(zLayer: number | null): void {
         this.model.setZLayer(zLayer);

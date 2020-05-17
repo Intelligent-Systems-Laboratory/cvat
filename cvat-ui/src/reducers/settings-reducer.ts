@@ -20,7 +20,7 @@ const defaultState: SettingsState = {
     shapes: {
         colorBy: ColorBy.INSTANCE,
         opacity: 3,
-        selectedOpacity: 0,   // EDITED FROM 30 for USER STORY 1
+        selectedOpacity: 0,   // ISL BACKGROUND FILTER changed from 30
         blackBorders: false,
         showBitmap: false,
     },

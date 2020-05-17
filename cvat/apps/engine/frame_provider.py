@@ -141,7 +141,7 @@ class FrameProvider:
                 else:
                     raise Exception('unsupported output type')
     
-    # EDITED START FOR INTEGRATION
+    # ISL AUTOFIT
     def _get_frame_snap(self, frame_number, chunk_path_getter, extracted_chunk, chunk_reader, reader_class):
         _, chunk_number, frame_offset = self._validate_frame_number(frame_number)
         chunk_path = chunk_path_getter(chunk_number)
@@ -155,7 +155,7 @@ class FrameProvider:
             return (pil_img, 'image/png')
 
         return (frame, mimetypes.guess_type(frame_name))
-    # EDITED END FOR INTEGRATION
+    # ISL END
     
     def _convert_frame(self, frame, reader_class, out_type):
         if out_type == self.Type.BUFFER:
@@ -196,7 +196,7 @@ class FrameProvider:
         for idx in range(self._db_data.size):
             yield self.get_frame(idx, quality=quality, out_type=out_type)
 
-    # EDITED START FOR INTEGRATION
+    # ISL AUTOFIT
     def get_frame_snap(self, frame_number, quality=Quality.ORIGINAL):
         if quality == self.Quality.ORIGINAL:
             return self._get_frame_snap(
@@ -214,6 +214,6 @@ class FrameProvider:
                 chunk_reader=self._compressed_chunk_reader,
                 reader_class=self._compressed_chunk_reader_class,
             )
-    # EDITED END FOR INTEGRATION
+    # ISL END
     
 

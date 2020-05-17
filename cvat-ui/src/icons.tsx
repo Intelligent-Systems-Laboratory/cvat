@@ -39,7 +39,7 @@ import SVGObjectOutsideIcon from './assets/object-outside-icon.svg';
 import SVGObjectInsideIcon from './assets/object-inside-icon.svg';
 import SVGBackgroundIcon from './assets/background-icon.svg';
 import SVGForegroundIcon from './assets/foreground-icon.svg';
-import SVGTrackIcon from './assets/track-icon.svg' // EDITED FOR TRACKING
+import SVGTrackIcon from './assets/track-icon.svg' // ISL MANUAL TRACKING
 
 export const CVATLogo = React.memo(
     (): JSX.Element => <SVGCVATLogo />,
@@ -146,8 +146,8 @@ export const BackgroundIcon = React.memo(
 export const ForegroundIcon = React.memo(
     (): JSX.Element => <SVGForegroundIcon />,
 );
-// EDITED FOR User story 12/13
+// ISL MANUAL TRACKING
 export const TrackIcon = React.memo(
     (): JSX.Element => <SVGTrackIcon />,
 );
-// EDITED END
+// ISL END

@@ -108,7 +108,9 @@ export enum UpdateReasons {
     DRAG_CANVAS = 'drag_canvas',
     ZOOM_CANVAS = 'zoom_canvas',
     CONFIG_UPDATED = 'config_updated',
-    SWITCH_TRACKING = 'SWITCH_TRACKING', // EDITED START FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
+    SWITCH_TRACKING = 'SWITCH_TRACKING', 
+    // ISL END
 }
 
 export enum Mode {
@@ -167,10 +169,10 @@ export interface CanvasModel {
     cancel(): void;
 
 
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     trackObject(enable: boolean, trackedStateID: number | null): void;
     trackingElement: any;
-    // EDITED END
+    // ISL END
 }
 
 export class CanvasModelImpl extends MasterImpl implements CanvasModel {
@@ -197,7 +199,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
         splitData: SplitData;
         selected: any;
         mode: Mode;
-        // EDITED START FOR USER STORY 12/13
+        // ISL MANUAL TRACKING
         trackingElement: {
             enable: boolean;
             trackID: number | null;
@@ -211,7 +213,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
             trackedwidthheight: any[];
             interpolatekeyframes: any[];
         }
-        // EDITED END
+        // ISL END
     };
 
     public constructor() {
@@ -269,7 +271,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
             selected: null,
             mode: Mode.IDLE,
 
-            // EDITED START FOR USER STORY 12/13
+            // ISL MANUAL TRACKING
             trackingElement: {
                 enable: false,
                 trackID: null,
@@ -283,11 +285,11 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
                 trackedwidthheight: [],
                 interpolatekeyframes: [],
             }
-            // EDITED END
+            // ISL END
         };
     }
 
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     public trackObject(enable: boolean, trackedStateID: number | null): void {
         if (enable) {
             this.trackingElement.enable = true;
@@ -310,7 +312,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
         this.notify(UpdateReasons.SWITCH_TRACKING);
     }
-    // EDITED END
+    // ISL END
 
     public setZLayer(zLayer: number | null): void {
         this.data.zLayer = zLayer;
@@ -699,7 +701,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
         return this.data.mode;
     }
 
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     public set trackingElement(value: any) {
         this.data.trackingElement = value;
     }
@@ -707,5 +709,5 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
     public get trackingElement(): any {
         return this.data.trackingElement;
     }
-    // EDITED END
+    // ISL END
 }

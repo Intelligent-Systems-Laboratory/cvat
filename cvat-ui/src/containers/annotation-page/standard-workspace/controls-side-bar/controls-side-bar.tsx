@@ -14,7 +14,7 @@ import {
     repeatDrawShapeAsync,
     pasteShapeAsync,
     resetAnnotationsGroup,
-    switchTracking, // EDITED FOR USER STORY 12/13
+    switchTracking, // ISL MANUAL TRACKING
 } from 'actions/annotation-actions';
 import ControlsSideBarComponent from 'components/annotation-page/standard-workspace/controls-side-bar/controls-side-bar';
 import { ActiveControl, CombinedState, Rotation } from 'reducers/interfaces';
@@ -25,11 +25,11 @@ interface StateToProps {
     activeControl: ActiveControl;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     normalizedKeyMap: Record<string, string>;
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     tracking: boolean;
     trackedStateID: number | null;
     activatedStateID: number | null;
-    // EDITED END
+    // ISL END
 }
 
 interface DispatchToProps {
@@ -40,7 +40,7 @@ interface DispatchToProps {
     resetGroup(): void;
     repeatDrawShape(): void;
     pasteShape(): void;
-    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // EDITED FOR USER STORY 12/13
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // ISL MANUAL TRACKING
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -50,7 +50,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 instance: canvasInstance,
                 activeControl,
             },
-            // EDITED FOR USER STORY 12/13
+            // ISL MANUAL TRACKING
             trackobject: {
                 tracking,
                 trackedStateID,
@@ -63,7 +63,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 },
                 history,
             },
-            // EDITED END
+            // ISL END
         },
         settings: {
             player: {
@@ -82,21 +82,21 @@ function mapStateToProps(state: CombinedState): StateToProps {
         activeControl,
         normalizedKeyMap,
         keyMap,
-        // EDITED FOR USER STORY 12/13
+        // ISL MANUAL TRACKING
         tracking,
         trackedStateID,
         activatedStateID,
-        // EDITED END
+        // ISL END
     };
 }
 
 function dispatchToProps(dispatch: any): DispatchToProps {
     return {
-        // EDITED FOR USER STORY 12/13
+        // ISL MANUAL TRACKING
         onSwitchTracking(tracking: boolean, trackedStateID: number | null): void {
             dispatch(switchTracking(tracking, trackedStateID));
         },
-        // EDITED END
+        // ISL END
         mergeObjects(enabled: boolean): void {
             dispatch(mergeObjects(enabled));
         },

@@ -658,8 +658,8 @@
                 }
             }
 
-            // EDITED FOR INTEGRATION
-            async function autoFit(id, objectID, frameNumber, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
+            // ISL AUTOFIT
+            async function autoFit(id, objectID, frameNumber, points) {
                 const { backendAPI } = config;
                 const x1 = Math.trunc(points[0])
                 const y1 = Math.trunc(points[1])
@@ -668,7 +668,7 @@
 
                 let response = null;
                 try {
-                    response = await Axios.get(`${backendAPI}/tasks/${id}/autofit`, { // EDITED to  add the URL parameters instead
+                    response = await Axios.get(`${backendAPI}/tasks/${id}/autofit`, {
                         proxy: config.proxy,
                         params: {
                             objectID: objectID,
@@ -688,7 +688,7 @@
                 }
                 return response.data;
             }
-            // EDITED END
+            // ISL END
 
             Object.defineProperties(this, Object.freeze({
                 server: {
@@ -714,7 +714,7 @@
                         createTask,
                         deleteTask,
                         exportDataset,
-                        autoFit,           /*EDITED FOR INTEGRATION*/
+                        autoFit,           /*ISL AUTOFIT*/
                     }),
                     writable: false,
                 },

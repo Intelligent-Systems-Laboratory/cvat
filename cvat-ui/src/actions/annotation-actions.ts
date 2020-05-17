@@ -189,8 +189,8 @@ export enum AnnotationActionTypes {
     SAVE_LOGS_FAILED = 'SAVE_LOGS_FAILED',
     SWITCH_TRACKING = 'SWITCH_TRACKING', // EDITED FOR USER STORY 12/13 
     // EDITED FOR LOADING ANIMATION WHILE SNAPPING
-    START_AUTO_SNAP = 'START_AUTO_SNAP',
-    STOP_AUTO_SNAP = 'STOP_AUTO_SNAP',
+    START_AUTO_FIT = 'START_AUTO_FIT',
+    STOP_AUTO_FIT = 'STOP_AUTO_FIT',
     // EDITED END
 }
 
@@ -207,31 +207,31 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
 // EDITED END
 
 // EDITED FOR AUTOSNAP
-export function autoSnap(jobInstance: any, stateToSnap: any, frame: number): AnyAction {
+export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
-            const state = stateToSnap;
+            const state = stateToFit;
             dispatch({
-                type: AnnotationActionTypes.START_AUTO_SNAP,
+                type: AnnotationActionTypes.START_AUTO_FIT,
                 payload: {
                     clientID: state.clientID,
                 },
             });
-            jobInstance.annotations.snap(state.clientID, frame, state.points).then((data: any) => {
-                stateToSnap.points = data.points;
-                dispatch(updateAnnotationsAsync([stateToSnap]));
+            jobInstance.annotations.autoFit(state.clientID, frame, state.points).then((data: any) => {
+                stateToFit.points = data.points;
+                dispatch(updateAnnotationsAsync([stateToFit]));
                 dispatch({
-                    type: AnnotationActionTypes.STOP_AUTO_SNAP,
+                    type: AnnotationActionTypes.STOP_AUTO_FIT,
                     payload: {
                         clientID: state.clientID,
                     },
                 });
             });
         } catch (error) {
-            console.log('Error Occured While Snapping', error);
-            const state = stateToSnap;
+            console.log('Error Occured While Fitting', error);
+            const state = stateToFit;
             dispatch({
-                type: AnnotationActionTypes.STOP_AUTO_SNAP,
+                type: AnnotationActionTypes.STOP_AUTO_FIT,
                 payload: {
                     clientID: state.clientID,
                 },

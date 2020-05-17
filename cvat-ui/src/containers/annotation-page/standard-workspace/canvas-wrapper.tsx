@@ -27,7 +27,7 @@ import {
     addZLayer,
     switchZLayer,
     switchTracking, // EDITED FOR USER STORY 12/13
-    autoSnap, // EDITED FOR AUTOSNAP
+    autoFit, // EDITED FOR AUTOSNAP
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -92,7 +92,7 @@ interface StateToProps {
     tracking: boolean;
     trackedStateID: number | null;
     // EDITED END
-    autoSnapObjects: any[]; // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+    autoFitObjects: any[]; // EDITED FOR LOADING ANIMATION WHILE SNAPPING
 }
 
 interface DispatchToProps {
@@ -124,7 +124,7 @@ interface DispatchToProps {
     onSwitchGrid(enabled: boolean): void;
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // EDITED FOR USER STORY 12/13
     onSwitchAutomaticBordering(enabled: boolean): void;
-    onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void; // EDITED FOR USER STORY 12/13
+    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // EDITED FOR USER STORY 12/13
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -170,7 +170,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 trackedStateID,
             },
             // EDITED END
-            autoSnapObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+            autoFitObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
             sidebarCollapsed,
             workspace,
         },
@@ -244,7 +244,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         tracking,
         trackedStateID,
         // EDITED END
-        autoSnapObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+        autoFitObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
         switchableAutomaticBordering: activeControl === ActiveControl.DRAW_POLYGON
             || activeControl === ActiveControl.DRAW_POLYLINE
             || activeControl === ActiveControl.EDIT,
@@ -342,8 +342,8 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(switchAutomaticBordering(enabled));
         },
         // EDITED FOR USER STORY 12/13
-        onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void {
-            dispatch(autoSnap(jobInstance, stateToSnap, frame));
+        onAutoFit(jobInstance: any, stateToFit: any, frame: number): void {
+            dispatch(autoFit(jobInstance, stateToFit, frame));
         },
         // EDITED END
     };

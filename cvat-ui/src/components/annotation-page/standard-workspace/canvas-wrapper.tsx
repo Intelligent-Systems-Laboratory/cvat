@@ -98,8 +98,8 @@ interface Props {
     trackedStateID: number | null;
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     // EDITED END
-    onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void; // EDITED FOR AUTOSNAP
-    autoSnapObjects: any[]; // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // EDITED FOR AUTOSNAP
+    autoFitObjects: any[]; // EDITED FOR LOADING ANIMATION WHILE SNAPPING
     onSwitchAutomaticBordering(enabled: boolean): void;
 }
 
@@ -158,7 +158,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             trackedStateID,
             // EDITED END
             automaticBordering,
-            autoSnapObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
+            autoFitObjects, // EDITED FOR LOADING ANIMATION WHILE SNAPPING
         } = this.props;
 
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
@@ -223,7 +223,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // EDITED START for USER STORY 2
             if (annotations.length > prevProps.annotations.length && prevProps.frameData === frameData) {
                 this.contextMenuOnDraw();
-                this.autoSnap(annotations[annotations.length - 1].clientID);
+                this.autoFit(annotations[annotations.length - 1].clientID);
             }
             // EDITED END
         }
@@ -258,10 +258,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         const loadingAnimation = window.document.getElementById('cvat_canvas_loading_animation');
         // EDITED START FOR LOADING ANIMATION WHILE SNAPPING
-        if (loadingAnimation && autoSnapObjects !== prevProps.autoSnapObjects) {
-            if (autoSnapObjects.length > 0 && prevProps.autoSnapObjects.length == 0) {
+        if (loadingAnimation && autoFitObjects !== prevProps.autoFitObjects) {
+            if (autoFitObjects.length > 0 && prevProps.autoFitObjects.length == 0) {
                 loadingAnimation.classList.remove('cvat_canvas_hidden');
-            } else if (autoSnapObjects.length == 0) {
+            } else if (autoFitObjects.length == 0) {
                 loadingAnimation.classList.add('cvat_canvas_hidden');
             }
         }
@@ -351,25 +351,25 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             jobInstance,
             frame,
             annotations,
-            onAutoSnap,
+            onAutoFit,
         } = this.props
         const { clientID } = e.detail.state;
 
         const [state] = annotations.filter((el: any) => (el.clientID === clientID))
-        onAutoSnap(jobInstance, state, frame)
+        onAutoFit(jobInstance, state, frame)
     };
 
-    private autoSnap = (clientID: number): void => {
+    private autoFit = (clientID: number): void => {
         const {
             jobInstance,
             frame,
             annotations,
-            onAutoSnap,
+            onAutoFit,
         } = this.props;
 
         const [state] = annotations.filter((el: any) => (el.clientID === clientID));
         if (state && state.shapeType === ShapeType.RECTANGLE) {
-            onAutoSnap(jobInstance, state, frame);
+            onAutoFit(jobInstance, state, frame);
         }
     }
     // EDITED END
@@ -849,7 +849,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             INCREASE_GRID_OPACITY: keyMap.INCREASE_GRID_OPACITY,
             DECREASE_GRID_OPACITY: keyMap.DECREASE_GRID_OPACITY,
             CHANGE_GRID_COLOR: keyMap.CHANGE_GRID_COLOR,
-            AUTOSNAP: keyMap.AUTOSNAP,
+            AUTOFIT: keyMap.AUTOFIT,
             SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
         };
 
@@ -929,10 +929,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 onChangeGridColor(color);
             },
             // EDITED START FOR INTEGRATION OF AUTOSNAP
-            AUTOSNAP: (event: KeyboardEvent | undefined) => {
+            AUTOFIT: (event: KeyboardEvent | undefined) => {
                 preventDefault(event);
                 if (activatedStateID){
-                    this.autoSnap(activatedStateID);
+                    this.autoFit(activatedStateID);
                 } 
             },
             // EDITED END

@@ -387,7 +387,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     # EDITED FOR INTEGRATION    
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task')
     @action(detail=True, methods=['GET'])
-    def snap(self, request, pk):
+    def autofit(self, request, pk):
         objectID = request.query_params.get('objectID', None)
         frame = request.query_params.get('frameNumber', None)
         xtl = int(request.query_params.get('x1', None))

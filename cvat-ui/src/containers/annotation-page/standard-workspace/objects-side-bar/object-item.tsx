@@ -21,7 +21,7 @@ import {
     activateObject as activateObjectAction,
     propagateObject as propagateObjectAction,
     pasteShapeAsync,
-    autoSnap, // EDITED FOR AUTOSNAP
+    autoFit, // EDITED FOR AUTOSNAP
 } from 'actions/annotation-actions';
 
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
@@ -59,7 +59,7 @@ interface DispatchToProps {
     propagateObject: (objectState: any) => void;
     changeLabelColor(sessionInstance: any, frameNumber: number, label: any, color: string): void;
     changeGroupColor(group: number, color: string): void;
-    onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void; // EDITED FOR AUTOSNAP
+    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // EDITED FOR AUTOSNAP
 }
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
@@ -166,8 +166,8 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(changeGroupColorAsync(group, color));
         },
         // EDITED FOR AUTOSNAP
-        onAutoSnap(jobInstance: any, stateToSnap: any, frame: number): void {
-            dispatch(autoSnap(jobInstance, stateToSnap, frame));
+        onAutoFit(jobInstance: any, stateToFit: any, frame: number): void {
+            dispatch(autoFit(jobInstance, stateToFit, frame));
         },
         // EDITED END
     };
@@ -405,15 +405,15 @@ class ObjectItemContainer extends React.PureComponent<Props> {
     };
 
     // EDITED FOR INTEGRATION
-    private autoSnap = (): void => {
+    private autoFit = (): void => {
         const {
             objectState,
             jobInstance,
             frameNumber,
-            onAutoSnap,
+            onAutoFit,
         } = this.props;
 
-        onAutoSnap(jobInstance, objectState, frameNumber);
+        onAutoFit(jobInstance, objectState, frameNumber);
     }
     // EDITED END
 
@@ -528,7 +528,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 changeAttribute={this.changeAttribute}
                 collapse={this.collapse}
                 // EDITED FOR INTEGRATION
-                autoSnap={this.autoSnap}
+                autoFit={this.autoFit}
             // EDITED END
             />
         );

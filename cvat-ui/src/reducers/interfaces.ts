@@ -391,7 +391,7 @@ export interface AnnotationState {
     }
     // EDITED END
     // EDITED FOR LOADING ANIMATION WHILE SNAPPING
-    autoSnapObjects: any[];
+    autoFitObjects: any[];
     // EDITED END
 }
 

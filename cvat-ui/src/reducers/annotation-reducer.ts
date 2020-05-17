@@ -84,7 +84,7 @@ const defaultState: AnnotationState = {
         },
     },
     // EDITED FOR LOADING ANIMATION WHILE SNAPPING
-    autoSnapObjects: [],
+    autoFitObjects: [],
     // EDITED END
     // EDITED FOR USER STORY 12/13
     trackobject: {
@@ -112,26 +112,26 @@ const defaultState: AnnotationState = {
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
         // EDITED FOR LOADING ANIMATION WHILE SNAPPING
-        case AnnotationActionTypes.START_AUTO_SNAP: {
+        case AnnotationActionTypes.START_AUTO_FIT: {
             const { clientID } = action.payload;
 
-            const newAutoSnapObjects = [...state.autoSnapObjects];
-            newAutoSnapObjects.push(clientID);
-            console.log(newAutoSnapObjects);
+            const newAutoFitObjects = [...state.autoFitObjects];
+            newAutoFitObjects.push(clientID);
+            console.log(newAutoFitObjects);
             return {
                 ...state,
-                autoSnapObjects: newAutoSnapObjects,
+                autoFitObjects: newAutoFitObjects,
             };
         }
-        case AnnotationActionTypes.STOP_AUTO_SNAP: {
+        case AnnotationActionTypes.STOP_AUTO_FIT: {
             const { clientID } = action.payload;
 
-            const newAutoSnapObjects = [...state.autoSnapObjects];
-            newAutoSnapObjects.splice(state.autoSnapObjects.indexOf(clientID), 1);
-            console.log(newAutoSnapObjects);
+            const newAutoFitObjects = [...state.autoFitObjects];
+            newAutoFitObjects.splice(state.autoFitObjects.indexOf(clientID), 1);
+            console.log(newAutoFitObjects);
             return {
                 ...state,
-                autoSnapObjects: newAutoSnapObjects,
+                autoFitObjects: newAutoFitObjects,
             };
         }
         // EDITED END

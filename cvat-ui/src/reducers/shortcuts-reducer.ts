@@ -323,9 +323,9 @@ const defaultKeyMap = {
     },
     // EDITED END
     // EDITED START for Integration of autoSnap
-    AUTOSNAP: {
-        name: 'Autosnap',
-        description: 'Snap bounding box to edges of selected object',
+    AUTOFIT: {
+        name: 'AutoFit',
+        description: 'Fit bounding box to edges of selected object',
         sequences: ['s'],
         action: 'keydown',
     },

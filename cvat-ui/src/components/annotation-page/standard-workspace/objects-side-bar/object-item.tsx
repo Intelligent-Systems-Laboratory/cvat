@@ -51,7 +51,7 @@ function ItemMenu(
     toBackground: (() => void),
     toForeground: (() => void),
     // EDITED FOR INTEGRATION
-    autoSnap: (() => void),
+    autoFit: (() => void),
     // EDITED END
 ): JSX.Element {
     return (
@@ -120,13 +120,13 @@ function ItemMenu(
             </Menu.Item>
             {/* EDITED FOR INTEGRATION */}
             <Menu.Item>
-                <Tooltip title={`Detects the object and snaps the box around its edges.`}>
+                <Tooltip title={`Detects the object and fits the box around its edges.`}>
                     <Button
                         type='link'
                         icon='import'
-                        onClick={autoSnap}   
+                        onClick={autoFit}   
                     >
-                        autoSnap
+                        AutoFit
                     </Button>
                 </Tooltip>
             </Menu.Item>
@@ -157,7 +157,7 @@ interface ItemTopComponentProps {
     toBackground(): void;
     toForeground(): void;
     // EDITED FOR INTEGRATION
-    autoSnap(): void;
+    autoFit(): void;
     // EDITED END
 }
 
@@ -184,7 +184,7 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         toBackground,
         toForeground,
         // EDITED FOR INTEGRATION
-        autoSnap,
+        autoFit,
         // EDITED END
     } = props;
 
@@ -226,7 +226,7 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
                         toBackground,
                         toForeground,
                         // EDITED FOR INTEGRATION
-                        autoSnap,
+                        autoFit,
                         // EDITED END
                     )}
                 >
@@ -753,7 +753,7 @@ interface Props {
     changeColor(color: string): void;
     collapse(): void;
     // EDITED FOR INTEGRATION
-    autoSnap(): void,
+    autoFit(): void,
     // EDITED END
 }
 
@@ -833,7 +833,7 @@ function ObjectItemComponent(props: Props): JSX.Element {
         changeColor,
         collapse,
         // EDITED FOR INTEGRATION
-        autoSnap,
+        autoFit,
         // EDITED END
     } = props;
 
@@ -888,7 +888,7 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     toBackground={toBackground}
                     toForeground={toForeground}
                     // EDITED FOR INTEGRATION
-                    autoSnap={autoSnap}
+                    autoFit={autoFit}
                     // EDITED END
                 />
                 <ItemButtons

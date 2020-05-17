@@ -22,9 +22,9 @@
             annotations: Object.freeze({
                 value: {
                     // EDITED FOR INTEGRATION
-                    async snap(objectID, frameNum, points) {
+                    async autoFit(objectID, frameNum, points) {
                         const result = await PluginRegistry
-                            .apiWrapper.call(this, prototype.annotations.snap, objectID, frameNum, points);
+                            .apiWrapper.call(this, prototype.annotations.autoFit, objectID, frameNum, points);
                         return result;
                     },
                     // EDITED END
@@ -743,7 +743,7 @@
                 hasUnsavedChanges: Object.getPrototypeOf(this)
                     .annotations.hasUnsavedChanges.bind(this),
                 // EDITED FOR INTEGRATION
-                snap: Object.getPrototypeOf(this).annotations.snap.bind(this),
+                autoFit: Object.getPrototypeOf(this).annotations.autoFit.bind(this),
                 // EDITED END
             };
 
@@ -1300,7 +1300,7 @@
                 exportDataset: Object.getPrototypeOf(this)
                     .annotations.exportDataset.bind(this),
                 // EDITED FOR INTEGRATION
-                snap: Object.getPrototypeOf(this).annotations.snap.bind(this),
+                autoFit: Object.getPrototypeOf(this).annotations.autoFit.bind(this),
                 // EDITED END
             };
 
@@ -1391,13 +1391,13 @@
     buildDublicatedAPI(Task.prototype);
 
     // EDITED FOR INTEGRATION
-    Job.prototype.annotations.snap = async function (objectID, frameNum, points) {
-        const result = await serverProxy.tasks.autoSnap(this.task.id, objectID, frameNum, points)
+    Job.prototype.annotations.autoFit = async function (objectID, frameNum, points) {
+        const result = await serverProxy.tasks.autoFit(this.task.id, objectID, frameNum, points)
         return result;
     },
 
-    Task.prototype.annotations.snap = async function (objectID, frameNum, points) {
-        const result = await serverProxy.tasks.autoSnap(this.id, objectID, frameNum, points)
+    Task.prototype.annotations.autoFit = async function (objectID, frameNum, points) {
+        const result = await serverProxy.tasks.autoFit(this.id, objectID, frameNum, points)
         return result;
     },
     // EDITED END

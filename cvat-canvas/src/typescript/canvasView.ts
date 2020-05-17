@@ -1350,8 +1350,6 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const rY = parseInt(activeRect.getAttribute('y')) - this.geometry.offset;
         const ptX = parseInt(point.getAttribute('cx')) + rX;
         const ptY = parseInt(point.getAttribute('cy')) + rY;
-        console.log(`ptX, ptY = ${ptX}, ${ptY}`);
-        console.log(`rX, rY = ${rX}, ${rY}`);
 
         // draw zoom        
         mgCtx.fillStyle = "#FFFFFF";

@@ -23,6 +23,7 @@ const defaultState: SettingsState = {
         selectedOpacity: 0,   // EDITED FROM 30 for USER STORY 1
         blackBorders: false,
         showBitmap: false,
+        showProjections: false,
     },
     workspace: {
         autoSave: false,
@@ -33,6 +34,7 @@ const defaultState: SettingsState = {
         showAllInterpolationTracks: false,
     },
     player: {
+        canvasBackgroundColor: '#ffffff',
         frameStep: 10,
         frameSpeed: FrameSpeed.Usual,
         resetZoom: false,
@@ -45,6 +47,7 @@ const defaultState: SettingsState = {
         contrastLevel: 100,
         saturationLevel: 100,
     },
+    showDialog: false,
 };
 
 export default (state = defaultState, action: AnyAction): SettingsState => {
@@ -127,6 +130,15 @@ export default (state = defaultState, action: AnyAction): SettingsState => {
                 shapes: {
                     ...state.shapes,
                     blackBorders: action.payload.blackBorders,
+                },
+            };
+        }
+        case SettingsActionTypes.CHANGE_SHAPES_SHOW_PROJECTIONS: {
+            return {
+                ...state,
+                shapes: {
+                    ...state.shapes,
+                    showProjections: action.payload.showProjections,
                 },
             };
         }
@@ -245,6 +257,21 @@ export default (state = defaultState, action: AnyAction): SettingsState => {
                     ...state.workspace,
                     automaticBordering: action.payload.automaticBordering,
                 },
+            };
+        }
+        case SettingsActionTypes.CHANGE_CANVAS_BACKGROUND_COLOR: {
+            return {
+                ...state,
+                player: {
+                    ...state.player,
+                    canvasBackgroundColor: action.payload.color,
+                },
+            };
+        }
+        case SettingsActionTypes.SWITCH_SETTINGS_DIALOG: {
+            return {
+                ...state,
+                showDialog: typeof action.payload.show === 'undefined' ? !state.showDialog : action.payload.show,
             };
         }
         case BoundariesActionTypes.RESET_AFTER_ERROR:

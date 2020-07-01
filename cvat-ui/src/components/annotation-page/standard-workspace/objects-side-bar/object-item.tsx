@@ -5,7 +5,7 @@
 import React from 'react';
 import { Row, Col } from 'antd/lib/grid';
 import Icon from 'antd/lib/icon';
-import Select from 'antd/lib/select';
+import Select, { OptionProps } from 'antd/lib/select';
 import Radio, { RadioChangeEvent } from 'antd/lib/radio';
 import Checkbox, { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import Input from 'antd/lib/input';
@@ -29,6 +29,7 @@ import {
     NextIcon,
     BackgroundIcon,
     ForegroundIcon,
+    ResetPerspectiveIcon,
 } from 'icons';
 import { ObjectType, ShapeType } from 'reducers/interfaces';
 import { clamp } from 'utils/math';
@@ -37,6 +38,7 @@ import { clamp } from 'utils/math';
 function ItemMenu(
     serverID: number | undefined,
     locked: boolean,
+    shapeType: ShapeType,
     objectType: ObjectType,
     copyShortcut: string,
     pasteShortcut: string,
@@ -48,11 +50,13 @@ function ItemMenu(
     remove: (() => void),
     propagate: (() => void),
     createURL: (() => void),
+    switchOrientation: (() => void),
     toBackground: (() => void),
     toForeground: (() => void),
     // EDITED FOR INTEGRATION
     autoSnap: (() => void),
     // EDITED END
+    resetCuboidPerspective: (() => void),
 ): JSX.Element {
     return (
         <Menu className='cvat-object-item-menu'>
@@ -75,7 +79,22 @@ function ItemMenu(
                     </Button>
                 </Tooltip>
             </Menu.Item>
-            { objectType !== ObjectType.TAG && (
+            { [ShapeType.POLYGON, ShapeType.POLYLINE, ShapeType.CUBOID].includes(shapeType) && (
+                <Menu.Item>
+                    <Button type='link' icon='retweet' onClick={switchOrientation}>
+                        Switch orientation
+                    </Button>
+                </Menu.Item>
+            )}
+            {shapeType === ShapeType.CUBOID && (
+                <Menu.Item>
+                    <Button type='link' onClick={resetCuboidPerspective}>
+                        <Icon component={ResetPerspectiveIcon} />
+                        Reset perspective
+                    </Button>
+                </Menu.Item>
+            )}
+            {objectType !== ObjectType.TAG && (
                 <Menu.Item>
                     <Tooltip title={`${toBackgroundShortcut}`}>
                         <Button type='link' onClick={toBackground}>
@@ -85,7 +104,7 @@ function ItemMenu(
                     </Tooltip>
                 </Menu.Item>
             )}
-            { objectType !== ObjectType.TAG && (
+            {objectType !== ObjectType.TAG && (
                 <Menu.Item>
                     <Tooltip title={`${toForegroundShortcut}`}>
                         <Button type='link' onClick={toForeground}>
@@ -140,6 +159,7 @@ interface ItemTopComponentProps {
     serverID: number | undefined;
     labelID: number;
     labels: any[];
+    shapeType: ShapeType;
     objectType: ObjectType;
     type: string;
     locked: boolean;
@@ -154,11 +174,13 @@ interface ItemTopComponentProps {
     remove(): void;
     propagate(): void;
     createURL(): void;
+    switchOrientation(): void;
     toBackground(): void;
     toForeground(): void;
     // EDITED FOR INTEGRATION
     autoSnap(): void;
     // EDITED END
+    resetCuboidPerspective(): void;
 }
 
 function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
@@ -167,6 +189,7 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         serverID,
         labelID,
         labels,
+        shapeType,
         objectType,
         type,
         locked,
@@ -181,11 +204,13 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         remove,
         propagate,
         createURL,
+        switchOrientation,
         toBackground,
         toForeground,
         // EDITED FOR INTEGRATION
         autoSnap,
         // EDITED END
+        resetCuboidPerspective,
     } = props;
 
     return (
@@ -197,7 +222,20 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
             </Col>
             <Col span={12}>
                 <Tooltip title='Change current label'>
-                    <Select size='small' value={`${labelID}`} onChange={changeLabel}>
+                    <Select
+                        size='small'
+                        value={`${labelID}`}
+                        onChange={changeLabel}
+                        showSearch
+                        filterOption={(input: string, option: React.ReactElement<OptionProps>) => {
+                            const { children } = option.props;
+                            if (typeof (children) === 'string') {
+                                return children.toLowerCase().includes(input.toLowerCase());
+                            }
+
+                            return false;
+                        }}
+                    >
                         { labels.map((label: any): JSX.Element => (
                             <Select.Option key={label.id} value={`${label.id}`}>
                                 {label.name}
@@ -212,6 +250,7 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
                     overlay={ItemMenu(
                         serverID,
                         locked,
+                        shapeType,
                         objectType,
                         copyShortcut,
                         pasteShortcut,
@@ -223,11 +262,13 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
                         remove,
                         propagate,
                         createURL,
+                        switchOrientation,
                         toBackground,
                         toForeground,
                         // EDITED FOR INTEGRATION
                         autoSnap,
                         // EDITED END
+                        resetCuboidPerspective,
                     )}
                 >
                     <Icon type='more' />
@@ -363,7 +404,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                         <Col>
                             <Tooltip title={`Switch lock property ${switchLockShortcut}`}>
                                 { locked
-                                    ? <Icon type='lock' onClick={unlock} />
+                                    ? <Icon type='lock' theme='filled' onClick={unlock} />
                                     : <Icon type='unlock' onClick={lock} />}
                             </Tooltip>
                         </Col>
@@ -377,7 +418,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                         <Col>
                             <Tooltip title={`Switch hidden property ${switchHiddenShortcut}`}>
                                 { hidden
-                                    ? <Icon type='eye-invisible' onClick={show} />
+                                    ? <Icon type='eye-invisible' theme='filled' onClick={show} />
                                     : <Icon type='eye' onClick={hide} />}
                             </Tooltip>
                         </Col>
@@ -413,7 +454,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                         <Col>
                             <Tooltip title={`Switch lock property ${switchLockShortcut}`}>
                                 { locked
-                                    ? <Icon type='lock' onClick={unlock} />
+                                    ? <Icon type='lock' onClick={unlock} theme='filled' />
                                     : <Icon type='unlock' onClick={lock} />}
                             </Tooltip>
                         </Col>
@@ -430,7 +471,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                     <Col>
                         <Tooltip title={`Switch lock property ${switchLockShortcut}`}>
                             { locked
-                                ? <Icon type='lock' onClick={unlock} />
+                                ? <Icon type='lock' onClick={unlock} theme='filled' />
                                 : <Icon type='unlock' onClick={lock} />}
                         </Tooltip>
                     </Col>
@@ -733,6 +774,7 @@ interface Props {
     copy(): void;
     propagate(): void;
     createURL(): void;
+    switchOrientation(): void;
     toBackground(): void;
     toForeground(): void;
     remove(): void;
@@ -755,6 +797,7 @@ interface Props {
     // EDITED FOR INTEGRATION
     autoSnap(): void,
     // EDITED END
+    resetCuboidPerspective(): void;
 }
 
 function objectItemsAreEqual(prevProps: Props, nextProps: Props): boolean {
@@ -813,6 +856,7 @@ function ObjectItemComponent(props: Props): JSX.Element {
         copy,
         propagate,
         createURL,
+        switchOrientation,
         toBackground,
         toForeground,
         remove,
@@ -835,6 +879,7 @@ function ObjectItemComponent(props: Props): JSX.Element {
         // EDITED FOR INTEGRATION
         autoSnap,
         // EDITED END
+        resetCuboidPerspective,
     } = props;
 
     const type = objectType === ObjectType.TAG ? ObjectType.TAG.toUpperCase()
@@ -844,12 +889,13 @@ function ObjectItemComponent(props: Props): JSX.Element {
         : 'cvat-objects-sidebar-state-item cvat-objects-sidebar-state-active-item';
 
     return (
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', marginBottom: '1px' }}>
             <Popover
                 placement='left'
                 trigger='click'
                 content={(
                     <ColorChanger
+                        shortcut={normalizedKeyMap.CHANGE_OBJECT_COLOR}
                         onChange={changeColor}
                         colors={colors}
                     />
@@ -857,20 +903,21 @@ function ObjectItemComponent(props: Props): JSX.Element {
             >
                 <div
                     className='cvat-objects-sidebar-state-item-color'
-                    style={{ background: ` ${color}` }}
+                    style={{ background: `${color}` }}
                 />
             </Popover>
             <div
                 onMouseEnter={activate}
                 id={`cvat-objects-sidebar-state-item-${clientID}`}
                 className={className}
-                style={{ borderColor: ` ${color}` }}
+                style={{ backgroundColor: `${color}88` }}
             >
                 <ItemTop
                     serverID={serverID}
                     clientID={clientID}
                     labelID={labelID}
                     labels={labels}
+                    shapeType={shapeType}
                     objectType={objectType}
                     type={type}
                     locked={locked}
@@ -885,11 +932,13 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     remove={remove}
                     propagate={propagate}
                     createURL={createURL}
+                    switchOrientation={switchOrientation}
                     toBackground={toBackground}
                     toForeground={toForeground}
                     // EDITED FOR INTEGRATION
                     autoSnap={autoSnap}
                     // EDITED END
+                    resetCuboidPerspective={resetCuboidPerspective}
                 />
                 <ItemButtons
                     shapeType={shapeType}

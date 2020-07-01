@@ -4,19 +4,19 @@
 The CVAT module written in TypeScript language.
 It presents a canvas to viewing, drawing and editing of annotations.
 
+## Versioning
+If you make changes in this package, please do following:
+
+- After not important changes (typos, backward compatible bug fixes, refactoring) do: ``npm version patch``
+- After changing API (backward compatible new features) do: ``npm version minor``
+- After changing API (changes that break backward compatibility) do: ``npm version major``
+
 ## Commands
 - Building of the module from sources in the ```dist``` directory:
 
 ```bash
 npm run build
 npm run build -- --mode=development     # without a minification
-```
-
-- Updating of a module version:
-```bash
-npm version patch   # updated after minor fixes
-npm version minor   # updated after major changes which don't affect API compatibility with previous versions
-npm version major   # updated after major changes which affect API compatibility with previous versions
 ```
 
 ## Using
@@ -35,6 +35,11 @@ Canvas itself handles:
     enum RectDrawingMethod {
         CLASSIC = 'By 2 points',
         EXTREME_POINTS = 'By 4 points'
+    }
+
+    enum CuboidDrawingMethod {
+        CLASSIC = 'From rectangle',
+        CORNER_POINTS = 'By 4 points',
     }
 
     enum Mode {
@@ -59,6 +64,7 @@ Canvas itself handles:
         enabled: boolean;
         shapeType?: string;
         rectDrawingMethod?: RectDrawingMethod;
+        cuboidDrawingMethod?: CuboidDrawingMethod;
         numberOfPoints?: number;
         initialState?: any;
         crosshair?: boolean;
@@ -111,6 +117,7 @@ Canvas itself handles:
         mode(): Mode;
         cancel(): void;
         configure(configuration: Configuration): void;
+        isAbleToChangeFrame(): boolean;
     }
 ```
 
@@ -182,8 +189,7 @@ Standard JS events are used.
 
 |              | IDLE | GROUP | SPLIT | DRAW | MERGE | EDIT | DRAG | RESIZE | ZOOM_CANVAS | DRAG_CANVAS |
 |--------------|------|-------|-------|------|-------|------|------|--------|-------------|-------------|
-| html()       | +    | +     | +     | +    | +     | +    | +    | +      | +           | +           |
-| setup()      | +    | +     | +     | +    | +     | +/-  | +/-  | +/-    | +           | +           |
+| setup()      | +    | +     | +     | +/-  | +     | +/-  | +/-  | +/-    | +           | +           |
 | activate()   | +    | -     | -     | -    | -     | -    | -    | -      | -           | -           |
 | rotate()     | +    | +     | +     | +    | +     | +    | +    | +      | +           | +           |
 | focus()      | +    | +     | +     | +    | +     | +    | +    | +      | +           | +           |
@@ -202,3 +208,6 @@ Standard JS events are used.
 | setZLayer()  | +    | +     | +     | +    | +     | +    | +    | +      | +           | +           |
 
 You can call setup() during editing, dragging, and resizing only to update objects, not to change a frame.
+You can change frame during draw only when you do not redraw an existing object
+
+Other methods do not change state and can be used everytime.

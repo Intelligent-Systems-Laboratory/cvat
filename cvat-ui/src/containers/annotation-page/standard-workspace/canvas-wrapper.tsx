@@ -27,6 +27,7 @@ import {
     addZLayer,
     switchZLayer,
     switchTracking, // EDITED FOR USER STORY 12/13
+    fetchAnnotationsAsync,
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -66,6 +67,7 @@ interface StateToProps {
     selectedOpacity: number;
     blackBorders: boolean;
     showBitmap: boolean;
+    showProjections: boolean;
     grid: boolean;
     gridSize: number;
     gridColor: GridColor;
@@ -78,19 +80,19 @@ interface StateToProps {
     resetZoom: boolean;
     aamZoomMargin: number;
     showObjectsTextAlways: boolean;
+    showAllInterpolationTracks: boolean;
     workspace: Workspace;
     minZLayer: number;
     maxZLayer: number;
     curZLayer: number;
     automaticBordering: boolean;
-    contextVisible: boolean;
-    contextType: ContextMenuType;
     switchableAutomaticBordering: boolean;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     // EDITED START FOR USER STORY 12/13
     tracking: boolean;
     trackedStateID: number | null;
     // EDITED END
+    canvasBackgroundColor: string;
 }
 
 interface DispatchToProps {
@@ -122,6 +124,7 @@ interface DispatchToProps {
     onSwitchGrid(enabled: boolean): void;
     onSwitchTracking(tracking: boolean, trackedStateID: number | null); // EDITED FOR USER STORY 12/13 // check again later
     onSwitchAutomaticBordering(enabled: boolean): void;
+    onFetchAnnotation(): void;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -129,10 +132,6 @@ function mapStateToProps(state: CombinedState): StateToProps {
         annotation: {
             canvas: {
                 activeControl,
-                contextMenu: {
-                    visible: contextVisible,
-                    type: contextType,
-                },
                 instance: canvasInstance,
             },
             drawing: {
@@ -172,6 +171,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         },
         settings: {
             player: {
+                canvasBackgroundColor,
                 grid,
                 gridSize,
                 gridColor,
@@ -184,6 +184,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
             workspace: {
                 aamZoomMargin,
                 showObjectsTextAlways,
+                showAllInterpolationTracks,
                 automaticBordering,
             },
             shapes: {
@@ -192,6 +193,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 selectedOpacity,
                 blackBorders,
                 showBitmap,
+                showProjections,
             },
         },
         shortcuts: {
@@ -216,6 +218,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         selectedOpacity,
         blackBorders,
         showBitmap,
+        showProjections,
         grid,
         gridSize,
         gridColor,
@@ -228,18 +231,18 @@ function mapStateToProps(state: CombinedState): StateToProps {
         resetZoom,
         aamZoomMargin,
         showObjectsTextAlways,
+        showAllInterpolationTracks,
         curZLayer,
         minZLayer,
         maxZLayer,
         automaticBordering,
-        contextVisible,
-        contextType,
         workspace,
         keyMap,
         // EDITED START FOR USER STORY 12/13
         tracking,
         trackedStateID,
         // EDITED END
+        canvasBackgroundColor,
         switchableAutomaticBordering: activeControl === ActiveControl.DRAW_POLYGON
             || activeControl === ActiveControl.DRAW_POLYLINE
             || activeControl === ActiveControl.EDIT,
@@ -335,6 +338,9 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         // EDITED END
         onSwitchAutomaticBordering(enabled: boolean): void {
             dispatch(switchAutomaticBordering(enabled));
+        },
+        onFetchAnnotation(): void {
+            dispatch(fetchAnnotationsAsync());
         },
     };
 }

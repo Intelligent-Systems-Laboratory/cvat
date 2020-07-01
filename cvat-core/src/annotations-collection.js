@@ -13,10 +13,12 @@
         PolygonShape,
         PolylineShape,
         PointsShape,
+        CuboidShape,
         RectangleTrack,
         PolygonTrack,
         PolylineTrack,
         PointsTrack,
+        CuboidTrack,
         Track,
         Shape,
         Tag,
@@ -46,22 +48,25 @@
 
         let shapeModel = null;
         switch (type) {
-            case 'rectangle':
-                shapeModel = new RectangleShape(shapeData, clientID, color, injection);
-                break;
-            case 'polygon':
-                shapeModel = new PolygonShape(shapeData, clientID, color, injection);
-                break;
-            case 'polyline':
-                shapeModel = new PolylineShape(shapeData, clientID, color, injection);
-                break;
-            case 'points':
-                shapeModel = new PointsShape(shapeData, clientID, color, injection);
-                break;
-            default:
-                throw new DataError(
-                    `An unexpected type of shape "${type}"`,
-                );
+        case 'rectangle':
+            shapeModel = new RectangleShape(shapeData, clientID, color, injection);
+            break;
+        case 'polygon':
+            shapeModel = new PolygonShape(shapeData, clientID, color, injection);
+            break;
+        case 'polyline':
+            shapeModel = new PolylineShape(shapeData, clientID, color, injection);
+            break;
+        case 'points':
+            shapeModel = new PointsShape(shapeData, clientID, color, injection);
+            break;
+        case 'cuboid':
+            shapeModel = new CuboidShape(shapeData, clientID, color, injection);
+            break;
+        default:
+            throw new DataError(
+                `An unexpected type of shape "${type}"`,
+            );
         }
 
         return shapeModel;
@@ -75,22 +80,25 @@
 
             let trackModel = null;
             switch (type) {
-                case 'rectangle':
-                    trackModel = new RectangleTrack(trackData, clientID, color, injection);
-                    break;
-                case 'polygon':
-                    trackModel = new PolygonTrack(trackData, clientID, color, injection);
-                    break;
-                case 'polyline':
-                    trackModel = new PolylineTrack(trackData, clientID, color, injection);
-                    break;
-                case 'points':
-                    trackModel = new PointsTrack(trackData, clientID, color, injection);
-                    break;
-                default:
-                    throw new DataError(
-                        `An unexpected type of track "${type}"`,
-                    );
+            case 'rectangle':
+                trackModel = new RectangleTrack(trackData, clientID, color, injection);
+                break;
+            case 'polygon':
+                trackModel = new PolygonTrack(trackData, clientID, color, injection);
+                break;
+            case 'polyline':
+                trackModel = new PolylineTrack(trackData, clientID, color, injection);
+                break;
+            case 'points':
+                trackModel = new PointsTrack(trackData, clientID, color, injection);
+                break;
+            case 'cuboid':
+                trackModel = new CuboidTrack(trackData, clientID, color, injection);
+                break;
+            default:
+                throw new DataError(
+                    `An unexpected type of track "${type}"`,
+                );
             }
 
             return trackModel;
@@ -150,7 +158,6 @@
             }
 
             for (const shape of data.shapes) {
-                if (shape.type === 'cuboid') continue;
                 const clientID = ++this.count;
                 const shapeModel = shapeFactory(shape, clientID, this.injection);
                 this.shapes[shapeModel.frame] = this.shapes[shapeModel.frame] || [];
@@ -592,6 +599,10 @@
                     shape: 0,
                     track: 0,
                 },
+                cuboid: {
+                    shape: 0,
+                    track: 0,
+                },
                 tags: 0,
                 manually: 0,
                 interpolated: 0,
@@ -786,15 +797,19 @@
                 .concat(imported.tracks)
                 .concat(imported.shapes);
 
-            this.history.do(HistoryActions.CREATED_OBJECTS, () => {
-                importedArray.forEach((object) => {
-                    object.removed = true;
-                });
-            }, () => {
-                importedArray.forEach((object) => {
-                    object.removed = false;
-                });
-            }, importedArray.map((object) => object.clientID), objectStates[0].frame);
+            if (objectStates.length) {
+                this.history.do(HistoryActions.CREATED_OBJECTS, () => {
+                    importedArray.forEach((object) => {
+                        object.removed = true;
+                    });
+                }, () => {
+                    importedArray.forEach((object) => {
+                        object.removed = false;
+                    });
+                }, importedArray.map((object) => object.clientID), objectStates[0].frame);
+            }
+
+            return importedArray.map((value) => value.clientID);
         }
 
         select(objectStates, x, y) {

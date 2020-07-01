@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import './styles.scss';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Text from 'antd/lib/typography/Text';
 import Icon from 'antd/lib/icon';
 import Tabs from 'antd/lib/tabs';
@@ -11,11 +11,13 @@ import Layout from 'antd/lib/layout';
 import { RadioChangeEvent } from 'antd/lib/radio';
 import { SliderValue } from 'antd/lib/slider';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
+import { Canvas } from 'cvat-canvas-wrapper';
 
 import { ColorBy } from 'reducers/interfaces';
 import ObjectsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/objects-list';
 import LabelsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/labels-list';
 import AppearanceBlock from './appearance-block';
+
 
 interface Props {
     sidebarCollapsed: boolean;
@@ -25,6 +27,8 @@ interface Props {
     selectedOpacity: number;
     blackBorders: boolean;
     showBitmap: boolean;
+    showProjections: boolean;
+    canvasInstance: Canvas;
 
     collapseSidebar(): void;
     collapseAppearance(): void;
@@ -34,6 +38,7 @@ interface Props {
     changeSelectedShapesOpacity(event: SliderValue): void;
     changeShapesBlackBorders(event: CheckboxChangeEvent): void;
     changeShowBitmap(event: CheckboxChangeEvent): void;
+    changeShowProjections(event: CheckboxChangeEvent): void;
 }
 
 function ObjectsSideBar(props: Props): JSX.Element {
@@ -45,6 +50,8 @@ function ObjectsSideBar(props: Props): JSX.Element {
         selectedOpacity,
         blackBorders,
         showBitmap,
+        showProjections,
+        canvasInstance,
         collapseSidebar,
         collapseAppearance,
         changeShapesColorBy,
@@ -52,6 +59,7 @@ function ObjectsSideBar(props: Props): JSX.Element {
         changeSelectedShapesOpacity,
         changeShapesBlackBorders,
         changeShowBitmap,
+        changeShowProjections,
     } = props;
 
     const appearanceProps = {
@@ -62,13 +70,32 @@ function ObjectsSideBar(props: Props): JSX.Element {
         selectedOpacity,
         blackBorders,
         showBitmap,
+        showProjections,
 
         changeShapesColorBy,
         changeShapesOpacity,
         changeSelectedShapesOpacity,
         changeShapesBlackBorders,
         changeShowBitmap,
+        changeShowProjections,
     };
+
+    useEffect(() => {
+        const listener = (event: Event): void => {
+            if ((event as TransitionEvent).propertyName === 'width'
+                    && ((event.target as any).classList as DOMTokenList).contains('ant-tabs-tab-prev')) {
+                canvasInstance.fit();
+            }
+        };
+
+        const [sidebar] = window.document.getElementsByClassName('cvat-objects-sidebar');
+
+        sidebar.addEventListener('transitionstart', listener);
+
+        return () => {
+            sidebar.removeEventListener('transitionstart', listener);
+        };
+    }, []);
 
     return (
         <Layout.Sider

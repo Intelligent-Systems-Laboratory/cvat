@@ -47,9 +47,9 @@
                         return result;
                     },
 
-                    async dump(name, dumper) {
+                    async dump(dumper, name = null) {
                         const result = await PluginRegistry
-                            .apiWrapper.call(this, prototype.annotations.dump, name, dumper);
+                            .apiWrapper.call(this, prototype.annotations.dump, dumper, name);
                         return result;
                     },
 
@@ -263,8 +263,8 @@
                 * Method always dumps annotations for a whole task.
                 * @method dump
                 * @memberof Session.annotations
-                * @param {string} name - a name of a file with annotations
                 * @param {module:API.cvat.classes.Dumper} dumper - a dumper
+                * @param {string} [name = null] - a name of a file with annotations
                 * which will be used to dump
                 * @returns {string} URL which can be used in order to get a dump file
                 * @throws {module:API.cvat.exceptions.PluginError}
@@ -288,6 +288,7 @@
                 * @method put
                 * @memberof Session.annotations
                 * @param {module:API.cvat.classes.ObjectState[]} data
+                * @returns {number[]} identificators of added objects
                 * array of objects on the specific frame
                 * @throws {module:API.cvat.exceptions.PluginError}
                 * @throws {module:API.cvat.exceptions.DataError}
@@ -1323,6 +1324,21 @@
         }
 
         /**
+            * Method removes all task related data from the client (annotations, history, etc.)
+            * @method close
+            * @returns {module:API.cvat.classes.Task}
+            * @memberof module:API.cvat.classes.Task
+            * @readonly
+            * @async
+            * @instance
+            * @throws {module:API.cvat.exceptions.PluginError}
+        */
+        async close() {
+            const result = await PluginRegistry.apiWrapper.call(this, Task.prototype.close);
+            return result;
+        }
+
+        /**
             * Method updates data of a created task or creates new task from scratch
             * @method save
             * @returns {module:API.cvat.classes.Task}
@@ -1385,6 +1401,7 @@
         redoActions,
         clearActions,
         getActions,
+        closeSession,
     } = require('./annotations');
 
     buildDublicatedAPI(Job.prototype);
@@ -1566,7 +1583,7 @@
         return result;
     };
 
-    Job.prototype.annotations.dump.implementation = async function (name, dumper) {
+    Job.prototype.annotations.dump.implementation = async function (dumper, name) {
         const result = await dumpAnnotations(this, name, dumper);
         return result;
     };
@@ -1599,6 +1616,15 @@
     Job.prototype.logger.log.implementation = async function (logType, payload, wait) {
         const result = await this.task.logger.log(logType, { ...payload, job_id: this.id }, wait);
         return result;
+    };
+
+    Task.prototype.close.implementation = function closeTask() {
+        for (const job of this.jobs) {
+            closeSession(job);
+        }
+
+        closeSession(this);
+        return this;
     };
 
     Task.prototype.save.implementation = async function saveTaskImplementation(onUpdate) {
@@ -1810,7 +1836,7 @@
         return result;
     };
 
-    Task.prototype.annotations.dump.implementation = async function (name, dumper) {
+    Task.prototype.annotations.dump.implementation = async function (dumper, name) {
         const result = await dumpAnnotations(this, name, dumper);
         return result;
     };

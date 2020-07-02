@@ -61,7 +61,8 @@ interface DispatchToProps {
     searchAnnotations(sessionInstance: any, frameFrom: any, frameTo: any): void;
     changeWorkspace(workspace: Workspace): void;
     closeJob(): void;
-
+}
+function mapStateToProps(state: CombinedState): StateToProps {
     const {
         annotation: {
             player: {

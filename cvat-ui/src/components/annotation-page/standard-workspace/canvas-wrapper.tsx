@@ -163,7 +163,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             trackedStateID,
             // ISL END
             showAllInterpolationTracks,
-            automaticBordering,
             showProjections,
             canvasBackgroundColor,
             onFetchAnnotation,

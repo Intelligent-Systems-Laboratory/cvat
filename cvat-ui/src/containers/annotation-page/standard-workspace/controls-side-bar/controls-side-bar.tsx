@@ -15,6 +15,7 @@ import {
     repeatDrawShapeAsync,
     pasteShapeAsync,
     resetAnnotationsGroup,
+    switchTracking, // ISL MANUAL TRACKING
 } from 'actions/annotation-actions';
 import ControlsSideBarComponent from 'components/annotation-page/standard-workspace/controls-side-bar/controls-side-bar';
 import { ActiveControl, CombinedState, Rotation } from 'reducers/interfaces';
@@ -25,6 +26,11 @@ interface StateToProps {
     activeControl: ActiveControl;
     keyMap: Record<string, ExtendedKeyMapOptions>;
     normalizedKeyMap: Record<string, string>;
+    // ISL MANUAL TRACKING
+    tracking: boolean;
+    trackedStateID: number | null;
+    activatedStateID: number | null;
+    // ISL END
 }
 
 interface DispatchToProps {
@@ -36,6 +42,7 @@ interface DispatchToProps {
     repeatDrawShape(): void;
     pasteShape(): void;
     redrawShape(): void;
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // ISL MANUAL TRACKING
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -45,6 +52,20 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 instance: canvasInstance,
                 activeControl,
             },
+            // ISL MANUAL TRACKING
+            trackobject: {
+                tracking,
+                trackedStateID,
+            },
+            annotations: {
+                activatedStateID,
+                saving: {
+                    uploading: saving,
+                    statuses: savingStatuses,
+                },
+                history,
+            },
+            // ISL END
         },
         settings: {
             player: {
@@ -63,11 +84,21 @@ function mapStateToProps(state: CombinedState): StateToProps {
         activeControl,
         normalizedKeyMap,
         keyMap,
+        // ISL MANUAL TRACKING
+        tracking,
+        trackedStateID,
+        activatedStateID,
+        // ISL END
     };
 }
 
 function dispatchToProps(dispatch: any): DispatchToProps {
     return {
+        // ISL MANUAL TRACKING
+        onSwitchTracking(tracking: boolean, trackedStateID: number | null): void {
+            dispatch(switchTracking(tracking, trackedStateID));
+        },
+        // ISL END
         mergeObjects(enabled: boolean): void {
             dispatch(mergeObjects(enabled));
         },

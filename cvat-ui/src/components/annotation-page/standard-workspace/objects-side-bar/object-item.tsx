@@ -53,10 +53,10 @@ function ItemMenu(
     switchOrientation: (() => void),
     toBackground: (() => void),
     toForeground: (() => void),
-    // EDITED FOR INTEGRATION
-    autoSnap: (() => void),
-    // EDITED END
     resetCuboidPerspective: (() => void),
+    // ISL AUTOFIT
+    autoFit: (() => void),
+    // ISL END
 ): JSX.Element {
     return (
         <Menu className='cvat-object-item-menu'>
@@ -137,19 +137,19 @@ function ItemMenu(
                     </Button>
                 </Tooltip>
             </Menu.Item>
-            {/* EDITED FOR INTEGRATION */}
+            {/* ISL AUTOFIT */}
             <Menu.Item>
-                <Tooltip title={`Snap`}>
+                <Tooltip title={`Detects the object and fits the box around its edges.`}>
                     <Button
                         type='link'
-                        icon='delete'
-                        onClick={autoSnap}   
+                        icon='import'
+                        onClick={autoFit}   
                     >
-                        autoSnap
+                        AutoFit
                     </Button>
                 </Tooltip>
             </Menu.Item>
-            {/* EDITED END */}
+            {/* ISL END */}
         </Menu>
     );
 }
@@ -177,10 +177,10 @@ interface ItemTopComponentProps {
     switchOrientation(): void;
     toBackground(): void;
     toForeground(): void;
-    // EDITED FOR INTEGRATION
-    autoSnap(): void;
-    // EDITED END
     resetCuboidPerspective(): void;
+    // ISL AUTOFIT
+    autoFit(): void;
+    // ISL END
 }
 
 function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
@@ -207,10 +207,11 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         switchOrientation,
         toBackground,
         toForeground,
-        // EDITED FOR INTEGRATION
-        autoSnap,
-        // EDITED END
+        
         resetCuboidPerspective,
+        // ISL AUTOFIT
+        autoFit,
+        // ISL END
     } = props;
 
     return (
@@ -265,10 +266,10 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
                         switchOrientation,
                         toBackground,
                         toForeground,
-                        // EDITED FOR INTEGRATION
-                        autoSnap,
-                        // EDITED END
                         resetCuboidPerspective,
+                        // ISL AUTOFIT
+                        autoFit,
+                        // ISL END
                     )}
                 >
                     <Icon type='more' />
@@ -794,10 +795,10 @@ interface Props {
     changeAttribute(attrID: number, value: string): void;
     changeColor(color: string): void;
     collapse(): void;
-    // EDITED FOR INTEGRATION
-    autoSnap(): void,
-    // EDITED END
     resetCuboidPerspective(): void;
+    // ISL AUTOFIT
+    autoFit(): void,
+    // ISL END
 }
 
 function objectItemsAreEqual(prevProps: Props, nextProps: Props): boolean {
@@ -876,10 +877,10 @@ function ObjectItemComponent(props: Props): JSX.Element {
         changeAttribute,
         changeColor,
         collapse,
-        // EDITED FOR INTEGRATION
-        autoSnap,
-        // EDITED END
         resetCuboidPerspective,
+        // ISL AUTOFIT
+        autoFit,
+        // ISL END
     } = props;
 
     const type = objectType === ObjectType.TAG ? ObjectType.TAG.toUpperCase()
@@ -935,10 +936,10 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     switchOrientation={switchOrientation}
                     toBackground={toBackground}
                     toForeground={toForeground}
-                    // EDITED FOR INTEGRATION
-                    autoSnap={autoSnap}
-                    // EDITED END
                     resetCuboidPerspective={resetCuboidPerspective}
+                    // ISL AUTOFIT
+                    autoFit={autoFit}
+                    // ISL END
                 />
                 <ItemButtons
                     shapeType={shapeType}

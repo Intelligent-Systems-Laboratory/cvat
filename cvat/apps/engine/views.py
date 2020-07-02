@@ -51,9 +51,11 @@ from . import models, task
 from .log import clogger, slogger
 
 
-import cvat.apps.engine.grabcut_improved as grabcut # EDITED for snapping algorithm
-from PIL import Image # EDITED for snapping algorithm
-import numpy as np # EDITED for snapping algorithm
+# ISL AUTOFIT
+import cvat.apps.engine.grabcut as grabcut # autofit algorithm
+from PIL import Image
+import numpy as np 
+# ISL END
 
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
@@ -382,11 +384,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             shutil.rmtree(instance.data.get_data_dirname(), ignore_errors=True)
             instance.data.delete()
 
-    # EDITED FOR INTEGRATION    
+    # ISL AUTOFIT    
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task')
     @action(detail=True, methods=['GET'])
-    def snap(self, request, pk):
-        objectID = request.query_params.get('objectID', None)
+    def autofit(self, request, pk):
         frame = request.query_params.get('frameNumber', None)
         xtl = int(request.query_params.get('x1', None))
         ytl = int(request.query_params.get('y1', None))
@@ -401,28 +402,21 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         img = Image.open(img)
         orig_img = np.array(img)
         image = orig_img[:, :, ::-1].copy()
-        data, dim = grabcut.run(image, xtl, ytl, xbr, ybr) # ADD for cropping code
+        data, dim = grabcut.run(image, xtl, ytl, xbr, ybr)
 
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                
                 snap_points = data
                 
                 new_coords = {
-                    "task" : pk,
-                    "object" : objectID,
-                    "frame" : frame,
                     "points" : snap_points,
-                    "old_points" : [xtl, ytl, xbr, ybr],
-                    "path" : request.build_absolute_uri(),
-                    "data" : data,
-                    "dimensions" : dim,
                 }
             return Response(new_coords)
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
             
-    # EDITED END
+    # ISL END
 
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',
         responses={'200': JobSerializer(many=True)})

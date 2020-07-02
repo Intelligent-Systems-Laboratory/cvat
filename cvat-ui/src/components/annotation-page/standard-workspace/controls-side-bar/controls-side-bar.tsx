@@ -23,6 +23,7 @@ import SetupTagControl from './setup-tag-control';
 import MergeControl from './merge-control';
 import GroupControl from './group-control';
 import SplitControl from './split-control';
+import TrackControl from './track-control'; // ISL MANUAL TRACKING
 
 interface Props {
     canvasInstance: Canvas;
@@ -38,6 +39,12 @@ interface Props {
     pasteShape(): void;
     resetGroup(): void;
     redrawShape(): void;
+    // ISL MANUAL TRACKING
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
+    tracking: boolean;
+    switchTrackingShortcut: string;
+    activatedStateID: number | null;
+    // ISL END
 }
 
 export default function ControlsSideBarComponent(props: Props): JSX.Element {
@@ -54,6 +61,11 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
         pasteShape,
         resetGroup,
         redrawShape,
+        // ISL MANUAL TRACKING
+        onSwitchTracking,
+        tracking,
+        activatedStateID,
+        // ISL END
     } = props;
 
     const preventDefault = (event: KeyboardEvent | undefined): void => {
@@ -72,6 +84,9 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
         CANCEL: keyMap.CANCEL,
         CLOCKWISE_ROTATION: keyMap.CLOCKWISE_ROTATION,
         ANTICLOCKWISE_ROTATION: keyMap.ANTICLOCKWISE_ROTATION,
+        // ISL MANUAL TRACKING
+        SWITCH_TRACKING: keyMap.SWITCH_TRACKING, 
+        // ISL END
     };
 
     const handlers = {
@@ -151,6 +166,16 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
             preventDefault(event);
             rotateFrame(Rotation.ANTICLOCKWISE90);
         },
+        // ISL MANUAL TRACKING
+        SWITCH_TRACKING: (event: KeyboardEvent | undefined) => {
+            preventDefault(event);
+            if (!tracking && activatedStateID !== null) {
+                onSwitchTracking(true, activatedStateID);
+            } else {
+                onSwitchTracking(false, null);
+            }
+        }
+        // ISL END
     };
 
     return (
@@ -225,6 +250,14 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
                 activeControl={activeControl}
                 splitTrack={splitTrack}
             />
+            {/* ISL MANUAL TRACKING */}
+            <TrackControl
+                switchTrackingShortcut={normalizedKeyMap.SWITCH_TRACKING}
+                tracking={tracking}
+                activatedStateID={activatedStateID}
+                onSwitchTracking={onSwitchTracking}
+            />
+            {/* ISL END */}
         </Layout.Sider>
     );
 }

@@ -282,6 +282,7 @@ export enum ActiveControl {
     GROUP = 'group',
     SPLIT = 'split',
     EDIT = 'edit',
+    TRACK = 'track',
 }
 
 export enum ShapeType {
@@ -399,12 +400,15 @@ export interface AnnotationState {
     appearanceCollapsed: boolean;
     tabContentHeight: number;
     workspace: Workspace;
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     trackobject: {
         tracking: boolean;
         trackedStateID: number | null;
     }
-    // EDITED END
+    // ISL END
+    // ISL AUTOFIT
+    autoFitObjects: any[];
+    // ISL END
 }
 
 export enum Workspace {

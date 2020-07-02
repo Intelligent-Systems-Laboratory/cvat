@@ -258,7 +258,7 @@ polyline.cvat_canvas_shape_splitting {
     height: 100%;
 }
 
-// EDITED START MAGNIFYING GLASS
+// ISL MAGNIFYING GLASS
 #cvat_canvas_magnifying_glass_container {
     position: absolute;
     z-index: 4;
@@ -267,7 +267,7 @@ polyline.cvat_canvas_shape_splitting {
     height: 100%;
     pointer-events: none;
 }
-// EDITED END
+// ISL END
 
 @keyframes loadingAnimation {
     0% {

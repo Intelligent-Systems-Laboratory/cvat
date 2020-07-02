@@ -26,8 +26,9 @@ import {
     updateCanvasContextMenu,
     addZLayer,
     switchZLayer,
-    switchTracking, // EDITED FOR USER STORY 12/13
     fetchAnnotationsAsync,
+    switchTracking, // ISL MANUAL TRACKING
+    autoFit, // ISL AUTOFIT
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -88,11 +89,14 @@ interface StateToProps {
     automaticBordering: boolean;
     switchableAutomaticBordering: boolean;
     keyMap: Record<string, ExtendedKeyMapOptions>;
-    // EDITED START FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     tracking: boolean;
     trackedStateID: number | null;
-    // EDITED END
+    // ISL END
     canvasBackgroundColor: string;
+    // ISL AUTOFIT
+    autoFitObjects: any[]; 
+    // ISL END
 }
 
 interface DispatchToProps {
@@ -122,9 +126,10 @@ interface DispatchToProps {
     onChangeGridOpacity(opacity: number): void;
     onChangeGridColor(color: GridColor): void;
     onSwitchGrid(enabled: boolean): void;
-    onSwitchTracking(tracking: boolean, trackedStateID: number | null); // EDITED FOR USER STORY 12/13 // check again later
+    onSwitchTracking(tracking: boolean, trackedStateID: number | null): void; // ISL MANUAL TRACKING
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
+    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -160,12 +165,15 @@ function mapStateToProps(state: CombinedState): StateToProps {
                     max: maxZLayer,
                 },
             },
-            // EDITED START FOR USER STORY 12/13
+            // ISL MANUAL TRACKING
             trackobject: {
                 tracking,
                 trackedStateID,
             },
-            // EDITED END
+            // ISL END
+            // ISL AUTOFIT
+            autoFitObjects, 
+            // ISL END
             sidebarCollapsed,
             workspace,
         },
@@ -238,11 +246,14 @@ function mapStateToProps(state: CombinedState): StateToProps {
         automaticBordering,
         workspace,
         keyMap,
-        // EDITED START FOR USER STORY 12/13
+        // ISL MANUAL TRACKING
         tracking,
         trackedStateID,
-        // EDITED END
+        // ISL END
         canvasBackgroundColor,
+        // ISL AUTOFIT
+        autoFitObjects,
+        // ISL END
         switchableAutomaticBordering: activeControl === ActiveControl.DRAW_POLYGON
             || activeControl === ActiveControl.DRAW_POLYLINE
             || activeControl === ActiveControl.EDIT,
@@ -331,17 +342,22 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSwitchGrid(enabled: boolean): void {
             dispatch(switchGrid(enabled));
         },
-        // EDITED FOR USER STORY 12/13
+        // ISL MANUAL TRACKING
         onSwitchTracking(tracking: boolean, trackedStateID: number | null): void {
             dispatch(switchTracking(tracking, trackedStateID));
         },
-        // EDITED END
+        // ISL END
         onSwitchAutomaticBordering(enabled: boolean): void {
             dispatch(switchAutomaticBordering(enabled));
         },
         onFetchAnnotation(): void {
             dispatch(fetchAnnotationsAsync());
         },
+        // ISL AUTOFIT
+        onAutoFit(jobInstance: any, stateToFit: any, frame: number): void {
+            dispatch(autoFit(jobInstance, stateToFit, frame));
+        },
+        // ISL END
     };
 }
 

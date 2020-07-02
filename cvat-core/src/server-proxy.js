@@ -662,8 +662,8 @@
                 }
             }
 
-            // EDITED FOR INTEGRATION
-            async function autoSnap(id, objectID, frameNumber, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
+            // ISL AUTOFIT
+            async function autoFit(id, frameNumber, points) {
                 const { backendAPI } = config;
                 const x1 = Math.trunc(points[0])
                 const y1 = Math.trunc(points[1])
@@ -672,10 +672,9 @@
 
                 let response = null;
                 try {
-                    response = await Axios.get(`${backendAPI}/tasks/${id}/snap`, { // EDITED to  add the URL parameters instead
+                    response = await Axios.get(`${backendAPI}/tasks/${id}/autofit`, {
                         proxy: config.proxy,
                         params: {
-                            objectID: objectID,
                             frameNumber: frameNumber,
                             x1: x1,
                             y1: y1,
@@ -684,12 +683,15 @@
                         }
                     });
                 } catch (errorData) {
-                    throw generateError(errorData);
+                    // throw generateError(errorData);
+                    console.log('Error receiving fitted coordinates, returning 0');
+                    return {
+                        points: [0, 0, 0, 0],
+                    };
                 }
-
                 return response.data;
             }
-            // EDITED END
+            // ISL END
 
             Object.defineProperties(this, Object.freeze({
                 server: {
@@ -715,7 +717,7 @@
                         createTask,
                         deleteTask,
                         exportDataset,
-                        autoSnap,           /*EDITED FOR INTEGRATION*/
+                        autoFit,           /*ISL AUTOFIT*/
                     }),
                     writable: false,
                 },

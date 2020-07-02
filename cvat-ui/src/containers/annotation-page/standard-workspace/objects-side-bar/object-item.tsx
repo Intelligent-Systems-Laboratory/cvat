@@ -26,6 +26,7 @@ import {
     activateObject as activateObjectAction,
     propagateObject as propagateObjectAction,
     pasteShapeAsync,
+    autoFit, // ISL AUTOFIT
 } from 'actions/annotation-actions';
 
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
@@ -64,6 +65,7 @@ interface DispatchToProps {
     propagateObject: (objectState: any) => void;
     changeLabelColor(label: any, color: string): void;
     changeGroupColor(group: number, color: string): void;
+    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
 }
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
@@ -167,6 +169,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         changeGroupColor(group: number, color: string): void {
             dispatch(changeGroupColorAsync(group, color));
         },
+        // ISL AUTOFIT
+        onAutoFit(jobInstance: any, stateToFit: any, frame: number): void {
+            dispatch(autoFit(jobInstance, stateToFit, frame));
+        },
+        // ISL END
     };
 }
 
@@ -426,22 +433,18 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
-    // EDITED FOR INTEGRATION
-    private autoSnap = (): void => {
+    // ISL AUTOFIT
+    private autoFit = (): void => {
         const {
             objectState,
             jobInstance,
             frameNumber,
+            onAutoFit,
         } = this.props;
 
-        let result = jobInstance.annotations.snap(objectState.serverID, frameNumber, objectState.points);
-        result.then((data: any) => {
-            objectState.points = data.points;
-            console.log(data);
-            this.commit();
-        });
+        onAutoFit(jobInstance, objectState, frameNumber);
     }
-    // EDITED END
+    // ISL END
     private switchCuboidOrientation = (): void => {
         function cuboidOrientationIsLeft(points: number[]): boolean {
             return points[12] > points[0];
@@ -600,10 +603,10 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 changeLabel={this.changeLabel}
                 changeAttribute={this.changeAttribute}
                 collapse={this.collapse}
-                // EDITED FOR INTEGRATION
-                autoSnap={this.autoSnap}
-            // EDITED END
                 resetCuboidPerspective={() => this.resetCuboidPerspective()}
+                // ISL AUTOFIT
+                autoFit={this.autoFit}
+                // ISL END
             />
         );
     }

@@ -78,22 +78,22 @@ export class CanvasViewImpl implements CanvasView, Listener {
         drawHidden: Record<number, boolean>;
     };
 
-    // EDITED START for USER STORY 1
+    // ISL BACKGROUND FILTER
     private backgroundOriginal: any;
     private backgroundNew: any;
     private lastShapeClicked: number;
-    // EDITED END
+    // ISL END
 
-    // EDITED START FOR MAGNIFYING GLASS
+    // ISL MAGNIFYING GLASS
     private magnifyingGlassContainer: SVGSVGElement;
     private magnifyingGlassForeignObject: SVGForeignObjectElement;
     private magnifyingGlassImage: HTMLCanvasElement;
     private circle: SVGCircleElement;
     private border: SVGCircleElement;
     private magnifyingGlassRadius: number;
-    // EDITED END
+    // ISL END
 
-    // EDITED FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
     public set trackingElement(value: any) {
         this.controller.trackingElement = value;
     }
@@ -101,7 +101,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     public get trackingElement(): any {
         return this.controller.trackingElement;
     }
-    // EDITED END
+    // ISL END
 
     private set mode(value: Mode) {
         this.controller.mode = value;
@@ -406,9 +406,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
             obj.style.transform = `scale(${this.geometry.scale}) rotate(${this.geometry.angle}deg)`;
         }
 
-        // EDITED START FOR MAGNIFYING GLASS
+        // ISL MAGNIFYING GLASS
         this.magnifyingGlassContainer.style.transform = `rotate(${this.geometry.angle}deg)`;
-        // EDITED END
+        // ISL END
 
         // Transform grid
         this.gridPath.setAttribute('stroke-width', `${consts.BASE_GRID_WIDTH / (this.geometry.scale)}px`);
@@ -506,73 +506,58 @@ export class CanvasViewImpl implements CanvasView, Listener {
             .filter((id: number): boolean => !newIDs.includes(id))
             .map((id: number): any => this.drawnStates[id]);
 
-        // EDITED START FOR USER STORY 12/13
-        if (this.trackingElement.trackID !== null) {
-            const trackID = this.trackingElement.trackID;
-            if (newIDs.includes(trackID)) {
-                const [trackstate] = states.filter((el: any) => (el.clientID === trackID));
+        // ISL MANUAL TRACKING
+        if (this.trackingElement.enable !== false) {
+            if (newIDs.includes(this.trackingElement.trackID)) {
+                const [trackstate] = states.filter((el: any) => (el.clientID === this.trackingElement.trackID));
 
                 if (!this.trackingElement.trackedframes.includes(trackstate.frame)) {
                     this.trackingElement.trackedframes.push(trackstate.frame);
+                    this.trackingElement.trackedwidthheight.push([
+                        trackstate.points[2] - trackstate.points[0],
+                        trackstate.points[3] - trackstate.points[1],
+                    ]);
                 }
-                this.trackingElement.frameindex = {
-                    frame: trackstate.frame,
-                    index: this.trackingElement.trackedframes.indexOf(trackstate.frame),
-                }
+                this.trackingElement.index = this.trackingElement.trackedframes.indexOf(trackstate.frame);
 
-                this.trackingElement.trackedStates[this.trackingElement.frameindex.index] = trackstate;
-                this.trackingElement.trackedcentroids[this.trackingElement.frameindex.index] = this.trackingElement.mousecoords;
+                this.trackingElement.trackedStates[this.trackingElement.index] = trackstate;
+                this.trackingElement.trackedcentroids[this.trackingElement.index] = this.trackingElement.mousecoords;
 
-                let resizewidth: any = null;
-                let resizeheight: any = null;
-
-                if (this.trackingElement.interpolatekeyframes.includes(this.trackingElement.frameindex.frame)) {
-                    resizewidth = this.trackingElement.trackedwidthheight[this.trackingElement.frameindex.index][0];
-                    resizeheight = this.trackingElement.trackedwidthheight[this.trackingElement.frameindex.index][1];
-                } else {
-                    resizewidth = trackstate.points[2] - trackstate.points[0];
-                    resizeheight = trackstate.points[3] - trackstate.points[1];
-                }
+                let resizewidth: any = trackstate.points[2] - trackstate.points[0];
+                let resizeheight: any = trackstate.points[3] - trackstate.points[1];
 
                 if (this.trackingElement.interpolatekeyframes.length != 0) {
-                    const interpolatekeyframes = [
-                        Math.min(...this.trackingElement.trackedframes),
-                        ...this.trackingElement.interpolatekeyframes,
-                        Math.max(...this.trackingElement.trackedframes),
-                    ].sort((a, b) => (a - b));
-
-                    let borderframes: any = [];
+                    let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a-b));
+                    if (!interpolatekeyframes.includes(Math.min(...this.trackingElement.trackedframes))) {
+                        interpolatekeyframes = [Math.min(...this.trackingElement.trackedframes), ...interpolatekeyframes];
+                    }
+                    let leftframe = null;
+                    let rightframe = null;
                     for (let i = 0; i < interpolatekeyframes.length; i++) {
-                        if (interpolatekeyframes[i] < this.trackingElement.frameindex.frame && interpolatekeyframes[i + 1] > this.trackingElement.frameindex.frame) {
-                            borderframes = [interpolatekeyframes[i], interpolatekeyframes[i + 1]];
+                        if (trackstate.frame >= interpolatekeyframes[i]) {
+                            leftframe = interpolatekeyframes[i];
+                        } else if (trackstate.frame < interpolatekeyframes[i]){
+                            rightframe = interpolatekeyframes[i];
                             break;
                         }
                     }
-
-                    if (borderframes.length !== 0) {
-                        let borderframesindex: any = [
-                            this.trackingElement.trackedframes.indexOf(borderframes[0]),
-                            this.trackingElement.trackedframes.indexOf(borderframes[1]),
-                        ]
-                        resizewidth = this.trackingElement.trackedwidthheight[borderframesindex[0]][0]
-                            + (this.trackingElement.trackedwidthheight[borderframesindex[1]][0]
-                                - this.trackingElement.trackedwidthheight[borderframesindex[0]][0])
-                            * (trackstate.frame - borderframes[0])
-                            / (borderframes[1] - borderframes[0]);
-
-                        resizeheight = this.trackingElement.trackedwidthheight[borderframesindex[0]][1]
-                            + (this.trackingElement.trackedwidthheight[borderframesindex[1]][1]
-                                - this.trackingElement.trackedwidthheight[borderframesindex[0]][1])
-                            * (trackstate.frame - borderframes[0])
-                            / (borderframes[1] - borderframes[0]);
-                        console.log(borderframes);
-                    } else {
-                        console.log("that is a key frame!");
-                    }
-
+                    resizewidth = this.interpolateSize(
+                        trackstate.frame,
+                        leftframe,
+                        (leftframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(leftframe)][0] : null,
+                        rightframe,
+                        (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][0] : null,
+                    );
+                    resizeheight = this.interpolateSize(
+                        trackstate.frame,
+                        leftframe,
+                        (leftframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(leftframe)][1] : null,
+                        rightframe,
+                        (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][1] : null,
+                    );
                 }
 
-                this.trackingElement.trackedwidthheight[this.trackingElement.frameindex.index] = [
+                this.trackingElement.trackedwidthheight[this.trackingElement.index] = [
                     resizewidth,
                     resizeheight,
                 ];
@@ -582,13 +567,10 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         .center(this.trackingElement.mousecoords[0] + offset, this.trackingElement.mousecoords[1] + offset);
                 }
             } else {
-                this.trackingElement.frameindex = {
-                    frame: null,
-                    index: null,
-                }
+                this.trackingElement.index= null;
             }
         }
-        // EDITED END
+        // ISL END
 
         if (deleted.length || updated.length || created.length) {
             if (this.activeElement.clientID !== null) {
@@ -604,12 +586,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.svgShapes[state.clientID].remove();
                 delete this.drawnStates[state.clientID];
 
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 if (state.clientID == this.lastShapeClicked) {
                     this.focusBox(false);
                     this.lastShapeClicked = null;
                 }
-                // EDITED END
+                // ISL END
             }
 
             this.addObjects(created, translate);
@@ -625,9 +607,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
             this.autoborderHandler.updateObjects();
         }
-        // EDITED START for USER STORY 1
+        // ISL BACKGROUND FILTER
         this.focusBox(true);
-        // EDITED END
+        // ISL END
     }
 
     private hideDirection(shape: SVG.Polygon | SVG.PolyLine): void {
@@ -883,7 +865,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const gridRect: SVGRectElement = window.document
             .createElementNS('http://www.w3.org/2000/svg', 'rect');
 
-        // EDITED START FOR MAGNIFYING GLASS
+        // ISL MAGNIFYING GLASS
         this.magnifyingGlassRadius = 75;
         this.magnifyingGlassContainer = window.document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.magnifyingGlassForeignObject = window.document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -931,7 +913,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.magnifyingGlassContainer.appendChild(this.border);
 
         this.canvas.appendChild(this.magnifyingGlassContainer);
-        // EDITED END
+        // ISL END
 
         // Setup loading animation
         this.loadingAnimation.setAttribute('id', 'cvat_canvas_loading_animation');
@@ -1034,12 +1016,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 ) {
                     self.controller.enableDrag(event.clientX, event.clientY);
                 }
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 if (this.lastShapeClicked != null) {
                     this.focusBox(false);
                     this.lastShapeClicked = null;
                 }
-                // EDITED END
+                // ISL END
             }
         });
 
@@ -1050,7 +1032,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         });
 
         this.content.addEventListener('wheel', (event): void => {
-            // EDITED START FOR MAGNIFYING GLASS
+            // ISL MAGNIFYING GLASS
             if (this.mode == Mode.RESIZE) {
                 if (event.deltaY < 0 && this.magnifyingGlassParameters.zoomScale > 30) {
                     this.magnifyingGlassParameters.zoomScale -= 5;
@@ -1061,7 +1043,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 }
                 return
             }
-            // EDITED END
+            // ISL END
 
             const { offset } = this.controller.geometry;
             const point = translateToSVG(this.content, [event.clientX, event.clientY]);
@@ -1076,14 +1058,14 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.content.addEventListener('mousemove', (e): void => {
             self.controller.drag(e.clientX, e.clientY);
 
-            // EDITED START MAGNIFYING GLASS
+            // ISL MAGNIFYING GLASS
             this.magnifyingGlassParameters.cursorX = e.clientX;
             this.magnifyingGlassParameters.cursorY = e.clientY;
 
             if (this.mode == Mode.RESIZE) {
                 this.updateMagnifyingGlass();
             }
-            // EDITED END
+            // ISL END
 
             if (this.mode !== Mode.IDLE) return;
             if (e.ctrlKey || e.shiftKey) return;
@@ -1091,10 +1073,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
             const { offset } = this.controller.geometry;
             const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
 
-            // EDITED START FOR USER STORY 12/13
+            // ISL MANUAL TRACKING
             this.trackingElement.mousecoords = [x - offset, y - offset];
-            this.trackingElement.trackedcentroids[this.trackingElement.frameindex.index] = this.trackingElement.mousecoords;
-            // EDITED END
+            // ISL END
 
             const event: CustomEvent = new CustomEvent('canvas.moved', {
                 bubbles: false,
@@ -1181,9 +1162,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.moveCanvas();
                 this.resizeCanvas();
                 this.transformCanvas();
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 this.getFilteredBG();
-                // EDITED END
+                // ISL END
             }
         } else if (reason === UpdateReasons.FITTED_CANVAS) {
             // Canvas geometry is going to be changed. Old object positions aren't valid any more
@@ -1308,14 +1289,14 @@ export class CanvasViewImpl implements CanvasView, Listener {
             } else if (this.mode === Mode.GROUP) {
                 this.groupHandler.select(this.controller.selected);
             }
-            // EDITED START FOR USER STORY 12/13
+            // ISL MANUAL TRACKING
         } else if (reason === UpdateReasons.SWITCH_TRACKING) {
             if (this.trackingElement.enable) {
                 this.startTracking();
             } else {
                 this.stopTracking();
             }
-            // EDITED END
+            // ISL END
         } else if (reason === UpdateReasons.CANCEL) {
             if (this.mode === Mode.DRAW) {
                 this.drawHandler.cancel();
@@ -1357,45 +1338,58 @@ export class CanvasViewImpl implements CanvasView, Listener {
         return this.canvas;
     }
 
-    // EDITED START FOR USER STORY 12/13
+    // ISL MANUAL TRACKING
+    private interpolateSize = (targetframe: number, leftframe: number | null, leftsize: number, rightframe: number | null, rightsize: number): number => {
+        if (leftframe !== null && rightframe !== null) {
+            if (leftframe == rightframe) {
+                return leftsize;
+            }
+            const newSize = leftsize + (rightsize - leftsize) * (targetframe - leftframe) / (rightframe - leftframe);
+            return newSize;
+        } else if (leftframe !== null) {
+            return leftsize;
+        } else if (rightframe !== null) {
+            return rightsize;
+        }
+    }
+
     private trackingMouseClickEventHandler = (event: any): void => {
         if (event.which === 1) {
             const states = this.trackingElement.trackedStates;
 
             for (var i = 0; i < this.trackingElement.trackedframes.length; i++) {
                 if (this.trackingElement.interpolatekeyframes.length != 0) {
-                    const interpolatekeyframes = [
-                        Math.min(...this.trackingElement.trackedframes),
-                        ...this.trackingElement.interpolatekeyframes,
-                        Math.max(...this.trackingElement.trackedframes),
-                    ].sort((a, b) => (a - b));
-
-                    let borderframes: any = [];
+                    let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a-b));
+                    if (!interpolatekeyframes.includes(Math.min(...this.trackingElement.trackedframes))) {
+                        interpolatekeyframes = [Math.min(...this.trackingElement.trackedframes), ...interpolatekeyframes];
+                    }
+                    if (!interpolatekeyframes.includes(Math.max(...this.trackingElement.trackedframes))) {
+                        interpolatekeyframes = [...interpolatekeyframes, Math.max(...this.trackingElement.trackedframes)];
+                    }
+                    let leftframe = null;
+                    let rightframe = null;
                     for (let k = 0; k < interpolatekeyframes.length; k++) {
-                        if (interpolatekeyframes[k] < states[i].frame && interpolatekeyframes[k + 1] > states[i].frame) {
-                            borderframes = [interpolatekeyframes[k], interpolatekeyframes[k + 1]];
+                        if (states[i].frame >= interpolatekeyframes[k]) {
+                            leftframe = interpolatekeyframes[k];
+                        } else if (states[i].frame < interpolatekeyframes[k]){
+                            rightframe = interpolatekeyframes[k];
                             break;
                         }
                     }
-                    console.log(borderframes);
-                    if (borderframes.length !== 0) {
-                        let borderframesindex: any = [
-                            this.trackingElement.trackedframes.indexOf(borderframes[0]),
-                            this.trackingElement.trackedframes.indexOf(borderframes[1]),
-                        ]
-                        this.trackingElement.trackedwidthheight[i][0] = this.trackingElement.trackedwidthheight[borderframesindex[0]][0]
-                            + (this.trackingElement.trackedwidthheight[borderframesindex[1]][0]
-                                - this.trackingElement.trackedwidthheight[borderframesindex[0]][0])
-                            * (states[i].frame - borderframes[0])
-                            / (borderframes[1] - borderframes[0]);
-
-                        this.trackingElement.trackedwidthheight[i][1] = this.trackingElement.trackedwidthheight[borderframesindex[0]][1]
-                            + (this.trackingElement.trackedwidthheight[borderframesindex[1]][1]
-                                - this.trackingElement.trackedwidthheight[borderframesindex[0]][1])
-                            * (states[i].frame - borderframes[0])
-                            / (borderframes[1] - borderframes[0]);
-                    }
-                    console.log('interpolate');
+                    this.trackingElement.trackedwidthheight[i][0] = this.interpolateSize(
+                        states[i].frame,
+                        leftframe,
+                        (leftframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(leftframe)][0] : null,
+                        rightframe,
+                        (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][0] : null,
+                    );
+                    this.trackingElement.trackedwidthheight[i][1] = this.interpolateSize(
+                        states[i].frame,
+                        leftframe,
+                        (leftframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(leftframe)][1] : null,
+                        rightframe,
+                        (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][1] : null,
+                    );
                 }
                 states[i].points = [
                     this.trackingElement.trackedcentroids[i][0] - this.trackingElement.trackedwidthheight[i][0] / 2,
@@ -1414,11 +1408,19 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }));
         } else if (event.which === 2) {
             this.trackingElement.scalemode = (this.trackingElement.scalemode + 1) % 3;
+            if (this.trackingElement.scalemode == 0) {
+                this.canvas.style.cursor = 'move';
+            } else if (this.trackingElement.scalemode == 1) {
+                this.canvas.style.cursor = 'ew-resize';
+            } else if (this.trackingElement.scalemode == 2) {
+                this.canvas.style.cursor = 'ns-resize';
+            }
         }
         event.preventDefault();
     }
 
     private trackingMouseMoveEventHandler = (event: any): void => {
+        this.trackingElement.trackedcentroids[this.trackingElement.index] = this.trackingElement.mousecoords;
         if (this.trackingElement.trackrect) {
             const { offset } = this.controller.geometry;
             this.trackingElement.trackrect.center(this.trackingElement.mousecoords[0] + offset, this.trackingElement.mousecoords[1] + offset);
@@ -1426,8 +1428,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     private trackingWheelEventHandler = (event: any): void => {
-        let width = this.trackingElement.trackedwidthheight[this.trackingElement.frameindex.index][0];
-        let height = this.trackingElement.trackedwidthheight[this.trackingElement.frameindex.index][1];
+        let width = this.trackingElement.trackedwidthheight[this.trackingElement.index][0];
+        let height = this.trackingElement.trackedwidthheight[this.trackingElement.index][1];
 
         if (event.deltaY < 0) {
             // SCROLL UP
@@ -1472,14 +1474,14 @@ export class CanvasViewImpl implements CanvasView, Listener {
         }
 
 
-        this.trackingElement.trackedwidthheight[this.trackingElement.frameindex.index] = [width, height];
+        this.trackingElement.trackedwidthheight[this.trackingElement.index] = [width, height];
         if (this.trackingElement.trackrect) {
             const { offset } = this.controller.geometry;
             this.trackingElement.trackrect.size(width, height)
                 .center(this.trackingElement.mousecoords[0] + offset, this.trackingElement.mousecoords[1] + offset);
         }
 
-        this.trackingElement.interpolatekeyframes[this.trackingElement.frameindex.index] = this.trackingElement.frameindex.frame;
+        this.trackingElement.interpolatekeyframes[this.trackingElement.index] = this.trackingElement.trackedframes[this.trackingElement.index];
         event.stopImmediatePropagation();
         event.preventDefault();
     }
@@ -1488,21 +1490,18 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const [state] = this.controller.objects.filter((el: any) => (el.clientID === this.trackingElement.trackID));;
 
         this.trackingElement.trackedframes.push(state.frame);
-        this.trackingElement.frameindex = {
-            frame: state.frame,
-            index: this.trackingElement.trackedframes.indexOf(state.frame),
-        }
+        this.trackingElement.index = this.trackingElement.trackedframes.indexOf(state.frame);
 
-        this.trackingElement.trackedStates[this.trackingElement.frameindex.index] = state;
-        this.trackingElement.trackedcentroids[this.trackingElement.frameindex.index] = this.trackingElement.mousecoords;
+        this.trackingElement.trackedStates[this.trackingElement.index] = state;
+        this.trackingElement.trackedcentroids[this.trackingElement.index] = this.trackingElement.mousecoords;
 
-        this.trackingElement.trackedwidthheight[this.trackingElement.frameindex.index] = [
+        this.trackingElement.trackedwidthheight[this.trackingElement.index] = [
             state.points[2] - state.points[0],
             state.points[3] - state.points[1],
         ];
 
         const { offset } = this.controller.geometry;
-        this.trackingElement.trackrect = this.adoptedContent.rect().size(this.trackingElement.trackedwidthheight[0][0], this.trackingElement.trackedwidthheight[0][1]).attr({
+        this.trackingElement.trackrect = this.adoptedContent.rect().size(this.trackingElement.trackedwidthheight[this.trackingElement.index][0], this.trackingElement.trackedwidthheight[this.trackingElement.index][1]).attr({
             fill: '#000',
             'fill-opacity': 0.2,
             'shape-rendering': 'geometricprecision',
@@ -1513,6 +1512,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         this.canvas.addEventListener('canvas.moved', this.trackingMouseMoveEventHandler, true);
         this.content.addEventListener('mousedown', this.trackingMouseClickEventHandler, true);
+
+        this.canvas.style.cursor = 'move';
     }
 
     private stopTracking(): void {
@@ -1523,10 +1524,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.trackingElement.trackrect.remove();
             this.trackingElement.trackrect = null;
         }
-    }
-    // EDITED END
 
-    // EDITED START FOR MAGNIFYING GLASS
+        this.canvas.style.cursor = '';
+    }
+    // ISL END
+
+    // ISL MAGNIFYING GLASS
     private magnifyingGlassParameters = {
         cursorX: 0,
         cursorY: 0,
@@ -1544,9 +1547,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const rectbbox = (activeRect as any).getBBox()
 
         const mgCtx = this.magnifyingGlassImage.getContext('2d');
-        const [cX, cY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
-        const bgX = cX - this.geometry.offset;
-        const bgY = cY - this.geometry.offset;
+        //const [cX, cY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
+        //const bgX = cX - this.geometry.offset;
+        //const bgY = cY - this.geometry.offset;
 
         const theta = Math.atan2((point.getAttribute('cy') as any) - (rectbbox.height / 2 as any), (point.getAttribute('cx') as any) - (rectbbox.width / 2 as any));
         const rad = Math.sqrt((width * width) + (height * height)) / 2;
@@ -1557,12 +1560,17 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.magnifyingGlassForeignObject.setAttribute('x', `${mgX - width / 2 + (rad * Math.cos(theta))}`);
         this.magnifyingGlassForeignObject.setAttribute('y', `${mgY - height / 2 + (rad * Math.sin(theta))}`);
 
+        const rX = parseInt(activeRect.getAttribute('x')) - this.geometry.offset;
+        const rY = parseInt(activeRect.getAttribute('y')) - this.geometry.offset;
+        const ptX = parseInt(point.getAttribute('cx')) + rX;
+        const ptY = parseInt(point.getAttribute('cy')) + rY;
+
         // draw zoom        
         mgCtx.fillStyle = "#FFFFFF";
         mgCtx.fillRect(0, 0, width, height);
         mgCtx.drawImage(this.background,
-            bgX - (width / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
-            bgY - (height / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
+            ptX - (width / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
+            ptY - (height / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
             (width) * (this.magnifyingGlassParameters.zoomScale / 100),
             (height) * (this.magnifyingGlassParameters.zoomScale / 100),
             0,
@@ -1578,9 +1586,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         mgCtx.lineTo(width, height / 2);
         mgCtx.stroke();
     }
-    // EDITED END
+    // ISL END
 
-    // EDITED START for USER STORY 1
+    // ISL BACKGROUND FILTER
     private getFilteredBG(): void {
         var ctx = this.background.getContext("2d");
         this.backgroundOriginal = ctx.getImageData(0, 0, this.background.width, this.background.height);
@@ -1612,7 +1620,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             ctx = null;
         };
     }
-    // EDITED END
+    // ISL END
     private redrawBitmap(): void {
         const width = +this.background.style.width.slice(0, -2);
         const height = +this.background.style.height.slice(0, -2);
@@ -1859,7 +1867,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         },
                     }));
                 });
-                // EDITED FOR INTEGRATION
+                // ISL AUTOFIT
                 this.svgShapes[state.clientID].on('dblclick.canvas', (e: any): void => {
                     e.stopPropagation();
                     this.canvas.dispatchEvent(new CustomEvent('canvas.dblclicked', {
@@ -1870,7 +1878,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         },
                     }));
                 });
-                // EDITED END
+                // ISL END
 
             if (displayAllText) {
                 this.svgTexts[state.clientID] = this.addText(state);
@@ -2017,7 +2025,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.content.append(shape.node);
         }
 
-        // EDITED START for USER STORY 1
+        // ISL BACKGROUND FILTER
         (shape as any).on('click', (): void => {
             if (this.lastShapeClicked != clientID) {
                 this.lastShapeClicked = clientID;
@@ -2053,11 +2061,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
             shape.addClass('cvat_canvas_shape_draggable');
             (shape as any).draggable().on('dragstart', (): void => {
                 this.mode = Mode.DRAG;
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 this.focusBox(false);
                 // EDITED END
                 
                 hideText();
+                // ISL END
+               
             }).on('dragend', (e: CustomEvent): void => {
                 showText();
                 this.mode = Mode.IDLE;
@@ -2082,9 +2092,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     }));
                     this.onEditDone(state, points);
                 }
-                // EDITED START for USER STORY 1
+                // ISL BACKGROUND FILTER
                 this.focusBox(true);
-                // EDITED END
+                // ISL END
             });
         }
 
@@ -2112,26 +2122,29 @@ export class CanvasViewImpl implements CanvasView, Listener {
             snapToGrid: 0.1,
         }).on('resizestart', (): void => {
             this.mode = Mode.RESIZE;
-            // EDITED START for USER STORY 1
+            // ISL BACKGROUND FILTER
             this.focusBox(false);
-            // EDITED END
+            // ISL END
             if (state.shapeType === 'rectangle') {
                 shapeSizeElement = displayShapeSize(this.adoptedContent, this.adoptedText);
             }
             resized = false;
             
-            // EDITED START FOR MAGNIFYING GLASS
+           
+            // ISL MAGNIFYING GLASS
             this.magnifyingGlassParameters.resizePointID = window.document.getElementsByClassName('cvat_canvas_selected_point')[0].id
             this.magnifyingGlassParameters.resizeRectID = window.document.getElementsByClassName('cvat_canvas_shape_activated')[0].id
             this.magnifyingGlassContainer.classList.remove('cvat_canvas_hidden');
             this.updateMagnifyingGlass()
-            // EDITED END
+            // ISL END
+            
             resized = false;
             hideDirection();
             hideText();
             if (state.shapeType === 'rectangle') {
                 shapeSizeElement = displayShapeSize(this.adoptedContent, this.adoptedText);
             }
+            
         }).on('resizing', (): void => {
             resized = true;
             if (shapeSizeElement) {
@@ -2166,10 +2179,10 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 }));
                 this.onEditDone(state, points);
             }
-            // EDITED START for USER STORY 1
+            // ISL BACKGROUND FILTER
             this.magnifyingGlassContainer.classList.add('cvat_canvas_hidden');
             this.focusBox(true);
-            // EDITED END
+            // ISL END
         });
 
         this.activeElement = {

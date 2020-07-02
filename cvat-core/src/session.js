@@ -21,13 +21,13 @@
         Object.defineProperties(prototype, {
             annotations: Object.freeze({
                 value: {
-                    // EDITED FOR INTEGRATION
-                    async snap(objectID, frameNum, points) {
+                    // ISL AUTOFIT
+                    async autoFit(frameNum, points) {
                         const result = await PluginRegistry
-                            .apiWrapper.call(this, prototype.annotations.snap, objectID, frameNum, points);
+                            .apiWrapper.call(this, prototype.annotations.autoFit, frameNum, points);
                         return result;
                     },
-                    // EDITED END
+                    // ISL END
 
                     async upload(file, loader) {
                         const result = await PluginRegistry
@@ -743,9 +743,9 @@
                 statistics: Object.getPrototypeOf(this).annotations.statistics.bind(this),
                 hasUnsavedChanges: Object.getPrototypeOf(this)
                     .annotations.hasUnsavedChanges.bind(this),
-                // EDITED FOR INTEGRATION
-                snap: Object.getPrototypeOf(this).annotations.snap.bind(this),
-                // EDITED END
+                // ISL AUTOFIT
+                autoFit: Object.getPrototypeOf(this).annotations.autoFit.bind(this),
+                // ISL END
             };
 
             this.actions = {
@@ -1300,9 +1300,9 @@
                     .annotations.hasUnsavedChanges.bind(this),
                 exportDataset: Object.getPrototypeOf(this)
                     .annotations.exportDataset.bind(this),
-                // EDITED FOR INTEGRATION
-                snap: Object.getPrototypeOf(this).annotations.snap.bind(this),
-                // EDITED END
+                // ISL AUTOFIT
+                autoFit: Object.getPrototypeOf(this).annotations.autoFit.bind(this),
+                // ISL END
             };
 
             this.actions = {
@@ -1407,17 +1407,17 @@
     buildDublicatedAPI(Job.prototype);
     buildDublicatedAPI(Task.prototype);
 
-    // EDITED FOR INTEGRATION
-    Job.prototype.annotations.snap = async function (objectID, frameNum, points) {
-        const result = await serverProxy.tasks.autoSnap(this.task.id, objectID, frameNum, points)
+    // ISL AUTOFIT
+    Job.prototype.annotations.autoFit = async function (frameNum, points) {
+        const result = await serverProxy.tasks.autoFit(this.task.id, frameNum, points)
         return result;
     },
 
-    Task.prototype.annotations.snap = async function (objectID, frameNum, points) {
-        const result = await serverProxy.tasks.autoSnap(this.id, objectID, frameNum, points)
+    Task.prototype.annotations.autoFit = async function (frameNum, points) {
+        const result = await serverProxy.tasks.autoFit(this.id, frameNum, points)
         return result;
     },
-    // EDITED END
+    // ISL END
 
     Job.prototype.save.implementation = async function () {
         // TODO: Add ability to change an assignee

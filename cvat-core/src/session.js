@@ -29,6 +29,14 @@
                     },
                     // ISL END
 
+                    // ISL TRACKING
+                    async tracking(objectID, frameStart, frameEnd, points) {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.tracking, objectID, frameStart, frameEnd, points);
+                        return result;
+                    },
+                    // ISL END
+
                     async upload(file, loader) {
                         const result = await PluginRegistry
                             .apiWrapper.call(this, prototype.annotations.upload, file, loader);
@@ -746,6 +754,9 @@
                 // ISL AUTOFIT
                 autoFit: Object.getPrototypeOf(this).annotations.autoFit.bind(this),
                 // ISL END
+                // ISL TRACKING
+                tracking: Object.getPrototypeOf(this).annotations.tracking.bind(this),
+                // ISL END
             };
 
             this.actions = {
@@ -789,18 +800,18 @@
         * @extends Session
     */
     class Task extends Session {
-    /**
-        * In a fact you need use the constructor only if you want to create a task
-        * @param {object} initialData - Object which is used for initalization
-        * <br> It can contain keys:
-        * <br> <li style="margin-left: 10px;"> name
-        * <br> <li style="margin-left: 10px;"> assignee
-        * <br> <li style="margin-left: 10px;"> bug_tracker
-        * <br> <li style="margin-left: 10px;"> z_order
-        * <br> <li style="margin-left: 10px;"> labels
-        * <br> <li style="margin-left: 10px;"> segment_size
-        * <br> <li style="margin-left: 10px;"> overlap
-    */
+        /**
+            * In a fact you need use the constructor only if you want to create a task
+            * @param {object} initialData - Object which is used for initalization
+            * <br> It can contain keys:
+            * <br> <li style="margin-left: 10px;"> name
+            * <br> <li style="margin-left: 10px;"> assignee
+            * <br> <li style="margin-left: 10px;"> bug_tracker
+            * <br> <li style="margin-left: 10px;"> z_order
+            * <br> <li style="margin-left: 10px;"> labels
+            * <br> <li style="margin-left: 10px;"> segment_size
+            * <br> <li style="margin-left: 10px;"> overlap
+        */
         constructor(initialData) {
             super();
             const data = {
@@ -1101,7 +1112,7 @@
                             if (!(label instanceof Label)) {
                                 throw new ArgumentError(
                                     'Each array value must be an instance of Label. '
-                                        + `${typeof (label)} was found`,
+                                    + `${typeof (label)} was found`,
                                 );
                             }
                         }
@@ -1303,6 +1314,9 @@
                 // ISL AUTOFIT
                 autoFit: Object.getPrototypeOf(this).annotations.autoFit.bind(this),
                 // ISL END
+                // ISL TRACKING
+                tracking: Object.getPrototypeOf(this).annotations.tracking.bind(this),
+                // ISL END
             };
 
             this.actions = {
@@ -1352,7 +1366,7 @@
             * @throws {module:API.cvat.exceptions.ServerError}
             * @throws {module:API.cvat.exceptions.PluginError}
         */
-        async save(onUpdate = () => {}) {
+        async save(onUpdate = () => { }) {
             const result = await PluginRegistry
                 .apiWrapper.call(this, Task.prototype.save, onUpdate);
             return result;
@@ -1415,6 +1429,18 @@
 
     Task.prototype.annotations.autoFit = async function (frameNum, points) {
         const result = await serverProxy.tasks.autoFit(this.id, frameNum, points)
+        return result;
+    },
+    // ISL END
+
+    // ISL TRACKING 
+    Job.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
+        const result = await serverProxy.tasks.tracking(this.task.id, objectID, frameStart, frameEnd, points)
+        return result;
+    },
+
+    Task.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
+        const result = await serverProxy.tasks.tracking(this.id, objectID, frameStart, frameEnd, points)
         return result;
     },
     // ISL END

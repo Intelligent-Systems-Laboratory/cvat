@@ -16,6 +16,7 @@ import { Canvas } from 'cvat-canvas-wrapper';
 import { ColorBy } from 'reducers/interfaces';
 import ObjectsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/objects-list';
 import LabelsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/labels-list';
+import HelpListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/help-list';
 import AppearanceBlock from './appearance-block';
 
 
@@ -132,9 +133,15 @@ function ObjectsSideBar(props: Props): JSX.Element {
                 >
                     <LabelsListContainer />
                 </Tabs.TabPane>
+                <Tabs.TabPane
+                    tab={<Text strong>Help</Text>}
+                    key='help'
+                >
+                    <HelpListContainer />
+                </Tabs.TabPane>
             </Tabs>
 
-            { !sidebarCollapsed && <AppearanceBlock {...appearanceProps} /> }
+            {!sidebarCollapsed && <AppearanceBlock {...appearanceProps} />}
         </Layout.Sider>
     );
 }

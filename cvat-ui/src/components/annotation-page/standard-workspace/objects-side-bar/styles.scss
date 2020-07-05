@@ -280,3 +280,35 @@
         }
     }
 }
+
+// EDITED START for help sidebar
+.cvat-objects-sidebar-help-header {
+    background: $objects-bar-tabs-color;
+    padding: 5px;
+
+    > div:nth-child(1) > div:nth-child(1) {
+        height: 32px;
+    }
+}
+
+.cvat-objects-sidebar-help-list {
+    background: $objects-bar-tabs-color;
+    padding: 5px;
+
+    > div:nth-child(1) > div:nth-child(1) {
+        height: 32px;
+    }
+}
+
+.cvat-objects-sidebar-help-content {
+    padding: 5px;
+    height: 800px;
+    text-align: justify;
+}
+
+.cvat-objects-sidebar-help-container {
+    background-color: $background-color-2;
+    height: 100%;
+    overflow-y: scroll;
+}
+// EDITED END

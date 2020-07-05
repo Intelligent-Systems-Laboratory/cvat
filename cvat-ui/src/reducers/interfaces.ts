@@ -308,6 +308,7 @@ export enum StatesOrdering {
 export enum ContextMenuType {
     CANVAS_SHAPE = 'canvas_shape',
     CANVAS_SHAPE_POINT = 'canvas_shape_point',
+    CANVAS_SHAPE_FIRST = 'canvas_shape_first', // EDITED for labels user story
 }
 
 export enum Rotation {

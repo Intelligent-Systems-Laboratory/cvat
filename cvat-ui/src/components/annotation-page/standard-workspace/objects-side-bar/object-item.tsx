@@ -360,12 +360,12 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                 <Col span={20} style={{ textAlign: 'center' }}>
                     <Row type='flex' justify='space-around'>
                         <Col>
-                            { navigateFirstKeyframe
+                            {navigateFirstKeyframe
                                 ? <Icon component={FirstIcon} onClick={navigateFirstKeyframe} />
                                 : <Icon component={FirstIcon} style={{ opacity: 0.5, pointerEvents: 'none' }} />}
                         </Col>
                         <Col>
-                            { navigatePrevKeyframe
+                            {navigatePrevKeyframe
                                 ? (
                                     <Tooltip title={`Go to previous keyframe ${prevKeyFrameShortcut}`}>
                                         <Icon
@@ -377,7 +377,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                                 : <Icon component={PreviousIcon} style={{ opacity: 0.5, pointerEvents: 'none' }} />}
                         </Col>
                         <Col>
-                            { navigateNextKeyframe
+                            {navigateNextKeyframe
                                 ? (
                                     <Tooltip title={`Go to next keyframe ${nextKeyFrameShortcut}`}>
                                         <Icon
@@ -389,7 +389,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                                 : <Icon component={NextIcon} style={{ opacity: 0.5, pointerEvents: 'none' }} />}
                         </Col>
                         <Col>
-                            { navigateLastKeyframe
+                            {navigateLastKeyframe
                                 ? <Icon component={LastIcon} onClick={navigateLastKeyframe} />
                                 : <Icon component={LastIcon} style={{ opacity: 0.5, pointerEvents: 'none' }} />}
                         </Col>
@@ -397,7 +397,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                     <Row type='flex' justify='space-around'>
                         <Col>
                             <Tooltip title={`Switch outside property ${switchOutsideShortcut}`}>
-                                { outside
+                                {outside
                                     ? <Icon component={ObjectOutsideIcon} onClick={unsetOutside} />
                                     : <Icon type='select' onClick={setOutside} />}
                             </Tooltip>
@@ -411,7 +411,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                         </Col>
                         <Col>
                             <Tooltip title={`Switch occluded property ${switchOccludedShortcut}`}>
-                                { occluded
+                                {occluded
                                     ? <Icon type='team' onClick={unsetOccluded} />
                                     : <Icon type='user' onClick={setOccluded} />}
                             </Tooltip>
@@ -425,7 +425,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                         </Col>
                         <Col>
                             <Tooltip title={`Switch keyframe property ${switchKeyFrameShortcut}`}>
-                                { keyframe
+                                {keyframe
                                     ? <Icon type='star' theme='filled' onClick={unsetKeyframe} />
                                     : <Icon type='star' onClick={setKeyframe} />}
                             </Tooltip>
@@ -434,7 +434,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                             shapeType !== ShapeType.POINTS && (
                                 <Col>
                                     <Tooltip title='Switch pinned property'>
-                                        { pinned
+                                        {pinned
                                             ? <Icon type='pushpin' theme='filled' onClick={unpin} />
                                             : <Icon type='pushpin' onClick={pin} />}
                                     </Tooltip>
@@ -478,14 +478,14 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                     </Col>
                     <Col>
                         <Tooltip title={`Switch occluded property ${switchOccludedShortcut}`}>
-                            { occluded
+                            {occluded
                                 ? <Icon type='team' onClick={unsetOccluded} />
                                 : <Icon type='user' onClick={setOccluded} />}
                         </Tooltip>
                     </Col>
                     <Col>
                         <Tooltip title={`Switch hidden property ${switchHiddenShortcut}`}>
-                            { hidden
+                            {hidden
                                 ? <Icon type='eye-invisible' onClick={show} />
                                 : <Icon type='eye' onClick={hide} />}
                         </Tooltip>
@@ -494,7 +494,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                         shapeType !== ShapeType.POINTS && (
                             <Col>
                                 <Tooltip title='Switch pinned property'>
-                                    { pinned
+                                    {pinned
                                         ? <Icon type='pushpin' theme='filled' onClick={unpin} />
                                         : <Icon type='pushpin' onClick={pin} />}
                                 </Tooltip>
@@ -574,12 +574,12 @@ function ItemAttributeComponent(props: ItemAttributeComponentProps): JSX.Element
                             changeAttribute(attrID, event.target.value);
                         }}
                     >
-                        { attrValues.map((value: string): JSX.Element => (
+                        {attrValues.map((value: string): JSX.Element => (
                             <Radio key={value} value={value}>
                                 {value === consts.UNDEFINED_ATTRIBUTE_VALUE
                                     ? consts.NO_BREAK_SPACE : value}
                             </Radio>
-                        )) }
+                        ))}
                     </Radio.Group>
                 </fieldset>
             </Col>
@@ -603,12 +603,12 @@ function ItemAttributeComponent(props: ItemAttributeComponentProps): JSX.Element
                         value={attrValue}
                         className='cvat-object-item-select-attribute'
                     >
-                        { attrValues.map((value: string): JSX.Element => (
+                        {attrValues.map((value: string): JSX.Element => (
                             <Select.Option key={value} value={value}>
                                 {value === consts.UNDEFINED_ATTRIBUTE_VALUE
                                     ? consts.NO_BREAK_SPACE : value}
                             </Select.Option>
-                        )) }
+                        ))}
                     </Select>
                 </Col>
             </>
@@ -719,7 +719,7 @@ function ItemAttributesComponent(props: ItemAttributesComponentProps): JSX.Eleme
                     header={<span style={{ fontSize: '11px' }}>Details</span>}
                     key='details'
                 >
-                    { sorted.map((attribute: any): JSX.Element => (
+                    {sorted.map((attribute: any): JSX.Element => (
                         <Row
                             key={attribute.id}
                             type='flex'
@@ -974,7 +974,7 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     hide={hide}
                     show={show}
                 />
-                { !!attributes.length
+                {!!attributes.length
                     && (
                         <ItemAttributes
                             collapsed={collapsed}

@@ -44,6 +44,8 @@ import {
     Configuration,
 } from './canvasModel';
 
+import { Job, Task } from '../../../cvat-core/src/session';
+
 export interface CanvasView {
     html(): HTMLDivElement;
 }
@@ -567,7 +569,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         .center(this.trackingElement.mousecoords[0] + offset, this.trackingElement.mousecoords[1] + offset);
                 }
             } else {
-                this.trackingElement.index= null;
+                this.trackingElement.index = null;
             }
         }
         // ISL END
@@ -1356,7 +1358,6 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private trackingMouseClickEventHandler = (event: any): void => {
         if (event.which === 1) {
             const states = this.trackingElement.trackedStates;
-
             for (var i = 0; i < this.trackingElement.trackedframes.length; i++) {
                 if (this.trackingElement.interpolatekeyframes.length != 0) {
                     let interpolatekeyframes = [...this.trackingElement.interpolatekeyframes].sort((a, b) => (a-b));
@@ -1391,6 +1392,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                         (rightframe !== null) ? this.trackingElement.trackedwidthheight[this.trackingElement.trackedframes.indexOf(rightframe)][1] : null,
                     );
                 }
+
                 states[i].points = [
                     this.trackingElement.trackedcentroids[i][0] - this.trackingElement.trackedwidthheight[i][0] / 2,
                     this.trackingElement.trackedcentroids[i][1] - this.trackingElement.trackedwidthheight[i][1] / 2,

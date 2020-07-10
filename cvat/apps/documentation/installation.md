@@ -69,11 +69,11 @@ server. Proxy is an advanced topic and it is not covered by the guide.
     ```
 
 -   Clone _CVAT_ source code from the
-    [GitHub repository](https://github.com/opencv/cvat).
+    [GitHub repository](https://github.com/Intelligent-Systems-Laboratory/cvat).
 
     ```bash
     sudo apt-get --no-install-recommends install -y git
-    git clone https://github.com/opencv/cvat
+    git clone https://github.com/Intelligent-Systems-Laboratory/cvat.git
     cd cvat
     ```
 
@@ -135,10 +135,10 @@ server. Proxy is an advanced topic and it is not covered by the guide.
 -   Go to windows menu, find `Git Bash` application and run it. You should see a terminal window.
 
 -   Clone _CVAT_ source code from the
-    [GitHub repository](https://github.com/opencv/cvat).
+    [GitHub repository](https://github.com/Intelligent-Systems-Laboratory/cvat).
 
     ```bash
-    git clone https://github.com/opencv/cvat
+    git clone https://github.com/Intelligent-Systems-Laboratory/cvat.git
     cd cvat
     ```
 
@@ -200,10 +200,10 @@ server. Proxy is an advanced topic and it is not covered by the guide.
     launch Spotlight and type "Terminal," then double-click the search result.
 
 -   Clone _CVAT_ source code from the
-    [GitHub repository](https://github.com/opencv/cvat).
+    [GitHub repository](https://github.com/Intelligent-Systems-Laboratory/cvat).
 
     ```bash
-    git clone https://github.com/opencv/cvat
+    git clone https://github.com/Intelligent-Systems-Laboratory/cvat.git
     cd cvat
     ```
 

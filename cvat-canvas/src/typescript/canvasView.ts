@@ -105,6 +105,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
     // ISL END
 
+    // ISL FIXED ZOOM
+    private fixedZoomSize: number;
+    // ISL END
     private set mode(value: Mode) {
         this.controller.mode = value;
     }
@@ -917,6 +920,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.canvas.appendChild(this.magnifyingGlassContainer);
         // ISL END
 
+        // ISL FIXED ZOOM
+        this.fixedZoomSize = 250;
+        // ISL END
         // Setup loading animation
         this.loadingAnimation.setAttribute('id', 'cvat_canvas_loading_animation');
         loadingCircle.setAttribute('id', 'cvat_canvas_loading_circle');
@@ -1079,6 +1085,15 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.trackingElement.mousecoords = [x - offset, y - offset];
             // ISL END
 
+            // ISL FIXED ZOOM
+            var zoomCanvas = document.getElementById('zoom-canvas');
+            var zoomCanvasCtx = zoomCanvas.getContext('2d');
+            // console.log("x,y",e.clientX,e.clientY);
+            var zoomX = x - offset - this.fixedZoomSize/2;
+            var zoomY = y - offset - this.fixedZoomSize/2;
+            zoomCanvasCtx.drawImage(this.background,zoomX,zoomY,this.fixedZoomSize,this.fixedZoomSize,0,0,this.fixedZoomSize,this.fixedZoomSize);
+            
+            // ISL END
             const event: CustomEvent = new CustomEvent('canvas.moved', {
                 bubbles: false,
                 cancelable: true,
@@ -1541,7 +1556,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     private updateMagnifyingGlass(): void {
-        const [mgX, mgY] = translateToSVG(this.magnifyingGlassContainer, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
+        const [mgX, mgY] = translateToSVG(this.magnifyingGlassContainer, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]); //convert coordinates to SVG coordinates
         const width = this.magnifyingGlassImage.width;
         const height = this.magnifyingGlassImage.height;
         const point = window.document.getElementById(this.magnifyingGlassParameters.resizePointID)

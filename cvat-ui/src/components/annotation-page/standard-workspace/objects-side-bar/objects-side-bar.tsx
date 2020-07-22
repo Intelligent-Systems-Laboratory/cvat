@@ -8,6 +8,7 @@ import Text from 'antd/lib/typography/Text';
 import Icon from 'antd/lib/icon';
 import Tabs from 'antd/lib/tabs';
 import Layout from 'antd/lib/layout';
+import Card from 'antd/lib/card';
 import { RadioChangeEvent } from 'antd/lib/radio';
 import { SliderValue } from 'antd/lib/slider';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
@@ -18,7 +19,11 @@ import ObjectsListContainer from 'containers/annotation-page/standard-workspace/
 import LabelsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/labels-list';
 import HelpListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/help-list';
 import AppearanceBlock from './appearance-block';
+import SampleImage from './sample.svg';
 
+const sample_image = () => (
+    <img src={SampleImage} />
+ );
 
 interface Props {
     sidebarCollapsed: boolean;
@@ -99,6 +104,7 @@ function ObjectsSideBar(props: Props): JSX.Element {
     }, []);
 
     return (
+        
         <Layout.Sider
             className='cvat-objects-sidebar'
             theme='light'
@@ -110,6 +116,15 @@ function ObjectsSideBar(props: Props): JSX.Element {
             collapsed={sidebarCollapsed}
         >
             {/* eslint-disable-next-line */}
+            <div className="site-card-border-less-wrapper" id="zoom-container">
+                <Card bordered={true} style={{ width: 300}}
+                bodyStyle={{backgroundColor: 'rgba(192, 192, 192,0.8)', border: 0 }}
+                >
+                
+                <canvas id='zoom-canvas' width='250' height='250'> </canvas>
+                </Card>
+            </div>
+            
             <span
                 className={`cvat-objects-sidebar-sider
                     ant-layout-sider-zero-width-trigger
@@ -119,7 +134,6 @@ function ObjectsSideBar(props: Props): JSX.Element {
                 {sidebarCollapsed ? <Icon type='menu-fold' title='Show' />
                     : <Icon type='menu-unfold' title='Hide' />}
             </span>
-
             <Tabs type='card' defaultActiveKey='objects' className='cvat-objects-sidebar-tabs'>
                 <Tabs.TabPane
                     tab={<Text strong>Objects</Text>}
@@ -140,9 +154,10 @@ function ObjectsSideBar(props: Props): JSX.Element {
                     <HelpListContainer />
                 </Tabs.TabPane>
             </Tabs>
-
+            
             {!sidebarCollapsed && <AppearanceBlock {...appearanceProps} />}
         </Layout.Sider>
+        
     );
 }
 

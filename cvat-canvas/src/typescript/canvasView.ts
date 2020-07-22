@@ -1091,7 +1091,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
             // console.log("x,y",e.clientX,e.clientY);
             var zoomX = x - offset - this.fixedZoomSize/2;
             var zoomY = y - offset - this.fixedZoomSize/2;
-            zoomCanvasCtx.drawImage(this.background,zoomX,zoomY,this.fixedZoomSize,this.fixedZoomSize,0,0,this.fixedZoomSize,this.fixedZoomSize);
+            zoomCanvasCtx.drawImage(this.background,zoomX,zoomY,this.fixedZoomSize,
+                this.fixedZoomSize,0,0,this.fixedZoomSize,this.fixedZoomSize);
             
             // ISL END
             const event: CustomEvent = new CustomEvent('canvas.moved', {
@@ -1559,9 +1560,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const [mgX, mgY] = translateToSVG(this.magnifyingGlassContainer, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]); //convert coordinates to SVG coordinates
         const width = this.magnifyingGlassImage.width;
         const height = this.magnifyingGlassImage.height;
-        const point = window.document.getElementById(this.magnifyingGlassParameters.resizePointID)
-        const activeRect = window.document.getElementById(this.magnifyingGlassParameters.resizeRectID)
-        const rectbbox = (activeRect as any).getBBox()
+        const point = window.document.getElementById(this.magnifyingGlassParameters.resizePointID);
+        const activeRect = window.document.getElementById(this.magnifyingGlassParameters.resizeRectID);
+        const rectbbox = (activeRect as any).getBBox();
 
         const mgCtx = this.magnifyingGlassImage.getContext('2d');
         //const [cX, cY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
@@ -1585,15 +1586,27 @@ export class CanvasViewImpl implements CanvasView, Listener {
         // draw zoom        
         mgCtx.fillStyle = "#FFFFFF";
         mgCtx.fillRect(0, 0, width, height);
-        mgCtx.drawImage(this.background,
-            ptX - (width / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
-            ptY - (height / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
-            (width) * (this.magnifyingGlassParameters.zoomScale / 100),
-            (height) * (this.magnifyingGlassParameters.zoomScale / 100),
-            0,
-            0,
-            width,
-            height);
+        // mgCtx.drawImage(this.background,
+        //     ptX - (width / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
+        //     ptY - (height / 2) * (this.magnifyingGlassParameters.zoomScale / 100),
+        //     (width) * (this.magnifyingGlassParameters.zoomScale / 100),
+        //     (height) * (this.magnifyingGlassParameters.zoomScale / 100),
+        //     0,
+        //     0,
+        //     width,
+        //     height);
+
+        // ISL NEW MAGNIFYING GLASS
+        const { offset } = this.controller.geometry;
+        const [offsetX,offsetY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
+        var mouseCoordsX = offsetX -offset;
+        var mousecoordsY = offsetY -offset;
+
+        console.log(mouseCoordsX, mousecoordsY);
+        mgCtx.drawImage(this.background,mouseCoordsX - width/2,mousecoordsY - height/2,
+            width, height, 0, 0,width,height);
+        // ISL END
+
         // draw crosshair
         mgCtx.strokeStyle = "red";
         mgCtx.moveTo(width / 2, 0);

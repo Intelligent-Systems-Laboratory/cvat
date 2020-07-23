@@ -18,8 +18,7 @@ import { ColorBy } from 'reducers/interfaces';
 import ObjectsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/objects-list';
 import LabelsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/labels-list';
 import HelpListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/help-list';
-import AppearanceBlock from './appearance-block';
-import SampleImage from './sample.svg';
+import AppearanceBlock from './appearance-block'
 
 const sample_image = () => (
     <img src={SampleImage} />
@@ -104,7 +103,7 @@ function ObjectsSideBar(props: Props): JSX.Element {
     }, []);
 
     return (
-        
+
         <Layout.Sider
             className='cvat-objects-sidebar'
             theme='light'
@@ -120,11 +119,11 @@ function ObjectsSideBar(props: Props): JSX.Element {
                 <Card bordered={true} style={{ width: 300}}
                 bodyStyle={{backgroundColor: 'rgba(192, 192, 192,0.8)', border: 0 }}
                 >
-                
+
                 <canvas id='zoom-canvas' width='250' height='250'> </canvas>
                 </Card>
             </div>
-            
+
             <span
                 className={`cvat-objects-sidebar-sider
                     ant-layout-sider-zero-width-trigger
@@ -154,10 +153,10 @@ function ObjectsSideBar(props: Props): JSX.Element {
                     <HelpListContainer />
                 </Tabs.TabPane>
             </Tabs>
-            
+
             {!sidebarCollapsed && <AppearanceBlock {...appearanceProps} />}
         </Layout.Sider>
-        
+
     );
 }
 

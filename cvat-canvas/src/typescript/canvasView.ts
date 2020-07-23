@@ -1066,6 +1066,16 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.content.addEventListener('mousemove', (e): void => {
             self.controller.drag(e.clientX, e.clientY);
 
+            // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
+            const { offset } = this.controller.geometry;    // Declare variables for ISL FIXED ZOOM and CROSSHAIR
+            const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
+            var zoomCanvas = document.getElementById('zoom-canvas');
+            var zoomCanvasCtx = zoomCanvas.getContext('2d');
+            var zoomX = x - offset - this.fixedZoomSize/2;
+            var zoomY = y - offset - this.fixedZoomSize/2;
+            var zoomImg = this.background;
+            // ISL END
+
             // ISL MAGNIFYING GLASS
             this.magnifyingGlassParameters.cursorX = e.clientX;
             this.magnifyingGlassParameters.cursorY = e.clientY;
@@ -1075,26 +1085,35 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
             // ISL END
 
+            // ISL FIXED ZOOM - CROSSHAIR
+            if (this.mode === Mode.DRAW || this.mode === Mode.RESIZE) { // Operate only on DRAW and RESIZE modes
+            zoomCanvasCtx.clearRect(0,0,this.fixedZoomSize,this.fixedZoomSize); // Clear canvas
+            zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,this.fixedZoomSize, // Show zoomed image
+                this.fixedZoomSize,0,0,this.fixedZoomSize,this.fixedZoomSize)
+            zoomCanvasCtx.beginPath();  // Draw crosshair lines
+            zoomCanvasCtx.lineWidth = 2;
+            zoomCanvasCtx.strokeStyle = 'red';
+            zoomCanvasCtx.moveTo(this.fixedZoomSize/2,0);
+            zoomCanvasCtx.lineTo(this.fixedZoomSize/2,this.fixedZoomSize);
+            zoomCanvasCtx.moveTo(0,this.fixedZoomSize/2);
+            zoomCanvasCtx.lineTo(this.fixedZoomSize,this.fixedZoomSize/2);
+            zoomCanvasCtx.stroke();
+            }
+            // ISL END
+
             if (this.mode !== Mode.IDLE) return;
             if (e.ctrlKey || e.shiftKey) return;
-
-            const { offset } = this.controller.geometry;
-            const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
 
             // ISL MANUAL TRACKING
             this.trackingElement.mousecoords = [x - offset, y - offset];
             // ISL END
 
             // ISL FIXED ZOOM
-            var zoomCanvas = document.getElementById('zoom-canvas');
-            var zoomCanvasCtx = zoomCanvas.getContext('2d');
-            // console.log("x,y",e.clientX,e.clientY);
-            var zoomX = x - offset - this.fixedZoomSize/2;
-            var zoomY = y - offset - this.fixedZoomSize/2;
-            zoomCanvasCtx.drawImage(this.background,zoomX,zoomY,this.fixedZoomSize,
-                this.fixedZoomSize,0,0,this.fixedZoomSize,this.fixedZoomSize);
-            
+            zoomCanvasCtx.clearRect(0,0,this.fixedZoomSize,this.fixedZoomSize); // Clear canvas
+            zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,this.fixedZoomSize, // Show zoomed image
+                this.fixedZoomSize,0,0,this.fixedZoomSize,this.fixedZoomSize)
             // ISL END
+
             const event: CustomEvent = new CustomEvent('canvas.moved', {
                 bubbles: false,
                 cancelable: true,
@@ -1262,6 +1281,19 @@ export class CanvasViewImpl implements CanvasView, Listener {
             if (data.enabled && this.mode === Mode.IDLE) {
                 this.canvas.style.cursor = 'crosshair';
                 this.mode = Mode.DRAW;
+                // ISL FIXED ZOOM - CROSSHAIR
+                // This is a repeat of the entries in the 'mousemove' event. How can we optimize this?
+                var zoomCanvas = document.getElementById('zoom-canvas');
+                var zoomCanvasCtx = zoomCanvas.getContext('2d');
+                zoomCanvasCtx.beginPath();  // Draw crosshair lines
+                zoomCanvasCtx.lineWidth = 2;
+                zoomCanvasCtx.strokeStyle = 'red';
+                zoomCanvasCtx.moveTo(this.fixedZoomSize/2,0);
+                zoomCanvasCtx.lineTo(this.fixedZoomSize/2,this.fixedZoomSize);
+                zoomCanvasCtx.moveTo(0,this.fixedZoomSize/2);
+                zoomCanvasCtx.lineTo(this.fixedZoomSize,this.fixedZoomSize/2);
+                zoomCanvasCtx.stroke();
+                // ISL END
                 if (typeof (data.redraw) === 'number') {
                     this.setupServiceHidden(data.redraw, true);
                 }
@@ -1583,7 +1615,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const ptX = parseInt(point.getAttribute('cx')) + rX;
         const ptY = parseInt(point.getAttribute('cy')) + rY;
 
-        // draw zoom        
+        // draw zoom
         mgCtx.fillStyle = "#FFFFFF";
         mgCtx.fillRect(0, 0, width, height);
         // mgCtx.drawImage(this.background,
@@ -1602,7 +1634,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         var mouseCoordsX = offsetX -offset;
         var mousecoordsY = offsetY -offset;
 
-        console.log(mouseCoordsX, mousecoordsY);
+        //console.log(mouseCoordsX, mousecoordsY);
         mgCtx.drawImage(this.background,mouseCoordsX - width/2,mousecoordsY - height/2,
             width, height, 0, 0,width,height);
         // ISL END
@@ -2094,10 +2126,10 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 // ISL BACKGROUND FILTER
                 this.focusBox(false);
                 // EDITED END
-                
+
                 hideText();
                 // ISL END
-               
+
             }).on('dragend', (e: CustomEvent): void => {
                 showText();
                 this.mode = Mode.IDLE;
@@ -2159,22 +2191,22 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 shapeSizeElement = displayShapeSize(this.adoptedContent, this.adoptedText);
             }
             resized = false;
-            
-           
+
+
             // ISL MAGNIFYING GLASS
             this.magnifyingGlassParameters.resizePointID = window.document.getElementsByClassName('cvat_canvas_selected_point')[0].id
             this.magnifyingGlassParameters.resizeRectID = window.document.getElementsByClassName('cvat_canvas_shape_activated')[0].id
             this.magnifyingGlassContainer.classList.remove('cvat_canvas_hidden');
             this.updateMagnifyingGlass()
             // ISL END
-            
+
             resized = false;
             hideDirection();
             hideText();
             if (state.shapeType === 'rectangle') {
                 shapeSizeElement = displayShapeSize(this.adoptedContent, this.adoptedText);
             }
-            
+
         }).on('resizing', (): void => {
             resized = true;
             if (shapeSizeElement) {

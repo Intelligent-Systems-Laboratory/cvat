@@ -100,8 +100,8 @@ interface Props {
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     // ISL END
     // ISL AUTOFIT
-    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; 
-    autoFitObjects: any[]; 
+    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void;
+    autoFitObjects: any[];
     // ISL END
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
@@ -168,7 +168,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onFetchAnnotation,
             automaticBordering,
             // ISL AUTOFIT
-            autoFitObjects, 
+            autoFitObjects,
             // ISL END
         } = this.props;
 
@@ -356,7 +356,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         onUpdateAnnotations(event.detail.states);
         onSwitchTracking(false, null);
     }
-    // ISL END    
+    // ISL END
 
     // ISL CONTEXT MENU ON DRAW
     private contextMenuOnDraw(): void {
@@ -517,9 +517,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasShapeDragged = (e: any): void => {
-        const { 
+        const {
             jobInstance,
-            onUpdateContextMenu, // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE 
+            onUpdateContextMenu, // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
         } = this.props;
         const { id } = e.detail;
         jobInstance.logger.log(LogType.dragObject, { id });
@@ -527,7 +527,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasShapeResized = (e: any): void => {
-        const { 
+        const {
             jobInstance,
             onUpdateContextMenu, // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
         } = this.props;
@@ -843,7 +843,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().addEventListener('point.contextmenu', this.onCanvasPointContextMenu);
         // ISL MANUAL TRACKING
         canvasInstance.html().addEventListener('canvas.trackingdone', this.trackingDone);
-        // ISL END 
+        // ISL END
     }
 
     public render(): JSX.Element {
@@ -972,7 +972,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 preventDefault(event);
                 if (activatedStateID){
                     this.autoFit(activatedStateID);
-                } 
+                }
             },
             // ISL END
             SWITCH_AUTOMATIC_BORDERING: (event: KeyboardEvent | undefined) => {

@@ -107,6 +107,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
     // ISL FIXED ZOOM
     private fixedZoomSize: number;
+    private fixedZoomMultiplier: number;
     // ISL END
     private set mode(value: Mode) {
         this.controller.mode = value;
@@ -922,6 +923,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         // ISL FIXED ZOOM
         this.fixedZoomSize = 250;
+        this.fixedZoomMultiplier = 2;
         // ISL END
         // Setup loading animation
         this.loadingAnimation.setAttribute('id', 'cvat_canvas_loading_animation');
@@ -1071,8 +1073,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
             const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
             var zoomCanvas = document.getElementById('zoom-canvas');
             var zoomCanvasCtx = zoomCanvas.getContext('2d');
-            var zoomX = x - offset - this.fixedZoomSize/2;
-            var zoomY = y - offset - this.fixedZoomSize/2;
+            var zoomX = x - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
+            var zoomY = y - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
             var zoomImg = this.background;
             // ISL END
 
@@ -1085,11 +1087,11 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
             // ISL END
 
-            // ISL FIXED ZOOM - CROSSHAIR
-            if (this.mode === Mode.DRAW || this.mode === Mode.RESIZE) { // Operate only on DRAW and RESIZE modes
+            // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
             zoomCanvasCtx.clearRect(0,0,this.fixedZoomSize,this.fixedZoomSize); // Clear canvas
-            zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,this.fixedZoomSize, // Show zoomed image
-                this.fixedZoomSize,0,0,this.fixedZoomSize,this.fixedZoomSize)
+            zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,(this.fixedZoomSize/this.fixedZoomMultiplier), // Show zoomed image
+                (this.fixedZoomSize/this.fixedZoomMultiplier),0,0,this.fixedZoomSize,this.fixedZoomSize);
+            if (this.mode === Mode.DRAW || this.mode === Mode.RESIZE) { // Operate only on DRAW and RESIZE modes
             zoomCanvasCtx.beginPath();  // Draw crosshair lines
             zoomCanvasCtx.lineWidth = 2;
             zoomCanvasCtx.strokeStyle = 'red';
@@ -1106,12 +1108,6 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
             // ISL MANUAL TRACKING
             this.trackingElement.mousecoords = [x - offset, y - offset];
-            // ISL END
-
-            // ISL FIXED ZOOM
-            zoomCanvasCtx.clearRect(0,0,this.fixedZoomSize,this.fixedZoomSize); // Clear canvas
-            zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,this.fixedZoomSize, // Show zoomed image
-                this.fixedZoomSize,0,0,this.fixedZoomSize,this.fixedZoomSize)
             // ISL END
 
             const event: CustomEvent = new CustomEvent('canvas.moved', {

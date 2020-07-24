@@ -1627,12 +1627,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
         // ISL NEW MAGNIFYING GLASS
         const { offset } = this.controller.geometry;
         const [offsetX,offsetY] = translateToSVG(this.content, [this.magnifyingGlassParameters.cursorX, this.magnifyingGlassParameters.cursorY]);
-        var mouseCoordsX = offsetX -offset;
-        var mousecoordsY = offsetY -offset;
+        var mouseCoordsX = offsetX - offset;
+        var mousecoordsY = offsetY - offset;
 
         //console.log(mouseCoordsX, mousecoordsY);
-        mgCtx.drawImage(this.background,mouseCoordsX - width/2,mousecoordsY - height/2,
-            width, height, 0, 0,width,height);
+        mgCtx.drawImage(this.background,mouseCoordsX - (width/this.fixedZoomMultiplier)/2,mousecoordsY - (height/this.fixedZoomMultiplier)/2,
+            width/this.fixedZoomMultiplier, height/this.fixedZoomMultiplier, 0, 0,width,height);
         // ISL END
 
         // draw crosshair

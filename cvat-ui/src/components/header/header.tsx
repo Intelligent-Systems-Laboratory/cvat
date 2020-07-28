@@ -18,6 +18,7 @@ import Text from 'antd/lib/typography/Text';
 import { CVATLogo, AccountIcon } from 'icons';
 import consts from 'consts';
 import SettingsModal from './settings-modal/settings-modal';
+import { showStatistics } from 'actions/annotation-actions';
 
 interface HeaderContainerProps {
     onLogout: () => void;
@@ -131,6 +132,56 @@ function HeaderContainer(props: Props): JSX.Element {
         });
     }
 
+    // ISL MODAL HELP
+    function helpModal(): void {
+        Modal.info({
+            title: 'HELP HELP HELP!!! HELP HELP HELP!!!',
+            content: (
+                <div>
+                    <p>
+                        <Text strong>
+                            THIS IS HELP:
+                        </Text>
+                        <Text type='secondary'>
+                            {` ${serverVersion}`}
+                        </Text>
+                    </p>
+                    <p>
+                        <Text strong>
+                            Core version:
+                        </Text>
+                        <Text type='secondary'>
+                            {` ${coreVersion}`}
+                        </Text>
+                    </p>
+                    <p>
+                        <Text strong>
+                            Canvas version:
+                        </Text>
+                        <Text type='secondary'>
+                            {` ${canvasVersion}`}
+                        </Text>
+                    </p>
+                    <p>
+                        <Text strong>
+                            UI version:
+                        </Text>
+                        <Text type='secondary'>
+                            {` ${uiVersion}`}
+                        </Text>
+                    </p>
+                </div>
+            ),
+            width: 800,
+            okButtonProps: {
+                style: {
+                    width: '100px',
+                },
+            },
+        });
+    }
+    //ISL END
+
     const menu = (
         <Menu className='cvat-header-menu' mode='vertical'>
             <Menu.Item
@@ -217,20 +268,25 @@ function HeaderContainer(props: Props): JSX.Element {
                     <Icon type='github' />
                     <Text className='cvat-text-color'>GitHub</Text>
                 </Button>
+
+                {/* ISL MODAL HELP */}
                 <Button
                     className='cvat-header-button'
                     type='link'
-                    onClick={
-                        (): void => {
-                            // false positive
-                            // eslint-disable-next-line
-                            window.open(`${serverHost}/documentation/user_guide.html`, '_blank')
-                        }
-                    }
+                    onClick={() => helpModal()}
+                    // onClick={
+                    //     (): void => {
+                    //         // false positive
+                    //         // eslint-disable-next-line
+                    //         window.open(`${serverHost}/documentation/user_guide.html`, '_blank')
+                    //     }
+                    // }
                 >
                     <Icon type='question-circle' />
                     Help
                 </Button>
+                {/* ISL END */}
+
                 <Dropdown overlay={menu} className='cvat-header-menu-dropdown'>
                     <span>
                         <Icon className='cvat-header-account-icon' component={AccountIcon} />

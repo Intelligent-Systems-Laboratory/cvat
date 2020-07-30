@@ -16,6 +16,7 @@ import {
     ContextMenuType,
     Workspace,
 } from './interfaces';
+import LabelsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/labels-list';
 
 const defaultState: AnnotationState = {
     activities: {
@@ -113,7 +114,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         // ISL AUTOFIT
         case AnnotationActionTypes.START_AUTO_FIT: {
             const { clientID } = action.payload;
-
+            console.log(LabelsListContainer);
             const newAutoFitObjects = [...state.autoFitObjects];
             newAutoFitObjects.push(clientID);
             return {

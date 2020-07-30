@@ -3,6 +3,8 @@
 * SPDX-License-Identifier: MIT
 */
 
+const { collection } = require('./logger-storage');
+
 /* global
     require:false
 */
@@ -179,6 +181,14 @@
 
         if (cache.has(session)) {
             cache.get(session).collection.clear();
+            // ISL GLOBAL ATTRIBUTES
+            console.log('1', cache);
+            console.log('2', cache.get(session));
+            console.log('3', cache.get(session).collection);
+            console.log('4', cache.get(session).collection.labels);
+            console.log('5', cache.get(session).collection.labels.attributes);
+            console.log('6', cache.get(session).collection.labels);
+            // ISL END
         }
 
         if (reload) {

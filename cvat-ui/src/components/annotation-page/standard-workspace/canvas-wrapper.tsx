@@ -417,8 +417,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     // ISL END
 
     // ISL GLOBAL LABELS
-    
-    private globalConditionsModal= (): void =>{
+
+    public globalConditionsModal= (): void =>{
         Modal.info({
             title: 'Global Attributes',
             content: (
@@ -426,7 +426,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                     <Row type='flex' justify='start' align='middle'>
                         <Col span={24}>
                             <Text className='cvat-title'>Lighting Condition</Text>
-                            
+
                         </Col>
                         <Col>
                             <Button>Daytime</Button>
@@ -449,8 +449,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
                         </Col>
                     </Row>
-                    
-                    
+
+
                 </div>
             ),
             width: 800,

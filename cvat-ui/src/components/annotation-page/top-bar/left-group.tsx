@@ -37,46 +37,8 @@ interface Props {
     onSaveAnnotation(): void;
     onUndoClick(): void;
     onRedoClick(): void;
+    onGlobalConditionsClick(): void; // ISL GLOBAL ATTRIBUTES
 }
-
-// ISL GLOBAL ATTRIBUTES
-function conditionsModal(): void {
-    Modal.info({
-        title: 'HELP HELP HELP!!! HELP HELP HELP!!!',
-        content: (
-            <div>
-                <p>
-                    <Text strong>
-                        THIS IS HELP:
-                    </Text>
-                    sdfsdsfssfddsfsdfsd
-                </p>
-                <p>
-                    <Text strong>
-                        Core version:
-                    </Text>
-                </p>
-                <p>
-                    <Text strong>
-                        Canvas version:
-                    </Text>
-                </p>
-                <p>
-                    <Text strong>
-                        UI version:
-                    </Text>
-                </p>
-            </div>
-        ),
-        width: 800,
-        okButtonProps: {
-            style: {
-                width: '100px',
-            },
-        },
-    });
-}
-//ISL END
 
 function LeftGroup(props: Props): JSX.Element {
     const {
@@ -90,6 +52,7 @@ function LeftGroup(props: Props): JSX.Element {
         onSaveAnnotation,
         onUndoClick,
         onRedoClick,
+        onGlobalConditionsClick, // ISL GLOBAL ATTRIBUTES
     } = props;
     // ISL GLOBAL ATTRIBUTES
     // const [show, setShow] = useState(false);
@@ -157,7 +120,7 @@ function LeftGroup(props: Props): JSX.Element {
             {/* ISL GLOBAL ATTRIBUTES */}
             <Button
                 title={`View conditions menu`}
-                onClick={() => conditionsModal()}
+                onClick={onGlobalConditionsClick}// ISL GLOBAL ATTRIBUTES
                 type='link'
                 className={'cvat-annotation-header-button'}
             >

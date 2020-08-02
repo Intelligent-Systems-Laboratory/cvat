@@ -416,52 +416,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     }
     // ISL END
 
-    // ISL GLOBAL LABELS
-
-    public globalConditionsModal= (): void =>{
-        Modal.info({
-            title: 'Global Attributes',
-            content: (
-                <div>
-                    <Row type='flex' justify='start' align='middle'>
-                        <Col span={24}>
-                            <Text className='cvat-title'>Lighting Condition</Text>
-
-                        </Col>
-                        <Col>
-                            <Button>Daytime</Button>
-
-                            <Button>Nighttime</Button>
-
-                            <Button>Option 3</Button>
-                        </Col>
-                        <Col span={24}>
-                            <Text className='cvat-title'>Weather</Text>
-                        </Col>
-                        <Col>
-                            <Button>Clear</Button>
-
-                            <Button>Foggy</Button>
-
-                            <Button>Wet</Button>
-
-                            <Button>Option 4</Button>
-
-                        </Col>
-                    </Row>
-
-
-                </div>
-            ),
-            width: 800,
-            okButtonProps: {
-                style: {
-                    width: '100px',
-                },
-            },
-        });
-    }
-    // ISL END
     private onCanvasShapeDrawn = (event: any): void => {
         const {
             jobInstance,

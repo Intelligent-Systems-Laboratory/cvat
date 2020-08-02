@@ -30,6 +30,16 @@ import { Canvas } from 'cvat-canvas-wrapper';
 import AnnotationTopBarComponent from 'components/annotation-page/top-bar/top-bar';
 import { CombinedState, FrameSpeed, Workspace } from 'reducers/interfaces';
 
+// ISL GLOBAL ATTRIBUTES
+import Modal from 'antd/lib/modal';
+import { Row, Col } from 'antd/lib/grid';
+import Button from 'antd/lib/button';
+import Menu from 'antd/lib/menu';
+import Dropdown from 'antd/lib/dropdown';
+import Text from 'antd/lib/typography/Text';
+import DownOutlined from 'antd/lib/icon'
+// ISL END
+
 interface StateToProps {
     jobInstance: any;
     frameNumber: number;
@@ -479,6 +489,52 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
     }
 
+    // ISL GLOBAL ATTRIBUTES
+    private onGlobalConditionsClick(): void{
+        Modal.info({
+            title: 'Global Attributes',
+            content: (
+                <div>
+                    <Row type='flex' justify='start' align='middle'>
+                        <Col span={24}>
+                            <Text className='cvat-title'>Lighting Condition</Text>
+
+                        </Col>
+                        <Col>
+                            <Button>Daytime</Button>
+
+                            <Button>Nighttime</Button>
+
+                            <Button>Option 3</Button>
+                        </Col>
+                        <Col span={24}>
+                            <Text className='cvat-title'>Weather</Text>
+                        </Col>
+                        <Col>
+                            <Button>Clear</Button>
+
+                            <Button>Foggy</Button>
+
+                            <Button>Wet</Button>
+
+                            <Button>Option 4</Button>
+
+                        </Col>
+                    </Row>
+
+
+                </div>
+            ),
+            width: 800,
+            okButtonProps: {
+                style: {
+                    width: '100px',
+                },
+            },
+        });
+
+    }
+    // ISL END
 
     public render(): JSX.Element {
         const {
@@ -633,6 +689,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     focusFrameInputShortcut={normalizedKeyMap.FOCUS_INPUT_FRAME}
                     onUndoClick={this.undo}
                     onRedoClick={this.redo}
+                    onGlobalConditionsClick={this.onGlobalConditionsClick} // ISL GLOBAL ATTRIBUTES
+
                 />
             </>
         );

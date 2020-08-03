@@ -23,13 +23,6 @@ import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas-wrapper';
 import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
-import Modal from 'antd/lib/modal';
-import { Row, Col } from 'antd/lib/grid';
-import Button from 'antd/lib/button';
-import Menu from 'antd/lib/menu';
-import Dropdown from 'antd/lib/dropdown';
-import Text from 'antd/lib/typography/Text';
-import DownOutlined from 'antd/lib/icon'
 
 const cvat = getCore();
 
@@ -295,11 +288,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             }
         }
         // ISL END
-        // ISL GLOBAL ATTRIBUTES
-        if(frameData.number == 1){
-            this.globalConditionsModal();
-        }
-        // ISL END
+
         if (loadingAnimation && frameFetching !== prevProps.frameFetching) {
             if (frameFetching) {
                 loadingAnimation.classList.remove('cvat_canvas_hidden');

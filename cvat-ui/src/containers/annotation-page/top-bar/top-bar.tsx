@@ -39,6 +39,7 @@ import Menu from 'antd/lib/menu';
 import Dropdown from 'antd/lib/dropdown';
 import Text from 'antd/lib/typography/Text';
 import DownOutlined from 'antd/lib/icon'
+import './GlobalAttributes.css';
 // ISL END
 
 interface StateToProps {
@@ -508,26 +509,32 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
                         </Col>
                         <div class="radio-toolbar">
-                            <input type="radio" id="radioApple" name="radioFruit" value="apple" checked/>
-                            <label for="radioApple">Apple</label>
+                            <input type="radio" id="radioLightingOption1" name="radioLighting" value="Daytime"/>
+                            <label for="radioLightingOption1">Daytime</label>
 
-                            <input type="radio" id="radioBanana" name="radioFruit" value="banana"/>
-                            <label for="radioBanana">Banana</label>
+                            <input type="radio" id="radioLightingOption2" name="radioLighting" value="Nighttime"/>
+                            <label for="radioLightingOption2">Nighttime</label>
 
-                            <input type="radio" id="radioOrange" name="radioFruit" value="orange"/>
-                            <label for="radioOrange">Orange</label> 
+                            <input type="radio" id="radioLightingOption3" name="radioLighting" value="Option 3"/>
+                            <label for="radioLightingOption3">Option 3</label> 
                         </div>
                         <Col span={24}>
                             <Text className='cvat-title'>Weather</Text>
                         </Col>
                         <Col>
-                            <Button>Clear</Button>
+                        <div class="radio-toolbar">
+                            <input type="radio" id="radioWeatherOption1" name="radioWeather" value="Clear"/>
+                            <label for="radioWeatherOption1">Clear</label>
 
-                            <Button>Foggy</Button>
+                            <input type="radio" id="radioWeatherOption2" name="radioWeather" value="Foggy"/>
+                            <label for="radioWeatherOption2">Foggy</label>
 
-                            <Button>Wet</Button>
+                            <input type="radio" id="radioWeatherOption3" name="radioWeather" value="Wet"/>
+                            <label for="radioWeatherOption3">Wet</label> 
 
-                            <Button>Option 4</Button>
+                            <input type="radio" id="radioWeatherOption4" name="radioWeather" value="Option 4"/>
+                            <label for="radioWeatherOption4">Option 4</label> 
+                        </div>
 
                         </Col>
                     </Row>

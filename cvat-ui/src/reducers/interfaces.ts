@@ -410,6 +410,9 @@ export interface AnnotationState {
     // ISL AUTOFIT
     autoFitObjects: any[];
     // ISL END
+    // ISL GLOBAL ATTRIBUTES
+    globalAttributes: any,
+    // ISL END
 }
 
 export enum Workspace {

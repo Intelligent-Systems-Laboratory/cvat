@@ -169,8 +169,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // ISL AUTOFIT
             autoFitObjects,
             // ISL END
+            jobInstance,
         } = this.props;
-
+        console.log(jobInstance);
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
             || prevProps.showProjections !== showProjections

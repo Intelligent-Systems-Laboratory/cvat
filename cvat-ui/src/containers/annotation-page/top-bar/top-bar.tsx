@@ -24,6 +24,7 @@ import {
     activateObject,
     switchTracking, // EDITED FOR USER STORY 12/13
     closeJob as closeJobAction,
+    editGlobalAttributes as editGlobalAttributesAction,
 } from 'actions/annotation-actions';
 import { Canvas } from 'cvat-canvas-wrapper';
 
@@ -71,6 +72,7 @@ interface DispatchToProps {
     searchAnnotations(sessionInstance: any, frameFrom: any, frameTo: any): void;
     changeWorkspace(workspace: Workspace): void;
     closeJob(): void;
+    onEditGlobalAttributes(): void;
 }
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
@@ -167,6 +169,9 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         closeJob(): void {
             dispatch(closeJobAction());
+        },
+        onEditGlobalAttributes(): void {
+            dispatch(editGlobalAttributesAction());
         },
     };
 }
@@ -484,13 +489,15 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     private changeFrame(frame: number): void {
         const { onChangeFrame, canvasInstance } = this.props;
+        console.log('changeFrame');
+        console.log(this.props);
         if (canvasInstance.isAbleToChangeFrame()) {
             onChangeFrame(frame);
         }
     }
 
     // ISL GLOBAL ATTRIBUTES
-    private onGlobalConditionsClick(): void{
+    private onGlobalIconClick = (): void => {
         Modal.info({
             title: 'Global Attributes',
             content: (
@@ -500,13 +507,16 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                             <Text className='cvat-title'>Lighting Condition</Text>
 
                         </Col>
-                        <Col>
-                            <Button>Daytime</Button>
+                        <div class="radio-toolbar">
+                            <input type="radio" id="radioApple" name="radioFruit" value="apple" checked/>
+                            <label for="radioApple">Apple</label>
 
-                            <Button>Nighttime</Button>
+                            <input type="radio" id="radioBanana" name="radioFruit" value="banana"/>
+                            <label for="radioBanana">Banana</label>
 
-                            <Button>Option 3</Button>
-                        </Col>
+                            <input type="radio" id="radioOrange" name="radioFruit" value="orange"/>
+                            <label for="radioOrange">Orange</label> 
+                        </div>
                         <Col span={24}>
                             <Text className='cvat-title'>Weather</Text>
                         </Col>
@@ -532,6 +542,12 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 },
             },
         });
+    }
+    private onEditGlobalAttributes = (): void => {
+        console.log('click from top-bar.tsx');
+        const { onEditGlobalAttributes } = this.props;
+        onEditGlobalAttributes();
+        
 
     }
     // ISL END
@@ -689,7 +705,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     focusFrameInputShortcut={normalizedKeyMap.FOCUS_INPUT_FRAME}
                     onUndoClick={this.undo}
                     onRedoClick={this.redo}
-                    onGlobalConditionsClick={this.onGlobalConditionsClick} // ISL GLOBAL ATTRIBUTES
+                    onEditGlobalAttributes={this.onEditGlobalAttributes} // ISL GLOBAL ATTRIBUTES
+                    onGlobalIconClick={this.onGlobalIconClick}
 
                 />
             </>

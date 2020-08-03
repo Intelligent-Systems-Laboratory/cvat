@@ -50,7 +50,8 @@ interface Props {
     onURLIconClick(): void;
     onUndoClick(): void;
     onRedoClick(): void;
-    onGlobalConditionsClick():void;
+    onGlobalIconClick():void;
+    onEditGlobalAttributes(): void;
 }
 
 export default function AnnotationTopBarComponent(props: Props): JSX.Element {
@@ -90,7 +91,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         onURLIconClick,
         onUndoClick,
         onRedoClick,
-        onGlobalConditionsClick,
+        onGlobalIconClick,
     } = props;
 
     return (
@@ -106,7 +107,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                 onSaveAnnotation={onSaveAnnotation}
                 onUndoClick={onUndoClick}
                 onRedoClick={onRedoClick}
-                onGlobalConditionsClick={onGlobalConditionsClick} // ISL GLOBAL ATTRIBUTES
+                onGlobalIconClick={onGlobalIconClick} // ISL GLOBAL ATTRIBUTES
             />
             <Col className='cvat-annotation-header-player-group'>
                 <Row type='flex' align='middle'>

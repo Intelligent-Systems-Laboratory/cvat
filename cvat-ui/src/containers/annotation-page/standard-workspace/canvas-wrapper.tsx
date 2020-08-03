@@ -97,6 +97,7 @@ interface StateToProps {
     // ISL AUTOFIT
     autoFitObjects: any[]; 
     // ISL END
+    globalAttributes: any;
 }
 
 interface DispatchToProps {
@@ -176,6 +177,9 @@ function mapStateToProps(state: CombinedState): StateToProps {
             // ISL END
             sidebarCollapsed,
             workspace,
+            // ISL GLOBAL ATTRIBUTES
+            globalAttributes,
+            // ISL END
         },
         settings: {
             player: {
@@ -257,6 +261,9 @@ function mapStateToProps(state: CombinedState): StateToProps {
         switchableAutomaticBordering: activeControl === ActiveControl.DRAW_POLYGON
             || activeControl === ActiveControl.DRAW_POLYLINE
             || activeControl === ActiveControl.EDIT,
+        // ISL GLOBAL ATTRIBUTES
+        globalAttributes,
+        // ISL END
     };
 }
 

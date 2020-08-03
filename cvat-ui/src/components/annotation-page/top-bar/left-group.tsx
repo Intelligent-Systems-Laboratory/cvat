@@ -37,7 +37,7 @@ interface Props {
     onSaveAnnotation(): void;
     onUndoClick(): void;
     onRedoClick(): void;
-    onGlobalConditionsClick(): void; // ISL GLOBAL ATTRIBUTES
+    onGlobalIconClick(): void; // ISL GLOBAL ATTRIBUTES
 }
 
 function LeftGroup(props: Props): JSX.Element {
@@ -52,7 +52,7 @@ function LeftGroup(props: Props): JSX.Element {
         onSaveAnnotation,
         onUndoClick,
         onRedoClick,
-        onGlobalConditionsClick, // ISL GLOBAL ATTRIBUTES
+        onGlobalIconClick, // ISL GLOBAL ATTRIBUTES
     } = props;
     // ISL GLOBAL ATTRIBUTES
     // const [show, setShow] = useState(false);
@@ -120,7 +120,7 @@ function LeftGroup(props: Props): JSX.Element {
             {/* ISL GLOBAL ATTRIBUTES */}
             <Button
                 title={`View conditions menu`}
-                onClick={onGlobalConditionsClick}// ISL GLOBAL ATTRIBUTES
+                onClick={onGlobalIconClick}// ISL GLOBAL ATTRIBUTES
                 type='link'
                 className={'cvat-annotation-header-button'}
             >

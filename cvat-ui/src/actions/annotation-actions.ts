@@ -196,6 +196,9 @@ export enum AnnotationActionTypes {
     START_AUTO_FIT = 'START_AUTO_FIT',
     STOP_AUTO_FIT = 'STOP_AUTO_FIT',
     // ISL END
+    // ISL GLOBAL ATTRIBUTES
+    EDIT_GLOBAL_ATTRIBUTES = 'EDIT_GLOBAL_ATTRIBUTES',
+    // ISL END
 }
 
 // ISL MANUAL TRACKING
@@ -244,7 +247,16 @@ export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAc
     };
 }
 // ISL END
+// ISL GLOBAL ATTRIBUTES
+export function editGlobalAttributes(): AnyAction {
+    return {
+        type: AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES,
+        payload: {
+        },
+    };
+}
 
+// ISL END
 export function saveLogsAsync():
     ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>) => {

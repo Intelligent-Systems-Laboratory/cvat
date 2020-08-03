@@ -1130,6 +1130,9 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         case AuthActionTypes.LOGOUT_SUCCESS: {
             return { ...defaultState };
         }
+        case AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES:{
+            return state;
+        }
         default: {
             return state;
         }

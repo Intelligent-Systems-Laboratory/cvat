@@ -14,6 +14,8 @@ import RightGroup from './right-group';
 import PlayerNavigation from './player-navigation';
 import PlayerButtons from './player-buttons';
 
+import GlobalAttributes from './global-attributes';
+
 interface Props {
     playing: boolean;
     saving: boolean;
@@ -96,6 +98,11 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
 
     return (
         <Row type='flex' justify='space-between'>
+            <GlobalAttributes
+                visible = {false}
+            >
+                
+            </GlobalAttributes>
             <LeftGroup
                 saving={saving}
                 savingStatuses={savingStatuses}

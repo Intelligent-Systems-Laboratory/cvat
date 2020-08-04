@@ -25,6 +25,7 @@ import {
     switchTracking, // EDITED FOR USER STORY 12/13
     closeJob as closeJobAction,
     editGlobalAttributes as editGlobalAttributesAction,
+    editGlobalAttributes,
 } from 'actions/annotation-actions';
 import { Canvas } from 'cvat-canvas-wrapper';
 
@@ -40,6 +41,7 @@ import Dropdown from 'antd/lib/dropdown';
 import Text from 'antd/lib/typography/Text';
 import DownOutlined from 'antd/lib/icon'
 import './GlobalAttributes.css';
+import ButtonGroup from 'antd/lib/button/button-group';
 // ISL END
 
 interface StateToProps {
@@ -182,10 +184,18 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private inputFrameRef: React.RefObject<InputNumber>;
     private autoSaveInterval: number | undefined;
     private unblock: any;
+    private globalAttributes: any;
+    private globalAttributesSelected: any;
 
     constructor(props: Props) {
         super(props);
         this.inputFrameRef = React.createRef<InputNumber>();
+        this.globalAttributes = {};
+        this.globalAttributesSelected = {};
+        let weather = new Set(['wet','fog','clear','+']);// TO DO: fetch this from props
+        let lighting = new Set(['daytime','nighttime','+']);// TO DO: fetch this from props
+        this.globalAttributes['weather'] = weather;
+        this.globalAttributes['lighting'] = lighting;
     }
 
     public componentDidMount(): void {
@@ -209,6 +219,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         });
 
         window.addEventListener('beforeunload', this.beforeUnloadCallback);
+        this.globalAttributesModal.update(
+            {visible:false});
     }
 
     public componentDidUpdate(prevProps: Props): void {
@@ -498,58 +510,106 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     // ISL GLOBAL ATTRIBUTES
-    private onGlobalIconClick = (): void => {
-        Modal.info({
-            title: 'Global Attributes',
-            content: (
-                <div>
-                    <Row type='flex' justify='start' align='middle'>
-                        <Col span={24}>
-                            <Text className='cvat-title'>Lighting Condition</Text>
-
-                        </Col>
-                        <div class="radio-toolbar">
-                            <input type="radio" id="radioLightingOption1" name="radioLighting" value="Daytime"/>
-                            <label for="radioLightingOption1">Daytime</label>
-
-                            <input type="radio" id="radioLightingOption2" name="radioLighting" value="Nighttime"/>
-                            <label for="radioLightingOption2">Nighttime</label>
-
-                            <input type="radio" id="radioLightingOption3" name="radioLighting" value="Option 3"/>
-                            <label for="radioLightingOption3">Option 3</label> 
-                        </div>
-                        <Col span={24}>
-                            <Text className='cvat-title'>Weather</Text>
-                        </Col>
-                        <Col>
-                        <div class="radio-toolbar">
-                            <input type="radio" id="radioWeatherOption1" name="radioWeather" value="Clear"/>
-                            <label for="radioWeatherOption1">Clear</label>
-
-                            <input type="radio" id="radioWeatherOption2" name="radioWeather" value="Foggy"/>
-                            <label for="radioWeatherOption2">Foggy</label>
-
-                            <input type="radio" id="radioWeatherOption3" name="radioWeather" value="Wet"/>
-                            <label for="radioWeatherOption3">Wet</label> 
-
-                            <input type="radio" id="radioWeatherOption4" name="radioWeather" value="Option 4"/>
-                            <label for="radioWeatherOption4">Option 4</label> 
-                        </div>
-
-                        </Col>
-                    </Row>
-
-
-                </div>
-            ),
-            width: 800,
-            okButtonProps: {
-                style: {
-                    width: '100px',
-                },
+    private handleOk = (event:any): void => {
+        let attributesLength = 0;
+        let currentLength = 0;
+        for (const key in this.globalAttributes) {
+            attributesLength++;
+        }
+        for (const key in this.globalAttributesSelected) {
+            currentLength++;
+        }
+        if(attributesLength == currentLength ){
+            //form is valid, close the modal
+            console.log('valid');
+            this.globalAttributesModal.update({
+                visible :false});
+        }else{
+            alert('Some attributes were not selected!');
+        }
+        console.log('ok');
+    }
+    private handleCancel = (): void => {
+        console.log('cancel');
+    }
+    private globalAttributesModal = Modal.info({
+        title: 'Global Attributes',
+        visible: true ,
+        content: ( <div></div>),
+        width: 800,
+        okText:'Submit',
+        okButtonProps: {
+            style: {
+                width: '100px',
             },
+        },
+        onOk:(event) => this.handleOk(event),
+    });
+    private generateElements = (buttons:any): any[] => {
+        const items:any[] = [];
+
+        return items;
+    }
+    private onChangeHandler = (value:string,key:string):void =>{
+        console.log(value, key);
+        if(value){
+            if(value == '+'){
+                console.log(this.globalAttributes[key]);
+                // delete + button, add new, add + button
+                let result = prompt("Input new option");
+                this.globalAttributes[key].add(result);
+                this.globalAttributes[key].delete('+');
+                this.globalAttributes[key].add('+');
+                //call update
+                this.updateGlobalAttributesModal();
+                console.log('done updating');
+
+            }else{
+                this.globalAttributesSelected[key] = value;
+            }
+        }
+        console.log(this.globalAttributesSelected);
+    }
+    private updateGlobalAttributesModal = (): void => {
+        console.log('updateGlobalAttributesModal');
+        console.log(this.globalAttributes);
+        let items = [];
+        for (const key in this.globalAttributes){
+            items.push(<Row><Text className='cvat-title'>{key}</Text></Row>);
+            let temp = []
+            for (const [index, value] of this.globalAttributes[key].entries()) {
+                if(value != '+'){
+                    temp.push(
+                        <input type='radio' id={'radio'+key+'Option'+index} key={index} name={'radio'+key} value={value}></input>,
+                        <label for={'radio'+key+'Option'+index}>{value}</label>,
+                        )
+                }else{
+                    temp.push(
+                        <input type='radio' id={'radio'+key+'Option'+index} key={index} name={'radio'+key} value={value}></input>,
+                        <label for={'radio'+key+'Option'+index}>{value}</label>,
+                        )
+                }
+                
+            }
+            items.push(<form class="radio-toolbar" onClick={event => this.onChangeHandler(event.target.value,key)}>{temp}</form>);
+        }
+        this.globalAttributesModal.update({
+            visible :true,
+            content: 
+                <div>
+                {items}
+                </div> 
+                ,
+
         });
     }
+    private onGlobalIconClick = (): void => {
+        console.log('click');
+        this.updateGlobalAttributesModal();
+        
+        
+    }
+
     private onEditGlobalAttributes = (): void => {
         console.log('click from top-bar.tsx');
         const { onEditGlobalAttributes } = this.props;
@@ -557,6 +617,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         
 
     }
+    
     // ISL END
 
     public render(): JSX.Element {

@@ -105,8 +105,8 @@ interface Props {
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
     // ISL GLOBAL ATTRIBUTES
-    globalAttributes: any 
-    // ISL END 
+    globalAttributes: any
+    // ISL END
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -555,7 +555,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         const sidebarItem = window.document
             .getElementById(`cvat-objects-sidebar-state-item-${clientID}`);
         if (sidebarItem) {
-            sidebarItem.scrollIntoView();
+            // ISL CANVAS
+            //sidebarItem.scrollIntoView();
+            // ISL END
         }
     };
 

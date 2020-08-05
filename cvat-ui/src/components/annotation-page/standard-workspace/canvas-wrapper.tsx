@@ -104,6 +104,9 @@ interface Props {
     // ISL END
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
+    // ISL GLOBAL ATTRIBUTES
+    globalAttributes: any 
+    // ISL END 
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -170,8 +173,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             autoFitObjects,
             // ISL END
             jobInstance,
+            globalAttributes,
         } = this.props;
-        console.log(jobInstance);
+        console.log(this.props);
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
             || prevProps.showProjections !== showProjections

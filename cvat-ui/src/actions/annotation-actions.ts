@@ -248,10 +248,11 @@ export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAc
 }
 // ISL END
 // ISL GLOBAL ATTRIBUTES
-export function editGlobalAttributes(): AnyAction {
+export function editGlobalAttributes(globalAttributes:any): AnyAction {
     return {
         type: AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES,
         payload: {
+            globalAttributes:globalAttributes,
         },
     };
 }

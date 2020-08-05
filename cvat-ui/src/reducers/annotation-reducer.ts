@@ -107,6 +107,10 @@ const defaultState: AnnotationState = {
     appearanceCollapsed: false,
     tabContentHeight: 0,
     workspace: Workspace.STANDARD,
+    globalAttributes: {
+        weather:"",
+        lighting:"",
+    }
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
@@ -1131,7 +1135,11 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             return { ...defaultState };
         }
         case AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES:{
-            return state;
+            const {globalAttributes} = action.payload;
+            return {
+                ...state,
+                globalAttributes:globalAttributes,
+            };
         }
         default: {
             return state;

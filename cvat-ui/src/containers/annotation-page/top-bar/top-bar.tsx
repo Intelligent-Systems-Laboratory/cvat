@@ -77,7 +77,7 @@ interface DispatchToProps {
     searchAnnotations(sessionInstance: any, frameFrom: any, frameTo: any): void;
     changeWorkspace(workspace: Workspace): void;
     closeJob(): void;
-    onEditGlobalAttributes(): void;
+    onEditGlobalAttributes(globalAttributes:any): void;
 }
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
@@ -175,8 +175,8 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         closeJob(): void {
             dispatch(closeJobAction());
         },
-        onEditGlobalAttributes(): void {
-            dispatch(editGlobalAttributesAction());
+        onEditGlobalAttributes(globalAttributes:any): void {
+            dispatch(editGlobalAttributesAction(globalAttributes));
         },
     };
 }
@@ -507,11 +507,12 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private globalAttributesSelected: any;
     
     private globalAttributesModal = Modal.confirm({
-        title: 'Global Attributes',
+        title: <Text className = 'cvat-title'>Global Attributes</Text>,
         visible: true ,
         content: ( <div></div>),
         width: 800,
         okText:'Submit',
+        icon:'',
         okButtonProps: {
             style: {
                 width: '100px',
@@ -546,6 +547,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             // console.log('valid');
             this.globalAttributesModal.update({
                 visible :false});
+            this.onEditGlobalAttributes();
         }else{
             alert('Some attributes were not selected!');
         }
@@ -554,6 +556,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     private handleCancel = (event:any): void => {
         this.globalAttributesSelected = {};
+        this.globalAttributesModal.update({
+            visible :false});
         // console.log('cancel');
     }
     
@@ -626,7 +630,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private onEditGlobalAttributes = (): void => {
         // console.log('click from top-bar.tsx');
         const { onEditGlobalAttributes } = this.props;
-        onEditGlobalAttributes();
+        onEditGlobalAttributes(this.globalAttributesSelected);
     }
     // ISL END
 

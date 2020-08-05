@@ -24,8 +24,10 @@ import {
     activateObject,
     switchTracking, // EDITED FOR USER STORY 12/13
     closeJob as closeJobAction,
+    // ISL GLOBAL ATTRIBUTES
     editGlobalAttributes as editGlobalAttributesAction,
     editGlobalAttributes,
+    // ISL END
 } from 'actions/annotation-actions';
 import { Canvas } from 'cvat-canvas-wrapper';
 
@@ -184,18 +186,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private inputFrameRef: React.RefObject<InputNumber>;
     private autoSaveInterval: number | undefined;
     private unblock: any;
-    private globalAttributes: any;
-    private globalAttributesSelected: any;
 
     constructor(props: Props) {
         super(props);
         this.inputFrameRef = React.createRef<InputNumber>();
-        this.globalAttributes = {};
-        this.globalAttributesSelected = {};
-        let weather = new Set(['wet','fog','clear','+']);// TO DO: fetch this from props
-        let lighting = new Set(['daytime','nighttime','+']);// TO DO: fetch this from props
-        this.globalAttributes['weather'] = weather;
-        this.globalAttributes['lighting'] = lighting;
+        this.initiateGlobalAttributesModal(); // ISL GLOBAL ATTRIBUTES
     }
 
     public componentDidMount(): void {
@@ -502,37 +497,16 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     private changeFrame(frame: number): void {
         const { onChangeFrame, canvasInstance } = this.props;
-        console.log('changeFrame');
-        console.log(this.props);
         if (canvasInstance.isAbleToChangeFrame()) {
             onChangeFrame(frame);
         }
     }
 
     // ISL GLOBAL ATTRIBUTES
-    private handleOk = (event:any): void => {
-        let attributesLength = 0;
-        let currentLength = 0;
-        for (const key in this.globalAttributes) {
-            attributesLength++;
-        }
-        for (const key in this.globalAttributesSelected) {
-            currentLength++;
-        }
-        if(attributesLength == currentLength ){
-            //form is valid, close the modal
-            console.log('valid');
-            this.globalAttributesModal.update({
-                visible :false});
-        }else{
-            alert('Some attributes were not selected!');
-        }
-        console.log('ok');
-    }
-    private handleCancel = (): void => {
-        console.log('cancel');
-    }
-    private globalAttributesModal = Modal.info({
+    private globalAttributes: any;
+    private globalAttributesSelected: any;
+    
+    private globalAttributesModal = Modal.confirm({
         title: 'Global Attributes',
         visible: true ,
         content: ( <div></div>),
@@ -543,37 +517,48 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 width: '100px',
             },
         },
+
+        cancelText:'Cancel',
+        cancelButtonProps: {
+            style: {
+                width: '100px',
+            },
+        },
         onOk:(event) => this.handleOk(event),
+        onCancel:(event) => this.handleCancel(event),
     });
-    private generateElements = (buttons:any): any[] => {
-        const items:any[] = [];
 
-        return items;
+    private initiateGlobalAttributesModal = ():void =>{
+        this.globalAttributes = {};
+        this.globalAttributesSelected = {};
+        let weather = new Set(['wet','fog','clear','+']);// TO DO: fetch this from props
+        let lighting = new Set(['daytime','nighttime','+']);// TO DO: fetch this from props
+        this.globalAttributes['weather'] = weather;
+        this.globalAttributes['lighting'] = lighting;
+        this.updateGlobalAttributesModal();
     }
-    private onChangeHandler = (value:string,key:string):void =>{
-        console.log(value, key);
-        if(value){
-            if(value == '+'){
-                console.log(this.globalAttributes[key]);
-                // delete + button, add new, add + button
-                let result = prompt("Input new option");
-                this.globalAttributes[key].add(result);
-                this.globalAttributes[key].delete('+');
-                this.globalAttributes[key].add('+');
-                //call update
-                this.updateGlobalAttributesModal();
-                console.log('done updating');
-
-            }else{
-                this.globalAttributesSelected[key] = value;
-            }
+    
+    private handleOk = (event:any): void => {
+        let attributesLength = Object.keys(this.globalAttributes).length;
+        let currentLength = Object.keys(this.globalAttributesSelected).length;
+        if(attributesLength == currentLength ){
+            //form is valid, close the modal
+            // console.log('valid');
+            this.globalAttributesModal.update({
+                visible :false});
+        }else{
+            alert('Some attributes were not selected!');
         }
-        console.log(this.globalAttributesSelected);
+        // console.log('Ok button pressed');
     }
-    private updateGlobalAttributesModal = (): void => {
-        console.log('updateGlobalAttributesModal');
-        console.log(this.globalAttributes);
-        let items = [];
+
+    private handleCancel = (event:any): void => {
+        this.globalAttributesSelected = {};
+        // console.log('cancel');
+    }
+    
+    private generateElements = (): any[] => {
+        const items:any[] = [];
         for (const key in this.globalAttributes){
             items.push(<Row><Text className='cvat-title'>{key}</Text></Row>);
             let temp = []
@@ -593,31 +578,56 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             }
             items.push(<form class="radio-toolbar" onClick={event => this.onChangeHandler(event.target.value,key)}>{temp}</form>);
         }
+        
+        return items;
+    }
+
+    private onChangeHandler = (value:string,key:string):void =>{
+        if(value){
+            if(value == '+'){
+                // console.log(this.globalAttributes[key]);
+                // delete + button, add new, add + button
+                let result = prompt("Input new option");
+                this.globalAttributes[key].add(result);
+                this.globalAttributes[key].delete('+');
+                this.globalAttributes[key].add('+');
+                //call update
+                this.updateGlobalAttributesModal();
+
+            }else{
+                this.globalAttributesSelected[key] = value;
+            }
+        }
+        // console.log(this.globalAttributesSelected);
+    }
+
+    private updateGlobalAttributesModal = (): void => {
+        let items:any = this.generateElements();
         this.globalAttributesModal.update({
-            visible :true,
             content: 
-                <div>
-                {items}
-                </div> 
+                <div>{items}</div>
                 ,
 
         });
+        
     }
+
+    private showGlobalAttributesModal = ():void => {
+        this.globalAttributesModal.update({
+            visible:true,
+        });
+    }
+
     private onGlobalIconClick = (): void => {
-        console.log('click');
-        this.updateGlobalAttributesModal();
-        
-        
-    }
-
-    private onEditGlobalAttributes = (): void => {
-        console.log('click from top-bar.tsx');
-        const { onEditGlobalAttributes } = this.props;
-        onEditGlobalAttributes();
-        
-
+        // console.log('click');
+        this.showGlobalAttributesModal();
     }
     
+    private onEditGlobalAttributes = (): void => {
+        // console.log('click from top-bar.tsx');
+        const { onEditGlobalAttributes } = this.props;
+        onEditGlobalAttributes();
+    }
     // ISL END
 
     public render(): JSX.Element {

@@ -175,7 +175,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             jobInstance,
             globalAttributes,
         } = this.props;
-        console.log(this.props);
+        // console.log(this.props);
+        // console.log(job);
+        // console.log('annotations',annotations);// contains the current attributes. see next line
+        // console.log(annotations[0].attributes); // the actual value of attributes
+        // console.log('objectState',objectState);
+
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
             || prevProps.showProjections !== showProjections
@@ -418,6 +423,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             frame,
             onShapeDrawn,
             onCreateAnnotations,
+            globalAttributes,
         } = this.props;
 
         if (!event.detail.continue) {
@@ -437,7 +443,27 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             .filter((label: any) => label.id === activeLabelID)[0];
         state.occluded = state.occluded || false;
         state.frame = frame;
+        // ISL GLOBAL ATTRIBUTES
+        // console.log(state);
+        const nameToIDMap:Record<string, number> = {};
+        for (const attribute of state.label.attributes) {
+            //save the corresponding IDs of each attribute
+            nameToIDMap[attribute.name] = attribute.id;
+        }
+
+        const attr: Record<number, string> = {}; 
+        // get the global attribute's name and value and apply it to the new rectangle if the attribute exist
+        for (const key in globalAttributes) {
+            if(nameToIDMap[key] !== undefined || ""){//nameToIDMap[key] is undefined if the attribute does not exist
+                if(globalAttributes[key] !== ""){//globalAttributes[key] is "", it means that global attributes are not yet set
+                    attr[nameToIDMap[key]] = globalAttributes[key];
+                }
+            }else{ 
+                // do nothing for now
+            }
+        }
         const objectState = new cvat.classes.ObjectState(state);
+        objectState.attributes = attr; // set the values to the edited values
         onCreateAnnotations(jobInstance, frame, [objectState]);
     };
 

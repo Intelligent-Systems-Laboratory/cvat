@@ -535,7 +535,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         let weather = new Set(['wet','fog','clear','+']);// TO DO: fetch this from props
         let lighting = new Set(['daytime','nighttime','+']);// TO DO: fetch this from props
         this.globalAttributes['weather'] = weather;
-        this.globalAttributes['lighting'] = lighting;
+        this.globalAttributes['lighting_condition'] = lighting;
         this.updateGlobalAttributesModal();
     }
     

@@ -137,40 +137,7 @@ function HeaderContainer(props: Props): JSX.Element {
         Modal.info({
             title: 'CVAT User Guide',
             content: (
-                /*  <div>
-                     <p>
-                         <Text strong>
-                             THIS IS HELP:
-                         </Text>
-                         <Text type='secondary'>
-                             {` ${serverVersion}`}
-                         </Text>
-                     </p>
-                     <p>
-                         <Text strong>
-                             Core version:
-                         </Text>
-                         <Text type='secondary'>
-                             {` ${coreVersion}`}
-                         </Text>
-                     </p>
-                     <p>
-                         <Text strong>
-                             Canvas version:
-                         </Text>
-                         <Text type='secondary'>
-                             {` ${canvasVersion}`}
-                         </Text>
-                     </p>
-                     <p>
-                         <Text strong>
-                             UI version:
-                         </Text>
-                         <Text type='secondary'>
-                             {` ${uiVersion}`}
-                         </Text>
-                     </p>
-                 </div> */
+        
                 <div className="clearfix">
                     <table>
                         <thead>

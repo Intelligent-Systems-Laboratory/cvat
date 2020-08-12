@@ -143,7 +143,7 @@ function ItemMenu(
                     <Button
                         type='link'
                         icon='import'
-                        onClick={autoFit}   
+                        onClick={autoFit}
                     >
                         AutoFit
                     </Button>
@@ -207,7 +207,7 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         switchOrientation,
         toBackground,
         toForeground,
-        
+
         resetCuboidPerspective,
         // ISL AUTOFIT
         autoFit,
@@ -309,6 +309,9 @@ interface ItemButtonsComponentProps {
     unsetOutside(): void;
     setKeyframe(): void;
     unsetKeyframe(): void;
+    // ISL INTERPOLATION
+    asLastKeyframe(): void;
+    // ISL END
     lock(): void;
     unlock(): void;
     pin(): void;
@@ -346,6 +349,9 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
         unsetOutside,
         setKeyframe,
         unsetKeyframe,
+        // ISL INTERPOLATION
+        asLastKeyframe,
+        // ISL END
         lock,
         unlock,
         pin,
@@ -430,6 +436,15 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                                     : <Icon type='star' onClick={setKeyframe} />}
                             </Tooltip>
                         </Col>
+                        {/* ISL INTERPOLATION */}
+                        <Col>
+                            <Tooltip title={`Copy last keyframe ${switchKeyFrameShortcut}`}>
+                                {keyframe
+                                    ? <Icon type='star' theme='filled' onClick={unsetKeyframe} />
+                                    : <Icon type='star' onClick={asLastKeyframe} />}
+                            </Tooltip>
+                        </Col>
+                        {/* ISL END */}
                         {
                             shapeType !== ShapeType.POINTS && (
                                 <Col>
@@ -785,6 +800,9 @@ interface Props {
     unsetOutside(): void;
     setKeyframe(): void;
     unsetKeyframe(): void;
+    // ISL INTERPOLATION
+    asLastKeyframe(): void;
+    // ISL END
     lock(): void;
     unlock(): void;
     pin(): void;
@@ -867,6 +885,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
         unsetOutside,
         setKeyframe,
         unsetKeyframe,
+        // ISL INTERPOLATION
+        asLastKeyframe,
+        // ISL END
         lock,
         unlock,
         pin,
@@ -967,6 +988,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     unsetOutside={unsetOutside}
                     setKeyframe={setKeyframe}
                     unsetKeyframe={unsetKeyframe}
+                    // ISL INTERPOLATION
+                    asLastKeyframe={asLastKeyframe}
+                    // ISL END
                     lock={lock}
                     unlock={unlock}
                     pin={pin}

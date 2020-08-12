@@ -44,9 +44,17 @@ import Text from 'antd/lib/typography/Text';
 import DownOutlined from 'antd/lib/icon'
 import './GlobalAttributes.css';
 import ButtonGroup from 'antd/lib/button/button-group';
+import jobList from 'components/task-page/job-list';
 // ISL END
 
 interface StateToProps {
+    // ISL GLOBAL ATTRIBUTES
+    attrInputType: string;
+    attrValues: string[];
+    attrValue: string;
+    attrName: string;
+    attrID: number;
+    // ISL END
     jobInstance: any;
     frameNumber: number;
     frameFilename: string;
@@ -505,7 +513,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     // ISL GLOBAL ATTRIBUTES
     private globalAttributes: any;
     private globalAttributesSelected: any;
-    
+
     private globalAttributesModal = Modal.confirm({
         title: <Text className = 'cvat-title'>Global Attributes</Text>,
         visible: true ,
@@ -529,16 +537,21 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         onCancel:(event) => this.handleCancel(event),
     });
 
-    private initiateGlobalAttributesModal = ():void =>{
+    private initiateGlobalAttributesModal = (event: any):void =>{
+        const { jobInstance } = this.props;
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
-        let weather = new Set(['wet','fog','clear','+']);// TO DO: fetch this from props
-        let lighting = new Set(['daytime','nighttime','+']);// TO DO: fetch this from props
-        this.globalAttributes['weather'] = weather;
-        this.globalAttributes['lighting_condition'] = lighting;
+        console.log(jobInstance.task.labels[0].attributes.length);
+        console.log(jobInstance.task.labels[0].attributes);
+        // Cycle through ALL existing attributes OF THE FIRST LABEL.
+        for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
+            // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
+            this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values;
+        }
         this.updateGlobalAttributesModal();
+
     }
-    
+
     private handleOk = (event:any): void => {
         let attributesLength = Object.keys(this.globalAttributes).length;
         let currentLength = Object.keys(this.globalAttributesSelected).length;
@@ -560,7 +573,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             visible :false});
         // console.log('cancel');
     }
-    
+
     private generateElements = (): any[] => {
         const items:any[] = [];
         for (const key in this.globalAttributes){
@@ -578,11 +591,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                         <label for={'radio'+key+'Option'+index}>{value}</label>,
                         )
                 }
-                
+
             }
             items.push(<form class="radio-toolbar" onClick={event => this.onChangeHandler(event.target.value,key)}>{temp}</form>);
         }
-        
+
         return items;
     }
 
@@ -608,12 +621,12 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private updateGlobalAttributesModal = (): void => {
         let items:any = this.generateElements();
         this.globalAttributesModal.update({
-            content: 
+            content:
                 <div>{items}</div>
                 ,
 
         });
-        
+
     }
 
     private showGlobalAttributesModal = ():void => {
@@ -626,7 +639,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // console.log('click');
         this.showGlobalAttributesModal();
     }
-    
+
     private onEditGlobalAttributes = (): void => {
         // console.log('click from top-bar.tsx');
         const { onEditGlobalAttributes } = this.props;
@@ -639,6 +652,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             playing,
             saving,
             savingStatuses,
+            job,
             jobInstance,
             jobInstance: {
                 startFrame,

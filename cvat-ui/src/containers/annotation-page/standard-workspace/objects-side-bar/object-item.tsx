@@ -381,6 +381,19 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
+    // ISL INTERPOLATION
+    private asLastKeyframe = (): void => {
+        const { objectState, frameNumber } = this.props;
+        const { prev } = objectState.keyframes;
+        objectState.keyframe = true;
+        if (prev !== null && prev !== frameNumber) {
+            this.changeFrame(prev);
+        }
+        console.log("Called");
+        this.commit();
+    };
+    // ISL END
+
     private collapse = (): void => {
         const {
             collapseOrExpand,
@@ -593,6 +606,9 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 unsetOutside={this.unsetOutside}
                 setKeyframe={this.setKeyframe}
                 unsetKeyframe={this.unsetKeyframe}
+                // ISL INTERPOLATION
+                asLastKeyframe={this.asLastKeyframe}
+                // ISL END
                 lock={this.lock}
                 unlock={this.unlock}
                 pin={this.pin}

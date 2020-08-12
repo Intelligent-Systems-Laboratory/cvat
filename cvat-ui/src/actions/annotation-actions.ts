@@ -190,7 +190,7 @@ export enum AnnotationActionTypes {
     SAVE_LOGS_SUCCESS = 'SAVE_LOGS_SUCCESS',
     SAVE_LOGS_FAILED = 'SAVE_LOGS_FAILED',
     // ISL MANUAL TRACKING
-    SWITCH_TRACKING = 'SWITCH_TRACKING', 
+    SWITCH_TRACKING = 'SWITCH_TRACKING',
     // ISL END
     // ISL AUTOFIT
     START_AUTO_FIT = 'START_AUTO_FIT',
@@ -942,15 +942,19 @@ export function rotateCurrentFrame(rotation: Rotation): AnyAction {
 }
 
 export function dragCanvas(enabled: boolean): AnyAction {
+
     return {
         type: AnnotationActionTypes.DRAG_CANVAS,
         payload: {
             enabled,
         },
     };
+
 }
 
 export function zoomCanvas(enabled: boolean): AnyAction {
+    const { jobInstance } = receiveAnnotationsParameters();
+    console.log('6', jobInstance);
     return {
         type: AnnotationActionTypes.ZOOM_CANVAS,
         payload: {

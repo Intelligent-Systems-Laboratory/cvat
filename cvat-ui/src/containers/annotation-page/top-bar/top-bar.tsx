@@ -542,11 +542,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
         // console.log(jobInstance.task.labels[0].attributes.length);
-        // console.log(jobInstance.task.labels[0].attributes);
+        console.log(jobInstance.task.labels[0].attributes);
+        console.log(jobInstance.task.labels);
         // Cycle through ALL existing attributes OF THE FIRST LABEL.
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
-            this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
+            if(jobInstance.task.labels[0].attributes[i].inputType !== "radio"){
+                this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
+            }
         }
         this.updateGlobalAttributesModal();
         console.log('initiate global attributes modal');
@@ -603,7 +606,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                         </div>
                         );
                 }else{
-                    
+
                 }
 
             }
@@ -622,11 +625,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private onChangeHandler = (value:string,key:string):void =>{
         if(value){
             if(value == '+'){
-                console.log(this.globalAttributes[key]);
                 let result = prompt("Input new option");
-                console.log(result,key);
-                this.globalAttributes[key].add(result);
-                
+                this.globalAttributes[key].push(result);
+
                 //call update
                 console.log(this.globalAttributes[key]);
                 this.updateGlobalAttributesModal();
@@ -639,7 +640,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     private updateGlobalAttributesModal = (): void => {
-        console.log(this.globalAttributes);
+        // console.log(this.globalAttributes);
         let items:any = this.generateElements();
         this.globalAttributesModal.update({
             content:

@@ -542,8 +542,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
         // console.log(jobInstance.task.labels[0].attributes.length);
-        console.log(jobInstance.task.labels[0].attributes);
-        console.log(jobInstance.task.labels);
+        // console.log(jobInstance.task.labels[0].attributes);
+        // console.log(jobInstance.task.labels);
         // Cycle through ALL existing attributes OF THE FIRST LABEL.
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
@@ -552,14 +552,21 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             }
         }
         this.updateGlobalAttributesModal();
-        console.log('initiate global attributes modal');
-        console.log(this.globalAttributes);
+        // console.log('initiate global attributes modal');
+        // console.log(this.globalAttributes);
     }
 
     private handleOk = (event:any): void => {
         let attributesLength = Object.keys(this.globalAttributes).length;
         let currentLength = Object.keys(this.globalAttributesSelected).length;
-        if(attributesLength == currentLength ){
+        let hasEmptyValues = false;
+        for (let key in this.globalAttributesSelected){
+            if(this.globalAttributesSelected[key] === ""){
+                hasEmptyValues = true;
+            }
+        }
+        //check for empty values
+        if(attributesLength == currentLength && !hasEmptyValues){
             //form is valid, close the modal
             // console.log('valid');
             this.globalAttributesModal.update({
@@ -589,6 +596,19 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         if(xBtn != null)
         xBtn.style.display = "none";
     }
+    private handleDeleteChoice(key:string,value:string){
+        // console.log(this.globalAttributes[key]);
+        for (var i = 0; i < this.globalAttributes[key].length; i++) {
+            if(this.globalAttributes[key][i] === value){
+                this.globalAttributes[key].splice(i, 1);
+            }
+            if(this.globalAttributesSelected[key] === value){
+                this.globalAttributesSelected[key] = "";
+            }
+        }
+        this.updateGlobalAttributesModal();
+        this.onEditGlobalAttributes();
+    }
     private generateElements = (): any[] => {
         const items:any[] = [];
         for (const key in this.globalAttributes){
@@ -598,7 +618,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 if(value != '+'){
                     temp.push(
                         <div class="container" onMouseOver={event=> this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
-                            <button class="x" id={'xBtn'+value}>
+                            <button type='button' class="x" id={'xBtn'+value} onClick={event=> this.handleDeleteChoice(key,value)} onsubmit="return false">
                                 x
                             </button>
                             <input type='radio' id={'radio'+key+'Option'+index} key={index} name={'radio'+key} value={value}></input>
@@ -629,7 +649,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 this.globalAttributes[key].push(result);
 
                 //call update
-                console.log(this.globalAttributes[key]);
+                // console.log(this.globalAttributes[key]);
                 this.updateGlobalAttributesModal();
 
             }else{
@@ -640,6 +660,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     private updateGlobalAttributesModal = (): void => {
+        // console.log('update modal');
         // console.log(this.globalAttributes);
         let items:any = this.generateElements();
         this.globalAttributesModal.update({
@@ -665,6 +686,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private onEditGlobalAttributes = (): void => {
         // console.log('click from top-bar.tsx');
         const { onEditGlobalAttributes } = this.props;
+        // console.log(this.globalAttributesSelected);
         onEditGlobalAttributes(this.globalAttributesSelected);
     }
     // ISL END

@@ -584,6 +584,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             visible :false});
         // console.log('cancel');
     }
+    private handleAddAttribute = (event:any): void => {
+        let result = prompt("Input new attribute");
+        if(result != null){
+            this.globalAttributes[result] = [];
+        }
+        this.updateGlobalAttributesModal();
+    }
     private onMouseOver = (value:any):void =>{
         // console.log('mouse over on ',value);
         var xBtn = document.getElementById('xBtn'+value);
@@ -617,8 +624,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             <InputNumber  size="small" min={0} max={1000000} defaultValue={0} /><text> to: </text>
             <InputNumber  size="small" min={0} max={1000000} defaultValue={0} />
             <button
+             className="plusbutton"
+             onClick ={(event) => this.handleAddAttribute(event)}>+</button>
+            <button
              className="xbutton"
-             onClick ={(event) => this.handleOk(event)}>X</button>
+             onClick ={(event) => this.handleCancel(event)}>X</button>
         </div>
 
         );

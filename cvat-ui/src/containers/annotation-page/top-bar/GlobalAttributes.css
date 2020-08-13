@@ -63,18 +63,23 @@
 }
 
 .radio-frame {
-  display: inline-block;
-  position: relative;
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-  margin-top: 0px;
-  top: -60px;
-  left: 220px;
-  text-align: center;
+    display: inline-block;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    margin-top: 0px;
+    top: -60px;
+    left: 220px;
+    text-align: center;
 }
 
-.xbutton{
+.xbutton {
     position: relative;
-    left: 260px;
+    left: 240px;
+}
+
+.plusbutton {
+    position: relative;
+    left: 230px;
 }

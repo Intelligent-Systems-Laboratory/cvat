@@ -541,15 +541,16 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         const { jobInstance } = this.props;
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
-        console.log(jobInstance.task.labels[0].attributes.length);
-        console.log(jobInstance.task.labels[0].attributes);
+        // console.log(jobInstance.task.labels[0].attributes.length);
+        // console.log(jobInstance.task.labels[0].attributes);
         // Cycle through ALL existing attributes OF THE FIRST LABEL.
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
-            this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values;
+            this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
         }
         this.updateGlobalAttributesModal();
-
+        console.log('initiate global attributes modal');
+        console.log(this.globalAttributes);
     }
 
     private handleOk = (event:any): void => {
@@ -573,7 +574,18 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             visible :false});
         // console.log('cancel');
     }
-
+    private onMouseOver = (value:any):void =>{
+        // console.log('mouse over on ',value);
+        var xBtn = document.getElementById('xBtn'+value);
+        if(xBtn != null)
+        xBtn.style.display = "block";
+    }
+    private onMouseOut = (value:any):void =>{
+        // console.log('mouse out on ', value);
+        var xBtn = document.getElementById('xBtn'+value);
+        if(xBtn != null)
+        xBtn.style.display = "none";
+    }
     private generateElements = (): any[] => {
         const items:any[] = [];
         for (const key in this.globalAttributes){
@@ -582,17 +594,25 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             for (const [index, value] of this.globalAttributes[key].entries()) {
                 if(value != '+'){
                     temp.push(
-                        <input type='radio' id={'radio'+key+'Option'+index} key={index} name={'radio'+key} value={value}></input>,
-                        <label for={'radio'+key+'Option'+index}>{value}</label>,
-                        )
+                        <div class="container" onMouseOver={event=> this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
+                            <button class="x" id={'xBtn'+value}>
+                                x
+                            </button>
+                            <input type='radio' id={'radio'+key+'Option'+index} key={index} name={'radio'+key} value={value}></input>
+                            <label for={'radio'+key+'Option'+index}>{value}</label>
+                        </div>
+                        );
                 }else{
-                    temp.push(
-                        <input type='radio' id={'radio'+key+'Option'+index} key={index} name={'radio'+key} value={value}></input>,
-                        <label for={'radio'+key+'Option'+index}>{value}</label>,
-                        )
+                    
                 }
 
             }
+            temp.push(
+                <div class="container" >
+                    <input type='radio' id={'radio'+key+'Option+'} key={this.globalAttributes[key].entries().length} name={'radio'+key} value={'+'}></input>
+                    <label for={'radio'+key+'Option+'}>{'+'}</label>
+                </div>
+                );
             items.push(<form class="radio-toolbar" onClick={event => this.onChangeHandler(event.target.value,key)}>{temp}</form>);
         }
 
@@ -602,13 +622,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private onChangeHandler = (value:string,key:string):void =>{
         if(value){
             if(value == '+'){
-                // console.log(this.globalAttributes[key]);
-                // delete + button, add new, add + button
+                console.log(this.globalAttributes[key]);
                 let result = prompt("Input new option");
+                console.log(result,key);
                 this.globalAttributes[key].add(result);
-                this.globalAttributes[key].delete('+');
-                this.globalAttributes[key].add('+');
+                
                 //call update
+                console.log(this.globalAttributes[key]);
                 this.updateGlobalAttributesModal();
 
             }else{
@@ -619,6 +639,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     private updateGlobalAttributesModal = (): void => {
+        console.log(this.globalAttributes);
         let items:any = this.generateElements();
         this.globalAttributesModal.update({
             content:

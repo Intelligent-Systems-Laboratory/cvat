@@ -591,6 +591,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
     private generateElements = (): any[] => {
         const items:any[] = [];
+
+        items.push(<div>
+            <InputNumber className="radio-framemin" size="small" min={0} max={1000000} defaultValue={0} /><text> to: </text>
+            <InputNumber className="radio-framemax" size="small" min={0} max={1000000} defaultValue={0} />
+        </div>
+        );
+
         for (const key in this.globalAttributes){
             items.push(<Row><Text className='cvat-title'>{key}</Text></Row>);
             let temp = []

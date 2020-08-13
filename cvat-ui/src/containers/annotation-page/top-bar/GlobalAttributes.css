@@ -62,19 +62,19 @@
     display: none;
 }
 
-.radio-framemin {
+.radio-frame {
   display: inline-block;
   position: relative;
   align-items: center;
   justify-content: center;
   margin: auto;
   margin-top: 0px;
+  top: -60px;
+  left: 220px;
+  text-align: center;
 }
-.radio-framemax {
-  display: inline-block;
-  position: relative;
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-  margin-top: 0px;
+
+.xbutton{
+    position: relative;
+    left: 260px;
 }

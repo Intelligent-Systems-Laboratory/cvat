@@ -612,10 +612,15 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private generateElements = (): any[] => {
         const items:any[] = [];
 
-        items.push(<div>
-            <InputNumber className="radio-framemin" size="small" min={0} max={1000000} defaultValue={0} /><text> to: </text>
-            <InputNumber className="radio-framemax" size="small" min={0} max={1000000} defaultValue={0} />
+        items.push(
+        <div className="radio-frame">
+            <InputNumber  size="small" min={0} max={1000000} defaultValue={0} /><text> to: </text>
+            <InputNumber  size="small" min={0} max={1000000} defaultValue={0} />
+            <button
+             className="xbutton"
+             onClick ={(event) => this.handleOk(event)}>X</button>
         </div>
+
         );
 
         for (const key in this.globalAttributes){

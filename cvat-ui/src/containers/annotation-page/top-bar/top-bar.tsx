@@ -585,11 +585,17 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // console.log('cancel');
     }
     private handleAddAttribute = (event:any): void => {
-        let result = prompt("Input new attribute");
+        let num_keys = Object.keys(this.globalAttributes).length;
+        console.log(num_keys)
+        if(num_keys>=5){
+            alert('You cannot add more than 5 global attributes');
+        }else{
+        let result = prompt("Input new attribute (maximum of 5 only)");
         if(result != null){
             this.globalAttributes[result] = [];
         }
         this.updateGlobalAttributesModal();
+        }
     }
     private onMouseOver = (value:any):void =>{
         // console.log('mouse over on ',value);

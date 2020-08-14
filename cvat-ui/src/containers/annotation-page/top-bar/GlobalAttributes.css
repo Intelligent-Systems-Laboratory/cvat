@@ -50,6 +50,14 @@
     border-radius: 7px;
 }
 
+.attribute-container {
+    display: inline-block;
+    background: #fff;
+    overflow: visible;
+    position: relative;
+    margin: 3px 5px;
+}
+
 .x {
     border-radius: 10px;
     position: absolute;
@@ -58,6 +66,18 @@
     color: white;
     top: -7px;
     right: -7px;
+    font-size: 10px;
+    display: none;
+}
+
+.x-attr {
+    border-radius: 10px;
+    position: absolute;
+    float: right;
+    background: #4d4a4a;
+    color: white;
+    top: -7px;
+    right: -10px;
     font-size: 10px;
     display: none;
 }

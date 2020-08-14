@@ -611,14 +611,20 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
     private handleDeleteChoice(key:string,value:string){
         // console.log(this.globalAttributes[key]);
-        for (var i = 0; i < this.globalAttributes[key].length; i++) {
-            if(this.globalAttributes[key][i] === value){
-                this.globalAttributes[key].splice(i, 1);
-            }
-            if(this.globalAttributesSelected[key] === value){
-                this.globalAttributesSelected[key] = "";
+        if(key==value){
+            console.log('must be an attribute');
+            delete this.globalAttributes[key];
+        }else{
+            for (var i = 0; i < this.globalAttributes[key].length; i++) {
+                if(this.globalAttributes[key][i] === value){
+                    this.globalAttributes[key].splice(i, 1);
+                }
+                if(this.globalAttributesSelected[key] === value){
+                    this.globalAttributesSelected[key] = "";
+                }
             }
         }
+        
         this.updateGlobalAttributesModal();
         this.onEditGlobalAttributes();
     }
@@ -635,12 +641,19 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             <button
              className="xbutton"
              onClick ={(event) => this.handleCancel(event)}>X</button>
-        </div>
-
+        </div>,
+        <div></div>
         );
 
         for (const key in this.globalAttributes){
-            items.push(<Row><Text className='cvat-title'>{key}</Text></Row>);
+            items.push(<div class="attribute-container" onMouseOver={event=> this.onMouseOver(key)} onMouseOut={event => this.onMouseOut(key)}>
+                            <button type='button' class="x" id={'xBtn'+key} onClick={event=> this.handleDeleteChoice(key,key)} onsubmit="return false">
+                                x
+                            </button>
+                            <Row>
+                                <Text className='cvat-title'>{key}</Text>
+                            </Row>
+                        </div>);
             let temp = []
             for (const [index, value] of this.globalAttributes[key].entries()) {
                 if(value != '+'){

@@ -10,6 +10,10 @@ import { RouteComponentProps } from 'react-router-dom';
 import { GlobalHotKeys, ExtendedKeyMapOptions } from 'react-hotkeys';
 import InputNumber from 'antd/lib/input-number';
 import { SliderValue } from 'antd/lib/slider';
+// ISL GLOBAL ATTRIBUTES
+import Select from 'antd/lib/select';
+import Tooltip from 'antd/lib/tooltip';
+// ISL END
 
 import {
     changeFrameAsync,
@@ -541,9 +545,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         const { jobInstance } = this.props;
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
-        // console.log(jobInstance.task.labels[0].attributes.length);
-        // console.log(jobInstance.task.labels[0].attributes);
-        // console.log(jobInstance.task.labels);
         // Cycle through ALL existing attributes OF THE FIRST LABEL.
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
@@ -584,7 +585,20 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             visible :false});
         // console.log('cancel');
     }
-    private handleAddAttribute = (event:any): void => {
+    private handleSelectAttribute = (event:any): void => {
+        let num_keys = Object.keys(this.globalAttributes).length;
+        console.log(num_keys)
+        if(num_keys>=5){
+            alert('You cannot add more than 5 global attributes');
+        }else{
+        let result = prompt("Input new attribute (maximum of 5 only)");
+        if(result != null){
+            this.globalAttributes[result] = [];
+        }
+        this.updateGlobalAttributesModal();
+        }
+    }
+    private handleAddAttributeValue = (event:any): void => {
         let num_keys = Object.keys(this.globalAttributes).length;
         console.log(num_keys)
         if(num_keys>=5){
@@ -624,7 +638,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 }
             }
         }
-        
+
         this.updateGlobalAttributesModal();
         this.onEditGlobalAttributes();
     }
@@ -632,12 +646,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         const items:any[] = [];
 
         items.push(
+
         <div className="radio-frame">
             <InputNumber  size="small" min={0} max={1000000} defaultValue={0} /><text> to: </text>
             <InputNumber  size="small" min={0} max={1000000} defaultValue={0} />
             <button
              className="plusbutton"
-             onClick ={(event) => this.handleAddAttribute(event)}>+</button>
+             onClick ={(event) => this.handleAddAttributeValue(event)}>+</button>
             <button
              className="xbutton"
              onClick ={(event) => this.handleCancel(event)}>X</button>
@@ -652,6 +667,17 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                             </button>
                             <Row>
                                 <Text className='cvat-title'>{key}</Text>
+                                {/* ISL GLOBAL ATTRIBUTES */}
+                                <div>
+                                <Tooltip title='Change current label'>
+                                    <Select size='small' value={`${this.globalAttributes}`} onChange={this.handleSelectAttribute}>
+                                            {/* <Select.Option key={this.globalAttributes} value={`${this.globalAttributes}`}>
+                                                {this.globalAttributes}
+                                            </Select.Option> */}
+                                    </Select>
+                                </Tooltip>
+                                </div>
+                                {/* ISL END */}
                             </Row>
                         </div>);
             let temp = []

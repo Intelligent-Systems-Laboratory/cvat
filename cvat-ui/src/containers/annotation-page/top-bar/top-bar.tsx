@@ -660,6 +660,40 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         <div></div>
         );
 
+        items.push(
+            <Row gutter={[12, 8]} >
+            <Col span={8} className ="Properties-header">
+              Subjects
+
+                <Col>
+                <Button onClick={() => console.log("Vehicles clicked!")} className="fillerbuttons"> Vehicles </Button>
+                <Button onClick={() => console.log("b clicked!")} className="fillerbuttons"> People </Button>
+                </Col>
+
+            </Col>
+            <Col span={8} className ="Properties-header">
+              Use Case
+
+                <Col>
+                <Button onClick={() => console.log("counting clicked!")} className="fillerbuttons"> Counting </Button>
+                <Button onClick={() => console.log("tracking clicked!")} className="fillerbuttons"> Tracking </Button>
+                <Button onClick={() => console.log("detection clicked!")} className="fillerbuttons"> Detection </Button>
+                </Col>
+
+            </Col>
+            <Col span={8} className ="Properties-header">
+              Spatial Properties
+
+                <Col>
+                <Button onClick={() => console.log("open clicked!")} className="fillerbuttons"> Open area </Button>
+                <Button onClick={() => console.log("encolsed clicked!")} className="fillerbuttons"> Enclosed </Button>
+
+                </Col>
+
+            </Col>
+          </Row>
+        )
+
         for (const key in this.globalAttributes){
             items.push(<div class="attribute-container" onMouseOver={event=> this.onMouseOver(key)} onMouseOut={event => this.onMouseOut(key)}>
                             <button type='button' class="x" id={'xBtn'+key} onClick={event=> this.handleDeleteChoice(key,key)} onsubmit="return false">

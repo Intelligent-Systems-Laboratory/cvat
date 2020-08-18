@@ -103,3 +103,14 @@
     position: relative;
     left: 230px;
 }
+
+.Properties-header {
+    font-weight: bold;
+    text-align: center;
+    margin: auto;
+  }
+
+  .fillerbuttons{
+      padding: 5px;
+      margin: 5px;
+  }

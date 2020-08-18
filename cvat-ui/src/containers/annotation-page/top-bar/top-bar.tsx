@@ -661,7 +661,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         );
 
         items.push(
-            <Row gutter={[12, 8]} >
+            <Row gutter={[12]} >
             <Col span={8} className ="Properties-header">
               Subjects
 

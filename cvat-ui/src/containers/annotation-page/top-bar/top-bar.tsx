@@ -203,6 +203,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         super(props);
         this.inputFrameRef = React.createRef<InputNumber>();
         this.initiateGlobalAttributesModal(); // ISL GLOBAL ATTRIBUTES
+
     }
 
     public componentDidMount(): void {
@@ -212,6 +213,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             jobInstance,
         } = this.props;
 
+        this.updateGlobalAttributesModal();
         this.autoSaveInterval = window.setInterval(this.autoSave.bind(this), autoSaveInterval);
 
         this.unblock = history.block((location: any) => {
@@ -244,6 +246,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             autoSaveInterval,
         } = this.props;
 
+        if(frameNumber != prevProps.frameNumber){
+            // TO DO: get the proper global attributes from the database and update the current one
+            this.fetchAttributeForCurrentFrame(frameNumber);
+
+        }
         if (autoSaveInterval !== prevProps.autoSaveInterval) {
             if (this.autoSaveInterval) window.clearInterval(this.autoSaveInterval);
             this.autoSaveInterval = window.setInterval(this.autoSave.bind(this), autoSaveInterval);
@@ -517,13 +524,16 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     // ISL GLOBAL ATTRIBUTES
     private globalAttributes: any;
     private globalAttributesSelected: any;
-
+    private globalAttributesDB: any[] = [];
+    private globalAttributesSelectedDB: any[] = [];
+    private frame_start: number = 0;
+    private frame_end:number =0;
     private globalAttributesModal = Modal.confirm({
         title: <Text className = 'cvat-title'>Global Attributes</Text>,
         visible: true ,
         content: ( <div></div>),
         width: 800,
-        okText:'Submit',
+        okText:'OK',
         icon:'',
         okButtonProps: {
             style: {
@@ -541,10 +551,15 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         onCancel:(event) => this.handleCancel(event),
     });
 
-    private initiateGlobalAttributesModal = (event: any):void =>{
+    private initiateGlobalAttributesModal = ():void =>{
         const { jobInstance } = this.props;
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
+        let globalAttributesWithFrameRange:any = {};
+
+        // console.log(jobInstance.task.labels[0].attributes.length);
+        // console.log(jobInstance.task.labels[0].attributes);
+        // console.log(jobInstance.task.labels);
         // Cycle through ALL existing attributes OF THE FIRST LABEL.
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
@@ -552,29 +567,98 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
             }
         }
+
+
+        globalAttributesWithFrameRange = {
+            frame_start:this.frame_start,
+            frame_end: jobInstance.stopFrame,
+            attributes: this.globalAttributes,
+        }
+        this.globalAttributesDB.push(globalAttributesWithFrameRange);
+        // console.log('MARKER',globalAttributesWithFrameRange['frame_start'],
+        // globalAttributesWithFrameRange['frame_end'],
+        // globalAttributesWithFrameRange['attributes']);
         this.updateGlobalAttributesModal();
         // console.log('initiate global attributes modal');
         // console.log(this.globalAttributes);
     }
 
+    private fetchAttributeForCurrentFrame = (frame_num:number): void => {
+        console.log('fetch global attributes for ', frame_num);
+        this.globalAttributes = {};
+        this.globalAttributesSelected = {};
+        for (let globalAttributes of this.globalAttributesDB){
+            if(frame_num >= globalAttributes['frame_start'] && frame_num <= globalAttributes['frame_end']){
+                this.globalAttributes = globalAttributes['attributes'];
+            }else{
+                console.log('attributes not found for',frame_num,'in',globalAttributes);
+            }
+        }
+        for (let globalAttributesSelected of this.globalAttributesSelectedDB){
+            if(frame_num >= parseInt(globalAttributesSelected['frame_start']) && frame_num <= parseInt(globalAttributesSelected['frame_end'])){
+                this.globalAttributesSelected = globalAttributesSelected['attributes'];
+            }
+        }
+        console.log('attributes db', this.globalAttributesDB);
+        console.log('selected db',this.globalAttributesSelectedDB);
+        console.log(this.globalAttributes)
+        console.log(this.globalAttributesSelected);
+        this.onEditGlobalAttributes();
+    }
+
     private handleOk = (event:any): void => {
+        const {jobInstance} = this.props;
         let attributesLength = Object.keys(this.globalAttributes).length;
         let currentLength = Object.keys(this.globalAttributesSelected).length;
         let hasEmptyValues = false;
+        let new_frame_start = parseInt((document.getElementById('frame_start') as (HTMLInputElement)).value);
+        let new_frame_end = parseInt((document.getElementById('frame_end') as (HTMLInputElement)).value);
+        // console.log(new_frame_start,new_frame_end);
+
+        let globalAttributesWithFrameRange:any = {};
+        let globalAttributesSelectedWithFrameRange: any = {};
+
+
+
         for (let key in this.globalAttributesSelected){
             if(this.globalAttributesSelected[key] === ""){
                 hasEmptyValues = true;
             }
         }
-        //check for empty values
-        if(attributesLength == currentLength && !hasEmptyValues){
-            //form is valid, close the modal
-            // console.log('valid');
+        //check if the form is valid
+
+        let valid_range = new_frame_start>=0 && new_frame_end<jobInstance.stopFrame && new_frame_end>=0 && new_frame_end >= new_frame_start;
+        if(attributesLength == currentLength && !hasEmptyValues && valid_range){
+            this.frame_start = new_frame_start;
+            this.frame_end = new_frame_end;
+            globalAttributesSelectedWithFrameRange = {
+                frame_start:new_frame_start,
+                frame_end:new_frame_end,
+                attributes:this.globalAttributesSelected,
+            }
+            globalAttributesWithFrameRange = {
+                frame_start:new_frame_start,
+                frame_end:new_frame_end,
+                attributes: this.globalAttributes,
+            }
+            this.globalAttributesSelectedDB.push(globalAttributesSelectedWithFrameRange);
+            this.globalAttributesDB.push(globalAttributesWithFrameRange);
+            // console.log('Attributes DB', this.globalAttributesDB);
+            // console.log('Selected DB', this.globalAttributesSelectedDB);
+
+            // if form is valid, close the modal
             this.globalAttributesModal.update({
                 visible :false});
             this.onEditGlobalAttributes();
+
         }else{
-            alert('Some attributes were not selected!');
+            if(attributesLength != currentLength && hasEmptyValues){
+                alert('Some attributes were not selected!');
+            }else if(!valid_range){
+                alert('Invalid frame range')
+            }else{
+                alert('Error! ');
+            }
         }
         // console.log('Ok button pressed');
     }
@@ -646,10 +730,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         const items:any[] = [];
 
         items.push(
-
         <div className="radio-frame">
-            <InputNumber  size="small" min={0} max={1000000} defaultValue={0} /><text> to: </text>
-            <InputNumber  size="small" min={0} max={1000000} defaultValue={0} />
+            <input  id='frame_start' type="number" size="small" min="0" max="10000" /><text> to: </text>
+            <input  id='frame_end' type="number" size="small" min="0" max="10000" />
             <button
              className="plusbutton"
              onClick ={(event) => this.handleAddAttributeValue(event)}>+</button>
@@ -737,13 +820,24 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     <label for={'radio'+key+'Option+'}>{'+'}</label>
                 </div>
                 );
-            items.push(<form class="radio-toolbar" onClick={event => this.onChangeHandler(event.target.value,key)}>{temp}</form>);
+            items.push(<form class="radio-toolbar" onClick={event => this.onChangeOptionHandler(event.target.value,key)}>{temp}</form>);
         }
 
         return items;
     }
+    private onChangeFrameRangeHandler = (id:string):void => {
+        let input = document.getElementById(id) as (HTMLInputElement);
+        if(input != null){
+            console.log(id,input.value);
+            if(input.value == 'frame_start'){
+                this.frame_start = parseInt(input.value);
+            }else{
 
-    private onChangeHandler = (value:string,key:string):void =>{
+            }
+        }
+
+    }
+    private onChangeOptionHandler = (value:string,key:string):void =>{
         if(value){
             if(value == '+'){
                 let result = prompt("Input new option");
@@ -762,7 +856,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     private updateGlobalAttributesModal = (): void => {
         // console.log('update modal');
-        // console.log(this.globalAttributes);
         let items:any = this.generateElements();
         this.globalAttributesModal.update({
             content:
@@ -777,10 +870,19 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.globalAttributesModal.update({
             visible:true,
         });
+        let input_start_frame = document.getElementById('frame_start');
+        let input_end_frame = document.getElementById('frame_end') ;
+        console.log(this.frame_start,this.frame_end);
+        console.log(input_start_frame,input_end_frame);
+        if(input_start_frame && input_end_frame){
+            input_start_frame.value = this.frame_start;
+            input_end_frame.value = this.frame_end;
+        }
     }
 
     private onGlobalIconClick = (): void => {
         // console.log('click');
+        this.updateGlobalAttributesModal();
         this.showGlobalAttributesModal();
     }
 

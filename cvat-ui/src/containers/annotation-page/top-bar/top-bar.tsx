@@ -778,6 +778,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         )
 
         for (const key in this.globalAttributes){
+            console.log('this', this.globalAttributes);
+            console.log('key', key);
             items.push(<div class="attribute-container" onMouseOver={event=> this.onMouseOver(key)} onMouseOut={event => this.onMouseOut(key)}>
                             <button type='button' class="x" id={'xBtn'+key} onClick={event=> this.handleDeleteChoice(key,key)} onsubmit="return false">
                                 x
@@ -786,11 +788,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                                 <Text className='cvat-title'>{key}</Text>
                                 {/* ISL GLOBAL ATTRIBUTES */}
                                 <div>
-                                <Tooltip title='Change current label'>
-                                    <Select size='small' value={`${this.globalAttributes}`} onChange={this.handleSelectAttribute}>
-                                            {/* <Select.Option key={this.globalAttributes} value={`${this.globalAttributes}`}>
-                                                {this.globalAttributes}
-                                            </Select.Option> */}
+                                <Tooltip title='Change attribute'>
+                                    <Select size='3' value={key}  onChange={this.handleSelectAttribute}>
+                                    {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
+                                        <Select.Option key={label} value={`${label}`}>
+                                            {label}
+                                        </Select.Option>
+                                    ))}
                                     </Select>
                                 </Tooltip>
                                 </div>

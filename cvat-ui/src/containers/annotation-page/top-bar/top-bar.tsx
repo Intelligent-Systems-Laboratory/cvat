@@ -786,19 +786,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                             </button>
                             <Row>
                                 <Text className='cvat-title'>{key}</Text>
-                                {/* ISL GLOBAL ATTRIBUTES */}
-                                <div>
-                                <Tooltip title='Change attribute'>
-                                    <Select size='3' value={key}  onChange={this.handleSelectAttribute}>
-                                    {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
-                                        <Select.Option key={label} value={`${label}`}>
-                                            {label}
-                                        </Select.Option>
-                                    ))}
-                                    </Select>
-                                </Tooltip>
-                                </div>
-                                {/* ISL END */}
                             </Row>
                         </div>);
             let temp = []
@@ -824,9 +811,22 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     <label for={'radio'+key+'Option+'}>{'+'}</label>
                 </div>
                 );
+
             items.push(<form class="radio-toolbar" onClick={event => this.onChangeOptionHandler(event.target.value,key)}>{temp}</form>);
         }
-
+        items.push(
+            <div>
+            <Tooltip title='Change attribute'>
+                <Select size='3' value={this.globalAttributes[0]}  onChange={this.handleSelectAttribute}>
+                {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
+                    <Select.Option key={label} value={`${label}`}>
+                        {label}
+                    </Select.Option>
+                ))}
+                </Select>
+            </Tooltip>
+            </div>
+            );
         return items;
     }
     private onChangeFrameRangeHandler = (id:string):void => {

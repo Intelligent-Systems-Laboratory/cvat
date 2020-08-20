@@ -89,7 +89,7 @@ interface DispatchToProps {
     searchAnnotations(sessionInstance: any, frameFrom: any, frameTo: any): void;
     changeWorkspace(workspace: Workspace): void;
     closeJob(): void;
-    onEditGlobalAttributes(globalAttributes:any): void;
+    onEditGlobalAttributes(globalAttributes: any): void;
 }
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
@@ -187,7 +187,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         closeJob(): void {
             dispatch(closeJobAction());
         },
-        onEditGlobalAttributes(globalAttributes:any): void {
+        onEditGlobalAttributes(globalAttributes: any): void {
             dispatch(editGlobalAttributesAction(globalAttributes));
         },
     };
@@ -229,7 +229,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
         window.addEventListener('beforeunload', this.beforeUnloadCallback);
         this.globalAttributesModal.update(
-            {visible:false});
+            { visible: false });
     }
 
     public componentDidUpdate(prevProps: Props): void {
@@ -246,7 +246,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             autoSaveInterval,
         } = this.props;
 
-        if(frameNumber != prevProps.frameNumber){
+        if (frameNumber != prevProps.frameNumber) {
             // TO DO: get the proper global attributes from the database and update the current one
             this.fetchAttributeForCurrentFrame(frameNumber);
 
@@ -527,35 +527,35 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private globalAttributesDB: any[] = [];
     private globalAttributesSelectedDB: any[] = [];
     private frame_start: number = 0;
-    private frame_end:number =0;
+    private frame_end: number = 0;
     private globalAttributesModal = Modal.confirm({
-        title: <Text className = 'cvat-title'>Global Attributes</Text>,
-        visible: true ,
-        content: ( <div></div>),
+        title: <Text className='cvat-title'>Global Attributes</Text>,
+        visible: true,
+        content: (<div></div>),
         width: 800,
-        okText:'OK',
-        icon:'',
+        okText: 'OK',
+        icon: '',
         okButtonProps: {
             style: {
                 width: '100px',
             },
         },
 
-        cancelText:'Cancel',
+        cancelText: 'Cancel',
         cancelButtonProps: {
             style: {
                 width: '100px',
             },
         },
-        onOk:(event) => this.handleOk(event),
-        onCancel:(event) => this.handleCancel(event),
+        onOk: (event) => this.handleOk(event),
+        onCancel: (event) => this.handleCancel(event),
     });
 
-    private initiateGlobalAttributesModal = ():void =>{
+    private initiateGlobalAttributesModal = (): void => {
         const { jobInstance } = this.props;
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
-        let globalAttributesWithFrameRange:any = {};
+        let globalAttributesWithFrameRange: any = {};
 
         // console.log(jobInstance.task.labels[0].attributes.length);
         // console.log(jobInstance.task.labels[0].attributes);
@@ -563,14 +563,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // Cycle through ALL existing attributes OF THE FIRST LABEL.
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
-            if(jobInstance.task.labels[0].attributes[i].inputType !== "radio"){
+            if (jobInstance.task.labels[0].attributes[i].inputType !== "radio") {
                 this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
             }
         }
 
 
         globalAttributesWithFrameRange = {
-            frame_start:this.frame_start,
+            frame_start: this.frame_start,
             frame_end: jobInstance.stopFrame,
             attributes: this.globalAttributes,
         }
@@ -583,31 +583,31 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // console.log(this.globalAttributes);
     }
 
-    private fetchAttributeForCurrentFrame = (frame_num:number): void => {
+    private fetchAttributeForCurrentFrame = (frame_num: number): void => {
         console.log('fetch global attributes for ', frame_num);
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
-        for (let globalAttributes of this.globalAttributesDB){
-            if(frame_num >= globalAttributes['frame_start'] && frame_num <= globalAttributes['frame_end']){
+        for (let globalAttributes of this.globalAttributesDB) {
+            if (frame_num >= globalAttributes['frame_start'] && frame_num <= globalAttributes['frame_end']) {
                 this.globalAttributes = globalAttributes['attributes'];
-            }else{
-                console.log('attributes not found for',frame_num,'in',globalAttributes);
+            } else {
+                console.log('attributes not found for', frame_num, 'in', globalAttributes);
             }
         }
-        for (let globalAttributesSelected of this.globalAttributesSelectedDB){
-            if(frame_num >= parseInt(globalAttributesSelected['frame_start']) && frame_num <= parseInt(globalAttributesSelected['frame_end'])){
+        for (let globalAttributesSelected of this.globalAttributesSelectedDB) {
+            if (frame_num >= parseInt(globalAttributesSelected['frame_start']) && frame_num <= parseInt(globalAttributesSelected['frame_end'])) {
                 this.globalAttributesSelected = globalAttributesSelected['attributes'];
             }
         }
         console.log('attributes db', this.globalAttributesDB);
-        console.log('selected db',this.globalAttributesSelectedDB);
+        console.log('selected db', this.globalAttributesSelectedDB);
         console.log(this.globalAttributes)
         console.log(this.globalAttributesSelected);
         this.onEditGlobalAttributes();
     }
 
-    private handleOk = (event:any): void => {
-        const {jobInstance} = this.props;
+    private handleOk = (event: any): void => {
+        const { jobInstance } = this.props;
         let attributesLength = Object.keys(this.globalAttributes).length;
         let currentLength = Object.keys(this.globalAttributesSelected).length;
         let hasEmptyValues = false;
@@ -615,30 +615,30 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         let new_frame_end = parseInt((document.getElementById('frame_end') as (HTMLInputElement)).value);
         // console.log(new_frame_start,new_frame_end);
 
-        let globalAttributesWithFrameRange:any = {};
+        let globalAttributesWithFrameRange: any = {};
         let globalAttributesSelectedWithFrameRange: any = {};
 
 
 
-        for (let key in this.globalAttributesSelected){
-            if(this.globalAttributesSelected[key] === ""){
+        for (let key in this.globalAttributesSelected) {
+            if (this.globalAttributesSelected[key] === "") {
                 hasEmptyValues = true;
             }
         }
         //check if the form is valid
 
-        let valid_range = new_frame_start>=0 && new_frame_end<jobInstance.stopFrame && new_frame_end>=0 && new_frame_end >= new_frame_start;
-        if(attributesLength == currentLength && !hasEmptyValues && valid_range){
+        let valid_range = new_frame_start >= 0 && new_frame_end < jobInstance.stopFrame && new_frame_end >= 0 && new_frame_end >= new_frame_start;
+        if (attributesLength == currentLength && !hasEmptyValues && valid_range) {
             this.frame_start = new_frame_start;
             this.frame_end = new_frame_end;
             globalAttributesSelectedWithFrameRange = {
-                frame_start:new_frame_start,
-                frame_end:new_frame_end,
-                attributes:this.globalAttributesSelected,
+                frame_start: new_frame_start,
+                frame_end: new_frame_end,
+                attributes: this.globalAttributesSelected,
             }
             globalAttributesWithFrameRange = {
-                frame_start:new_frame_start,
-                frame_end:new_frame_end,
+                frame_start: new_frame_start,
+                frame_end: new_frame_end,
                 attributes: this.globalAttributes,
             }
             this.globalAttributesSelectedDB.push(globalAttributesSelectedWithFrameRange);
@@ -648,76 +648,78 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
             // if form is valid, close the modal
             this.globalAttributesModal.update({
-                visible :false});
+                visible: false
+            });
             this.onEditGlobalAttributes();
 
-        }else{
-            if(attributesLength != currentLength && hasEmptyValues){
+        } else {
+            if (attributesLength != currentLength && hasEmptyValues) {
                 alert('Some attributes were not selected!');
-            }else if(!valid_range){
+            } else if (!valid_range) {
                 alert('Invalid frame range')
-            }else{
+            } else {
                 alert('Error! ');
             }
         }
         // console.log('Ok button pressed');
     }
 
-    private handleCancel = (event:any): void => {
+    private handleCancel = (event: any): void => {
         this.globalAttributesSelected = {};
         this.globalAttributesModal.update({
-            visible :false});
+            visible: false
+        });
         // console.log('cancel');
     }
-    private handleSelectAttribute = (event:any): void => {
+    private handleSelectAttribute = (event: any): void => {
         let num_keys = Object.keys(this.globalAttributes).length;
         console.log(num_keys)
-        if(num_keys>=5){
+        if (num_keys >= 5) {
             alert('You cannot add more than 5 global attributes');
-        }else{
-        let result = prompt("Input new attribute (maximum of 5 only)");
-        if(result != null){
-            this.globalAttributes[result] = [];
-        }
-        this.updateGlobalAttributesModal();
+        } else {
+            let result = prompt("Input new attribute (maximum of 5 only)");
+            if (result != null) {
+                this.globalAttributes[result] = [];
+            }
+            this.updateGlobalAttributesModal();
         }
     }
-    private handleAddAttributeValue = (event:any): void => {
+    private handleAddAttributeValue = (event: any): void => {
         let num_keys = Object.keys(this.globalAttributes).length;
         console.log(num_keys)
-        if(num_keys>=5){
+        if (num_keys >= 5) {
             alert('You cannot add more than 5 global attributes');
-        }else{
-        let result = prompt("Input new attribute (maximum of 5 only)");
-        if(result != null){
-            this.globalAttributes[result] = [];
-        }
-        this.updateGlobalAttributesModal();
+        } else {
+            let result = prompt("Input new attribute (maximum of 5 only)");
+            if (result != null) {
+                this.globalAttributes[result] = [];
+            }
+            this.updateGlobalAttributesModal();
         }
     }
-    private onMouseOver = (value:any):void =>{
+    private onMouseOver = (value: any): void => {
         // console.log('mouse over on ',value);
-        var xBtn = document.getElementById('xBtn'+value);
-        if(xBtn != null)
-        xBtn.style.display = "block";
+        var xBtn = document.getElementById('xBtn' + value);
+        if (xBtn != null)
+            xBtn.style.display = "block";
     }
-    private onMouseOut = (value:any):void =>{
+    private onMouseOut = (value: any): void => {
         // console.log('mouse out on ', value);
-        var xBtn = document.getElementById('xBtn'+value);
-        if(xBtn != null)
-        xBtn.style.display = "none";
+        var xBtn = document.getElementById('xBtn' + value);
+        if (xBtn != null)
+            xBtn.style.display = "none";
     }
-    private handleDeleteChoice(key:string,value:string){
+    private handleDeleteChoice(key: string, value: string) {
         // console.log(this.globalAttributes[key]);
-        if(key==value){
+        if (key == value) {
             console.log('must be an attribute');
             delete this.globalAttributes[key];
-        }else{
+        } else {
             for (var i = 0; i < this.globalAttributes[key].length; i++) {
-                if(this.globalAttributes[key][i] === value){
+                if (this.globalAttributes[key][i] === value) {
                     this.globalAttributes[key].splice(i, 1);
                 }
-                if(this.globalAttributesSelected[key] === value){
+                if (this.globalAttributesSelected[key] === value) {
                     this.globalAttributesSelected[key] = "";
                 }
             }
@@ -727,123 +729,147 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.onEditGlobalAttributes();
     }
     private generateElements = (): any[] => {
-        const items:any[] = [];
+        const items: any[] = [];
 
         items.push(
-        <div className="radio-frame">
-            <input  id='frame_start' type="number" size="small" min="0" max="10000" /><text> to: </text>
-            <input  id='frame_end' type="number" size="small" min="0" max="10000" />
-            <button
-             className="plusbutton"
-             onClick ={(event) => this.handleAddAttributeValue(event)}>+</button>
-            <button
-             className="xbutton"
-             onClick ={(event) => this.handleCancel(event)}>X</button>
-        </div>,
-        <div></div>
+            <div className="radio-frame">
+                <input id='frame_start' type="number" size="small" min="0" max="10000" /><text> to: </text>
+                <input id='frame_end' type="number" size="small" min="0" max="10000" />
+                <button
+                    className="plusbutton"
+                    onClick={(event) => this.handleAddAttributeValue(event)}>+</button>
+                <button
+                    className="xbutton"
+                    onClick={(event) => this.handleCancel(event)}>X</button>
+            </div>,
+            <div></div>
         );
 
         items.push(
             <Row gutter={[12]} >
-            <Col span={8} className ="Properties-header">
-              Subjects
+                <Col span={8} className="Properties-header">
+                    Subjects
 
                 <Col>
-                <Button onClick={() => console.log("Vehicles clicked!")} className="fillerbuttons"> Vehicles </Button>
-                <Button onClick={() => console.log("b clicked!")} className="fillerbuttons"> People </Button>
-                </Col>
+                        <Button onClick={() => console.log("Vehicles clicked!")} className="fillerbuttons"> Vehicles </Button>
+                        <Button onClick={() => console.log("b clicked!")} className="fillerbuttons"> People </Button>
+                    </Col>
 
-            </Col>
-            <Col span={8} className ="Properties-header">
-              Use Case
+                </Col>
+                <Col span={8} className="Properties-header">
+                    Use Case
 
                 <Col>
-                <Button onClick={() => console.log("counting clicked!")} className="fillerbuttons"> Counting </Button>
-                <Button onClick={() => console.log("tracking clicked!")} className="fillerbuttons"> Tracking </Button>
-                <Button onClick={() => console.log("detection clicked!")} className="fillerbuttons"> Detection </Button>
-                </Col>
+                        <Button onClick={() => console.log("counting clicked!")} className="fillerbuttons"> Counting </Button>
+                        <Button onClick={() => console.log("tracking clicked!")} className="fillerbuttons"> Tracking </Button>
+                        <Button onClick={() => console.log("detection clicked!")} className="fillerbuttons"> Detection </Button>
+                    </Col>
 
-            </Col>
-            <Col span={8} className ="Properties-header">
-              Spatial Properties
+                </Col>
+                <Col span={8} className="Properties-header">
+                    Spatial Properties
 
                 <Col>
-                <Button onClick={() => console.log("open clicked!")} className="fillerbuttons"> Open area </Button>
-                <Button onClick={() => console.log("encolsed clicked!")} className="fillerbuttons"> Enclosed </Button>
+                        <Button onClick={() => console.log("open clicked!")} className="fillerbuttons"> Open area </Button>
+                        <Button onClick={() => console.log("encolsed clicked!")} className="fillerbuttons"> Enclosed </Button>
+
+                    </Col>
+
+                </Col>
+            </Row>,
+
+            <Row gutter={[12]} >
+                <Col span={8} className="Properties-header">
+                    Camera Location
+
+                <Col>
+                        <Button onClick={() => console.log("Vehicles clicked!")} className="fillerbuttons"> Side </Button>
+                        <Button onClick={() => console.log("b clicked!")} className="fillerbuttons"> Corner </Button>
+                    </Col>
+
+                </Col>
+                <Col span={8} className="Properties-header">
+                    Camera Viewpoint Orientation
+
+                <Col>
+                        <Button onClick={() => console.log("counting clicked!")} className="fillerbuttons"> Left </Button>
+                        <Button onClick={() => console.log("tracking clicked!")} className="fillerbuttons"> Right </Button>
+                        <Button onClick={() => console.log("detection clicked!")} className="fillerbuttons"> Front </Button>
+                        <Button onClick={() => console.log("detection clicked!")} className="fillerbuttons"> Back </Button>
+                    </Col>
 
                 </Col>
 
-            </Col>
-          </Row>
+            </Row>
         )
 
-        for (const key in this.globalAttributes){
+        for (const key in this.globalAttributes) {
             console.log('this', this.globalAttributes);
             console.log('key', key);
-            items.push(<div class="attribute-container" onMouseOver={event=> this.onMouseOver(key)} onMouseOut={event => this.onMouseOut(key)}>
-                            <button type='button' class="x" id={'xBtn'+key} onClick={event=> this.handleDeleteChoice(key,key)} onsubmit="return false">
-                                x
+            items.push(<div class="attribute-container" onMouseOver={event => this.onMouseOver(key)} onMouseOut={event => this.onMouseOut(key)}>
+                <button type='button' class="x" id={'xBtn' + key} onClick={event => this.handleDeleteChoice(key, key)} onsubmit="return false">
+                    x
                             </button>
-                            <Row>
-                                <Text className='cvat-title'>{key}</Text>
-                            </Row>
-                        </div>);
+                <Row>
+                    <Text className='cvat-title'>{key}</Text>
+                </Row>
+            </div>);
             let temp = []
             for (const [index, value] of this.globalAttributes[key].entries()) {
-                if(value != '+'){
+                if (value != '+') {
                     temp.push(
-                        <div class="container" onMouseOver={event=> this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
-                            <button type='button' class="x" id={'xBtn'+value} onClick={event=> this.handleDeleteChoice(key,value)} onsubmit="return false">
+                        <div class="container" onMouseOver={event => this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
+                            <button type='button' class="x" id={'xBtn' + value} onClick={event => this.handleDeleteChoice(key, value)} onsubmit="return false">
                                 x
                             </button>
-                            <input type='radio' id={'radio'+key+'Option'+index} key={index} name={'radio'+key} value={value}></input>
-                            <label for={'radio'+key+'Option'+index}>{value}</label>
+                            <input type='radio' id={'radio' + key + 'Option' + index} key={index} name={'radio' + key} value={value}></input>
+                            <label for={'radio' + key + 'Option' + index}>{value}</label>
                         </div>
-                        );
-                }else{
+                    );
+                } else {
 
                 }
 
             }
             temp.push(
                 <div class="container" >
-                    <input type='radio' id={'radio'+key+'Option+'} key={this.globalAttributes[key].entries().length} name={'radio'+key} value={'+'}></input>
-                    <label for={'radio'+key+'Option+'}>{'+'}</label>
+                    <input type='radio' id={'radio' + key + 'Option+'} key={this.globalAttributes[key].entries().length} name={'radio' + key} value={'+'}></input>
+                    <label for={'radio' + key + 'Option+'}>{'+'}</label>
                 </div>
-                );
+            );
 
-            items.push(<form class="radio-toolbar" onClick={event => this.onChangeOptionHandler(event.target.value,key)}>{temp}</form>);
+            items.push(<form class="radio-toolbar" onClick={event => this.onChangeOptionHandler(event.target.value, key)}>{temp}</form>);
         }
         items.push(
             <div>
-            <Tooltip title='Change attribute'>
-                <Select size='3' value={this.globalAttributes[0]}  onChange={this.handleSelectAttribute}>
-                {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
-                    <Select.Option key={label} value={`${label}`}>
-                        {label}
-                    </Select.Option>
-                ))}
-                </Select>
-            </Tooltip>
+                <Tooltip title='Change attribute'>
+                    <Select size='3' value={this.globalAttributes[0]} onChange={this.handleSelectAttribute}>
+                        {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
+                            <Select.Option key={label} value={`${label}`}>
+                                {label}
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </Tooltip>
             </div>
-            );
+        );
         return items;
     }
-    private onChangeFrameRangeHandler = (id:string):void => {
+    private onChangeFrameRangeHandler = (id: string): void => {
         let input = document.getElementById(id) as (HTMLInputElement);
-        if(input != null){
-            console.log(id,input.value);
-            if(input.value == 'frame_start'){
+        if (input != null) {
+            console.log(id, input.value);
+            if (input.value == 'frame_start') {
                 this.frame_start = parseInt(input.value);
-            }else{
+            } else {
 
             }
         }
 
     }
-    private onChangeOptionHandler = (value:string,key:string):void =>{
-        if(value){
-            if(value == '+'){
+    private onChangeOptionHandler = (value: string, key: string): void => {
+        if (value) {
+            if (value == '+') {
                 let result = prompt("Input new option");
                 this.globalAttributes[key].push(result);
 
@@ -851,7 +877,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 // console.log(this.globalAttributes[key]);
                 this.updateGlobalAttributesModal();
 
-            }else{
+            } else {
                 this.globalAttributesSelected[key] = value;
             }
         }
@@ -860,25 +886,25 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     private updateGlobalAttributesModal = (): void => {
         // console.log('update modal');
-        let items:any = this.generateElements();
+        let items: any = this.generateElements();
         this.globalAttributesModal.update({
             content:
                 <div>{items}</div>
-                ,
+            ,
 
         });
 
     }
 
-    private showGlobalAttributesModal = ():void => {
+    private showGlobalAttributesModal = (): void => {
         this.globalAttributesModal.update({
-            visible:true,
+            visible: true,
         });
         let input_start_frame = document.getElementById('frame_start');
-        let input_end_frame = document.getElementById('frame_end') ;
-        console.log(this.frame_start,this.frame_end);
-        console.log(input_start_frame,input_end_frame);
-        if(input_start_frame && input_end_frame){
+        let input_end_frame = document.getElementById('frame_end');
+        console.log(this.frame_start, this.frame_end);
+        console.log(input_start_frame, input_end_frame);
+        if (input_start_frame && input_end_frame) {
             input_start_frame.value = this.frame_start;
             input_end_frame.value = this.frame_end;
         }

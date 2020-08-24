@@ -561,7 +561,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // console.log(jobInstance.task.labels[0].attributes);
         // console.log(jobInstance.task.labels);
         // Cycle through ALL existing attributes OF THE FIRST LABEL.
-        for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
+        // i < 1 or jobInstance.task.labels[0].attributes.length
+        for (var i = 0; i < 1; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
             if (jobInstance.task.labels[0].attributes[i].inputType !== "radio") {
                 this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
@@ -812,6 +813,17 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                             </button>
                 <Row>
                     <Text className='cvat-title'>{key}</Text>
+                    <div>
+                <Tooltip title='Change attribute'>
+                    <Select size='3' value={key} onChange={this.handleSelectAttribute}>
+                        {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
+                            <Select.Option key={label} value={`${label}`}>
+                                {label}
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </Tooltip>
+            </div>
                 </Row>
             </div>);
             let temp = []

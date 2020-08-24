@@ -752,8 +752,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Subjects
 
                 <Col>
-                        <Button onClick={() => console.log("Vehicles clicked!")} className="fillerbuttons"> Vehicles </Button>
-                        <Button onClick={() => console.log("b clicked!")} className="fillerbuttons"> People </Button>
+                        <button onClick={() => console.log("Vehicles clicked!")} className="radio-toolbar"> Vehicles </button>
+                        <utton onClick={() => console.log("b clicked!")} className="radio-toolbar"> People </utton>
                     </Col>
 
                 </Col>
@@ -761,9 +761,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Use Case
 
                 <Col>
-                        <Button onClick={() => console.log("counting clicked!")} className="fillerbuttons"> Counting </Button>
-                        <Button onClick={() => console.log("tracking clicked!")} className="fillerbuttons"> Tracking </Button>
-                        <Button onClick={() => console.log("detection clicked!")} className="fillerbuttons"> Detection </Button>
+                        <button onClick={() => console.log("counting clicked!")} className="radio-toolbar"> Counting </button>
+                        <button onClick={() => console.log("tracking clicked!")} className="radio-toolbar"> Tracking </button>
+                        <button onClick={() => console.log("detection clicked!")} className="radio-toolbar"> Detection </button>
                     </Col>
 
                 </Col>
@@ -771,8 +771,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Spatial Properties
 
                 <Col>
-                        <Button onClick={() => console.log("open clicked!")} className="fillerbuttons"> Open area </Button>
-                        <Button onClick={() => console.log("encolsed clicked!")} className="fillerbuttons"> Enclosed </Button>
+                        <button onClick={() => console.log("open clicked!")} className="radio-toolbar"> Open area </button>
+                        <button onClick={() => console.log("encolsed clicked!")} className="radio-toolbar"> Enclosed </button>
 
                     </Col>
 
@@ -784,8 +784,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Camera Location
 
                 <Col>
-                        <Button onClick={() => console.log("Vehicles clicked!")} className="fillerbuttons"> Side </Button>
-                        <Button onClick={() => console.log("b clicked!")} className="fillerbuttons"> Corner </Button>
+                        <button onClick={() => console.log("Vehicles clicked!")} className="radio-toolbar"> Side </button>
+                        <button onClick={() => console.log("b clicked!")} className="radio-toolbar"> Corner </button>
                     </Col>
 
                 </Col>
@@ -793,10 +793,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Camera Viewpoint Orientation
 
                 <Col>
-                        <Button onClick={() => console.log("counting clicked!")} className="fillerbuttons"> Left </Button>
-                        <Button onClick={() => console.log("tracking clicked!")} className="fillerbuttons"> Right </Button>
-                        <Button onClick={() => console.log("detection clicked!")} className="fillerbuttons"> Front </Button>
-                        <Button onClick={() => console.log("detection clicked!")} className="fillerbuttons"> Back </Button>
+                        <button onClick={() => console.log("counting clicked!")} className="radio-toolbar"> Left </button>
+                        <button onClick={() => console.log("tracking clicked!")} className="radio-toolbar"> Right </button>
+                        <button onClick={() => console.log("detection clicked!")} className="radio-toolbar"> Front </button>
+                        <button onClick={() => console.log("detection clicked!")} className="radio-toolbar"> Back </button>
                     </Col>
 
                 </Col>

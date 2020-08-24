@@ -115,10 +115,19 @@ const defaultState: AnnotationState = {
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // ISL GLOBAL ATTRIBUTES
+        case AnnotationActionTypes.START_EDIT_LABEL: {
+            const { task_id,
+            data } = action.payload;
+            return {...state,};
+        }
+        case AnnotationActionTypes.STOP_EDIT_LABEL: {
+            return {...state,};
+        }
+        // ISL END
         // ISL AUTOFIT
         case AnnotationActionTypes.START_AUTO_FIT: {
             const { clientID } = action.payload;
-            console.log(LabelsListContainer);
             const newAutoFitObjects = [...state.autoFitObjects];
             newAutoFitObjects.push(clientID);
             return {

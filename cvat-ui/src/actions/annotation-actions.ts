@@ -198,6 +198,8 @@ export enum AnnotationActionTypes {
     // ISL END
     // ISL GLOBAL ATTRIBUTES
     EDIT_GLOBAL_ATTRIBUTES = 'EDIT_GLOBAL_ATTRIBUTES',
+    START_EDIT_LABEL = 'START_EDIT_LABEL',
+    STOP_EDIT_LABEL = 'STOP_EDIT_LABEL',
     // ISL END
 }
 
@@ -257,7 +259,38 @@ export function editGlobalAttributes(globalAttributes:any): AnyAction {
     };
 }
 
-// ISL END
+export function editLabels(jobInstance: any,labels_data:any ,selected:any): AnyAction {
+    console.log('Editing label for task ',jobInstance.task.id);
+    console.log('attributes: ', labels_data);
+    console.log('selected: ', selected);
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch({
+                type: AnnotationActionTypes.START_EDIT_LABEL,
+                payload: {
+                    task_id: jobInstance.task.id,
+                    data:labels_data,
+                    status: true,
+                },
+            });
+            console.log(jobInstance);
+            jobInstance.annotations.updateLabels(labels_data,selected).then((data: any) => {
+                console.log('data received from server: ', data);
+                dispatch({
+                    type: AnnotationActionTypes.STOP_EDIT_LABEL,
+                    payload: {
+                        task_id: jobInstance.task.id,
+                        data:labels_data,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error Occured While editing labels', error);
+
+        }
+    };
+};
+//ISL END
 export function saveLogsAsync():
     ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>) => {

@@ -451,14 +451,14 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             nameToIDMap[attribute.name] = attribute.id;
         }
 
-        const attr: Record<number, string> = {}; 
+        const attr: Record<number, string> = {};
         // get the global attribute's name and value and apply it to the new rectangle if the attribute exist
         for (const key in globalAttributes) {
             if(nameToIDMap[key] !== undefined || ""){//nameToIDMap[key] is undefined if the attribute does not exist
                 if(globalAttributes[key] !== ""){//globalAttributes[key] is "", it means that global attributes are not yet set
                     attr[nameToIDMap[key]] = globalAttributes[key];
                 }
-            }else{ 
+            }else{
                 // do nothing for now
             }
         }

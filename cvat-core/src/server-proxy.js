@@ -722,7 +722,52 @@
                 return response.data;
             }
             // EDITED END
+            // ISL GLOBAL ATTRIBUTES
+            async function updateLabels(id, data,selected) {
+                const { backendAPI } = config;
+                console.log('MARKER server-proxy');
+                console.log('updating lables');
+                console.log('id: ', id);
+                console.log('data: ',data);
+                console.log('selected: ',selected);
+                console.log('MARKER END');
+                let task_details = {},labels = null;
 
+                try {
+                    task_details = await Axios.get(`${backendAPI}/tasks/${id}`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                    });
+                    labels = task_details.data.labels;
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+                let update_details = {...task_details.data,
+                }
+                console.log(update_details.labels);
+                for (let key in data) {
+                    console.log('key', key);
+                    for(let attribute of update_details.labels[0].attributes){
+                        if(key == attribute.name){
+                            console.log('found ',key,'in original labels');
+                            attribute.values = data[key];
+                            attribute.default_value = selected[key];
+                        }
+                    }
+
+                }
+                console.log('update_details', update_details);
+                let update_detailsJSON = JSON.stringify(update_details);
+                let updateLabel = null;
+                try {
+                    updateLabel = await Axios.put(`${backendAPI}/tasks/${id}`,
+                    update_details
+                    );
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+                return updateLabel.data;
+            }
+            // ISL END
             Object.defineProperties(this, Object.freeze({
                 server: {
                     value: Object.freeze({
@@ -748,6 +793,7 @@
                         deleteTask,
                         exportDataset,
                         autoFit,           /*ISL AUTOFIT*/
+                        updateLabels,       /*ISL GLOBAL ATTRIBUTES*/
                     }),
                     writable: false,
                 },

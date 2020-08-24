@@ -37,6 +37,15 @@
                     },
                     // ISL END
 
+                    // ISL GLOBAL ATTRIBUTES
+                    async updateLabels(data,selected) {
+                        console.log('session.js',data,selected);
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.updateLabels, data,selected);
+                        return result;
+                    },
+                    // ISL END
+
                     async upload(file, loader) {
                         const result = await PluginRegistry
                             .apiWrapper.call(this, prototype.annotations.upload, file, loader);
@@ -757,6 +766,9 @@
                 // ISL TRACKING
                 tracking: Object.getPrototypeOf(this).annotations.tracking.bind(this),
                 // ISL END
+                // ISL GLOBAL ATTRIBUTES
+                updateLabels: Object.getPrototypeOf(this).annotations.updateLabels.bind(this),
+                // ISL END
             };
 
             this.actions = {
@@ -1317,6 +1329,9 @@
                 // ISL TRACKING
                 tracking: Object.getPrototypeOf(this).annotations.tracking.bind(this),
                 // ISL END
+                // ISL GLOBAL ATTRIBUTES
+                updateLabels: Object.getPrototypeOf(this).annotations.updateLabels.bind(this),
+                // ISL END
             };
 
             this.actions = {
@@ -1433,7 +1448,7 @@
     },
     // ISL END
 
-    // ISL TRACKING 
+    // ISL TRACKING
     Job.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
         const result = await serverProxy.tasks.tracking(this.task.id, objectID, frameStart, frameEnd, points)
         return result;
@@ -1441,6 +1456,17 @@
 
     Task.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
         const result = await serverProxy.tasks.tracking(this.id, objectID, frameStart, frameEnd, points)
+        return result;
+    },
+    // ISL END
+    // ISL TRACKING
+    Job.prototype.annotations.updateLabels = async function (data,selected) {
+        const result = await serverProxy.tasks.updateLabels(this.task.id, data,selected);
+        return result;
+    },
+
+    Task.prototype.annotations.updateLabels = async function (data,selected) {
+        const result = await serverProxy.tasks.updateLabels(this.id, data,selected);
         return result;
     },
     // ISL END

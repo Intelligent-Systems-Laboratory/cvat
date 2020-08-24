@@ -731,7 +731,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
     private generateElements = (): any[] => {
         const items: any[] = [];
-
+        const { jobInstance } = this.props;
         items.push(
             <div className="radio-frame">
                 <input id='frame_start' type="number" size="small" min="0" max="10000" /><text> to: </text>
@@ -803,9 +803,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
             </Row>
         )
-
+            // 24 AUG 2020
         for (const key in this.globalAttributes) {
-            console.log('this', this.globalAttributes);
+            console.log('this', jobInstance.task.labels[0].attributes[0]);
+            console.log('this2', this.globalAttributes);
             console.log('key', key);
             items.push(<div class="attribute-container" onMouseOver={event => this.onMouseOver(key)} onMouseOut={event => this.onMouseOut(key)}>
                 <button type='button' class="x" id={'xBtn' + key} onClick={event => this.handleDeleteChoice(key, key)} onsubmit="return false">
@@ -818,6 +819,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     <Select size='3' value={key} onChange={this.handleSelectAttribute}>
                         {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
                             <Select.Option key={label} value={`${label}`}>
+
                                 {label}
                             </Select.Option>
                         ))}

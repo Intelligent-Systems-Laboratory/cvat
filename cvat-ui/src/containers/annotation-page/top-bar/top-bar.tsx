@@ -218,7 +218,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             jobInstance,
         } = this.props;
 
-        this.updateGlobalAttributesModal();
+
         this.autoSaveInterval = window.setInterval(this.autoSave.bind(this), autoSaveInterval);
 
         this.unblock = history.block((location: any) => {
@@ -233,8 +233,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         });
 
         window.addEventListener('beforeunload', this.beforeUnloadCallback);
-        this.globalAttributesModal.update(
-            { visible: false });
+        this.hideGlobalAttributesModal();
     }
 
     public componentDidUpdate(prevProps: Props): void {
@@ -573,8 +572,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
             }
         }
-        console.log(this.globalAttributes);
-
+        this.frame_start = 0;
+        this.frame_end = jobInstance.stopFrame;
         globalAttributesWithFrameRange = {
             frame_start: this.frame_start,
             frame_end: jobInstance.stopFrame,
@@ -585,8 +584,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // globalAttributesWithFrameRange['frame_end'],
         // globalAttributesWithFrameRange['attributes']);
         this.updateGlobalAttributesModal();
-        // console.log('initiate global attributes modal');
         // console.log(this.globalAttributes);
+
+
+
+        console.log('Initiate global attributes modal complete');
     }
 
     private fetchAttributeForCurrentFrame = (frame_num: number): void => {
@@ -680,8 +682,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 alert('Unknown Error! Check console for more details');
             }
         }
-        console.log('MARKER OK');
-
         // console.log('Ok button pressed');
     }
 
@@ -693,7 +693,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // console.log('cancel');
     }
     private handleSelectAttribute = (event: any): void => {
-        console.log('handleSelectAttribute');
         let num_keys = Object.keys(this.globalAttributes).length;
         // console.log(num_keys)
         if (num_keys >= 5) {
@@ -937,14 +936,33 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     }
 
+    private hideGlobalAttributesModal = (): void => {
+        this.globalAttributesModal.update({
+            visible: false,
+        });
+
+    }
+    private waitPageToCompleteLoading = (): void => {
+            let frame_start = (document.getElementById('frame_start') as (HTMLInputElement));
+            let frame_end = (document.getElementById('frame_end') as (HTMLInputElement));
+            if(frame_start !== null && frame_end !== null){
+                frame_start.value = this.frame_start + "";
+                frame_end.value = this.frame_end +"";
+            }else{
+                setTimeout(this.waitPageToCompleteLoading, 300);
+            }
+    }
     private onGlobalIconClick = (): void => {
         // console.log('click');
         this.updateGlobalAttributesModal();
+
         this.showGlobalAttributesModal();
+
+
+        this.waitPageToCompleteLoading();
     }
 
     private onEditGlobalAttributes = (): void => {
-        // console.log('click from top-bar.tsx');
         const { onEditGlobalAttributes } = this.props;
         // console.log(this.globalAttributesSelected);
         onEditGlobalAttributes(this.globalAttributesSelected);

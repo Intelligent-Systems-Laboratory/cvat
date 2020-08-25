@@ -598,6 +598,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         for (let globalAttributes of this.globalAttributesDB) {
             if (frame_num >= globalAttributes['frame_start'] && frame_num <= globalAttributes['frame_end']) {
                 this.globalAttributes = globalAttributes['attributes'];
+                console.log('attribute found: ',this.globalAttributes);
             } else {
                 console.log('attributes not found for', frame_num, 'in', globalAttributes);
             }
@@ -605,6 +606,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         for (let globalAttributesSelected of this.globalAttributesSelectedDB) {
             if (frame_num >= parseInt(globalAttributesSelected['frame_start']) && frame_num <= parseInt(globalAttributesSelected['frame_end'])) {
                 this.globalAttributesSelected = globalAttributesSelected['attributes'];
+                console.log('selected found: ',this.globalAttributesSelected);
             }
         }
         // console.log('attributes db', this.globalAttributesDB);
@@ -639,8 +641,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 hasEmptyValues = true;
             }
         }
-        //check if the form is valid
 
+        //check if the form is valid
         let valid_range = new_frame_start >= 0 && new_frame_end < jobInstance.stopFrame && new_frame_end >= 0 && new_frame_end >= new_frame_start;
         if (attributesLength == currentLength && !hasEmptyValues) {//dont forget to add check for valid_range
             onEditLabels(jobInstance,{...this.globalAttributes},{...this.globalAttributesSelected});//send a copy to the server, not the original data
@@ -693,16 +695,19 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // console.log('cancel');
     }
     private handleSelectAttribute = (event: any): void => {
+        // console.log(event);
         let num_keys = Object.keys(this.globalAttributes).length;
         // console.log(num_keys)
         if (num_keys >= 5) {
             alert('You cannot add more than 5 global attributes');
         } else {
-            let result = prompt("Input new attribute (maximum of 5 only)");
-            if (result != null) {
-                this.globalAttributes[result] = [];
+            if(event.key == 'Other'){
+                let result = prompt("Input new attribute (maximum of 5 only)");
+                if (result != null) {
+                    this.globalAttributes[result] = [];
+                }
+                this.updateGlobalAttributesModal();
             }
-            this.updateGlobalAttributesModal();
         }
     }
     private handleAddAttributeValue = (event: any): void => {
@@ -773,7 +778,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
                 <Col>
                         <button onClick={() => console.log("Vehicles clicked!")} className="radio-toolbar"> Vehicles </button>
-                        <utton onClick={() => console.log("b clicked!")} className="radio-toolbar"> People </utton>
+                        <button onClick={() => console.log("b clicked!")} className="radio-toolbar"> People </button>
                     </Col>
 
                 </Col>
@@ -875,13 +880,22 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
         items.push(
             <div>
-                <Tooltip title='Change attribute'>
-                    <Select size='default' value={this.globalAttributes[0]} onChange={this.handleSelectAttribute}>
-                        {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
-                            <Select.Option key={label} value={`${label}`}>
+                <Tooltip title='Select an attribute'>
+                    <Select
+                        placeholder={"Select an attribute"}
+                        onChange={this.handleSelectAttribute}
+                        labelInValue
+                        style={{ width: 200 }}
+                    >
+                        {Object.keys(this.globalAttributes).map((label: any,index:number): JSX.Element => (
+                            <Select.Option key={index} value={`${label}`}>
                                 {label}
                             </Select.Option>
+
                         ))}
+                        <Select.Option key='Other' value='Other'>
+                        Other
+                        </Select.Option>
                     </Select>
                 </Tooltip>
             </div>
@@ -943,6 +957,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     }
     private waitPageToCompleteLoading = (): void => {
+        // this function is required in order to override the value of the frame range inputs
+        // for some reason document.getElementById('frame_start') returns null even when the modal is being shown
+        // this could be because the modal is shown in asynchronously and is not using the main thread
             let frame_start = (document.getElementById('frame_start') as (HTMLInputElement));
             let frame_end = (document.getElementById('frame_end') as (HTMLInputElement));
             if(frame_start !== null && frame_end !== null){
@@ -957,7 +974,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.updateGlobalAttributesModal();
 
         this.showGlobalAttributesModal();
-
 
         this.waitPageToCompleteLoading();
     }

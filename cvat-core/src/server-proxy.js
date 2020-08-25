@@ -746,14 +746,27 @@
                 console.log(update_details.labels);
                 for (let key in data) {
                     console.log('key', key);
+                    let found = false;
                     for(let attribute of update_details.labels[0].attributes){
                         if(key == attribute.name){
                             console.log('found ',key,'in original labels');
+                            found = true;
                             attribute.values = data[key];
                             attribute.default_value = selected[key];
                         }
                     }
+                    if(!found){
+                        // if key already exist in the attributes, do nothing
+                        let new_attribute = {
+                            name: key+"",
+                            default_value: selected[key],
+                            mutable: true,
+                            input_type:"select",
+                            values:data[key],
+                        };
+                        update_details.labels[0].attributes.push(new_attribute);
 
+                    }
                 }
                 console.log('update_details', update_details);
                 let update_detailsJSON = JSON.stringify(update_details);

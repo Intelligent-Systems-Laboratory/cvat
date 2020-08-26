@@ -412,6 +412,7 @@ export interface AnnotationState {
     // ISL END
     // ISL GLOBAL ATTRIBUTES
     globalAttributes: any,
+    globalAttributesVisibility:boolean,
     // ISL END
 }
 

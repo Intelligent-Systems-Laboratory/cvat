@@ -54,11 +54,7 @@ import jobList from 'components/task-page/job-list';
 
 interface StateToProps {
     // ISL GLOBAL ATTRIBUTES
-    attrInputType: string;
-    attrValues: string[];
-    attrValue: string;
-    attrName: string;
-    attrID: number;
+    globalAttributesVisibility: boolean;
     // ISL END
     jobInstance: any;
     frameNumber: number;
@@ -119,6 +115,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 instance: canvasInstance,
             },
             workspace,
+            globalAttributesVisibility,
         },
         settings: {
             player: {
@@ -155,6 +152,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         keyMap,
         normalizedKeyMap,
         canvasInstance,
+        globalAttributesVisibility,
     };
 }
 
@@ -248,6 +246,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             onSwitchPlay,
             onChangeFrame,
             autoSaveInterval,
+            globalAttributesVisibility,
         } = this.props;
 
         if (frameNumber != prevProps.frameNumber) {
@@ -288,6 +287,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             } else {
                 onSwitchPlay(false);
             }
+        }
+        if (this.firstTime && globalAttributesVisibility){
+            console.log('FIRST TIME DETECTED');
+            this.firstTime = false;
+            this.showGlobalAttributesModal();
         }
     }
 
@@ -534,6 +538,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private frame_start: number = 0;
     private frame_end: number = 0;
     private AllAttributeNames: string[] = [];
+    private firstTime: boolean = true;
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
         visible: true,
@@ -589,7 +594,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
         this.globalAttributesDB.push(globalAttributesWithFrameRange);
         this.updateGlobalAttributesModal();
-        console.log('Initiate global attributes modal complete');
+        // console.log('Initiate global attributes modal complete');
     }
 
     private changeSpatialTag = (tag_str: string): void => {
@@ -836,7 +841,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         )
 
         for (const key in this.globalAttributes) {
-            console.log('fwerawe', Object.keys(this.globalAttributes).indexOf(key));
+            // console.log('fwerawe', Object.keys(this.globalAttributes).indexOf(key));
             const{
                 jobInstance
             } =this.props;

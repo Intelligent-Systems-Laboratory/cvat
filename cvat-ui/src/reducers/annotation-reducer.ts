@@ -110,7 +110,8 @@ const defaultState: AnnotationState = {
     globalAttributes: {
         weather:"",
         lighting:"",
-    }
+    },
+    globalAttributesVisibility: false
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
@@ -123,6 +124,13 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         }
         case AnnotationActionTypes.STOP_EDIT_LABEL: {
             return {...state,};
+        }
+        case AnnotationActionTypes.SET_ATTRIBUTE_VISIBILITY: {
+            const{visibility} = action.payload;
+            console.log('MARKER ',visibility)
+            return {...state,
+                globalAttributesVisibility: visibility,
+            };
         }
         // ISL END
         // ISL AUTOFIT

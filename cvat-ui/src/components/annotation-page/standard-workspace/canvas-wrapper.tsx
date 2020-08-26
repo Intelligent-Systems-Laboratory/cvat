@@ -105,7 +105,9 @@ interface Props {
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
     // ISL GLOBAL ATTRIBUTES
-    globalAttributes: any
+    globalAttributes: any;
+    globalAttributesVisibility:boolean;
+    onSetGlobalAttributesVisibility(visiblity:boolean):void;
     // ISL END
 }
 
@@ -174,13 +176,14 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // ISL END
             jobInstance,
             globalAttributes,
+            globalAttributesVisibility,
+            onSetGlobalAttributesVisibility
         } = this.props;
         // console.log(this.props);
         // console.log(job);
         // console.log('annotations',annotations);// contains the current attributes. see next line
         // console.log(annotations[0].attributes); // the actual value of attributes
         // console.log('objectState',objectState);
-
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
             || prevProps.showProjections !== showProjections
@@ -806,7 +809,16 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             contrastLevel,
             saturationLevel,
             canvasBackgroundColor,
+            annotations,
+            onSetGlobalAttributesVisibility
         } = this.props;
+
+        // ISL GLOBAL ATTRIBUTES
+        if(annotations.length == 0){
+            //show the global attribute modal if there are no annotations
+            onSetGlobalAttributesVisibility(true);
+        }
+        // ISL END
 
         // Size
         window.addEventListener('resize', this.fitCanvas);

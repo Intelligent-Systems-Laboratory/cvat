@@ -29,6 +29,7 @@ import {
     fetchAnnotationsAsync,
     switchTracking, // ISL MANUAL TRACKING
     autoFit, // ISL AUTOFIT
+    setGlobalAttributesVisibility,
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -95,9 +96,12 @@ interface StateToProps {
     // ISL END
     canvasBackgroundColor: string;
     // ISL AUTOFIT
-    autoFitObjects: any[]; 
+    autoFitObjects: any[];
     // ISL END
+    // ISL GLOBAL ATTRIBUTES
     globalAttributes: any;
+    globalAttributesVisibility: boolean;
+    // ISL END
 }
 
 interface DispatchToProps {
@@ -131,6 +135,7 @@ interface DispatchToProps {
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
+    onSetGlobalAttributesVisibility(visibility:boolean):void; // ISL GLOBAL ATTRIBUTES
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -173,12 +178,13 @@ function mapStateToProps(state: CombinedState): StateToProps {
             },
             // ISL END
             // ISL AUTOFIT
-            autoFitObjects, 
+            autoFitObjects,
             // ISL END
             sidebarCollapsed,
             workspace,
             // ISL GLOBAL ATTRIBUTES
             globalAttributes,
+            globalAttributesVisibility,
             // ISL END
         },
         settings: {
@@ -263,6 +269,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
             || activeControl === ActiveControl.EDIT,
         // ISL GLOBAL ATTRIBUTES
         globalAttributes,
+        globalAttributesVisibility,
         // ISL END
     };
 }
@@ -365,6 +372,10 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(autoFit(jobInstance, stateToFit, frame));
         },
         // ISL END
+        // ISL GLOBAL ATTRIBUTES
+        onSetGlobalAttributesVisibility(visibility:boolean): void {
+            dispatch(setGlobalAttributesVisibility(visibility));
+        },
     };
 }
 

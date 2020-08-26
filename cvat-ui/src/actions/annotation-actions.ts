@@ -200,6 +200,7 @@ export enum AnnotationActionTypes {
     EDIT_GLOBAL_ATTRIBUTES = 'EDIT_GLOBAL_ATTRIBUTES',
     START_EDIT_LABEL = 'START_EDIT_LABEL',
     STOP_EDIT_LABEL = 'STOP_EDIT_LABEL',
+    SET_ATTRIBUTE_VISIBILITY = 'SET_ATTRIBUTE_VISIBILITY'
     // ISL END
 }
 
@@ -250,6 +251,15 @@ export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAc
 }
 // ISL END
 // ISL GLOBAL ATTRIBUTES
+export function setGlobalAttributesVisibility(visibility:boolean): AnyAction {
+    return {
+        type: AnnotationActionTypes.SET_ATTRIBUTE_VISIBILITY,
+        payload: {
+            visibility:visibility,
+        },
+
+    };
+}
 export function editGlobalAttributes(globalAttributes:any): AnyAction {
     return {
         type: AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES,

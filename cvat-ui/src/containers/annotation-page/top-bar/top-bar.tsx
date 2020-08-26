@@ -530,8 +530,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private globalAttributesSelected: any;
     private globalAttributesDB: any[] = [];
     private globalAttributesSelectedDB: any[] = [];
+    private currentSpatialTag: string = "open";
     private frame_start: number = 0;
     private frame_end: number = 0;
+    private AllAttributeNames: string[] = [];
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
         visible: true,
@@ -555,20 +557,26 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         onCancel: (event) => this.handleCancel(event),
     });
 
+    private getAllAttributeNames = (): void => {
+        const { jobInstance } = this.props;
+        for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
+            if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
+                this.AllAttributeNames[i] = jobInstance.task.labels[0].attributes[i].name;
+            }
+        }
+        // console.log(this.AllAttributeNames);
+    }
+
     private initiateGlobalAttributesModal = (): void => {
         const { jobInstance } = this.props;
+        this.getAllAttributeNames();
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
         let globalAttributesWithFrameRange: any = {};
-
-        // console.log(jobInstance.task.labels[0].attributes.length);
-        // console.log(jobInstance.task.labels[0].attributes);
-        // console.log(jobInstance.task.labels);
-        // Cycle through ALL existing attributes OF THE FIRST LABEL.
-        // i < 1 or jobInstance.task.labels[0].attributes.length
-        for (var i = 0; i < 1; i++) {
+        // Assign global attributes
+        for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
-            if (jobInstance.task.labels[0].attributes[i].inputType !== "radio") {
+            if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
                 this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
             }
         }
@@ -580,15 +588,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             attributes: this.globalAttributes,
         }
         this.globalAttributesDB.push(globalAttributesWithFrameRange);
-        // console.log('MARKER',globalAttributesWithFrameRange['frame_start'],
-        // globalAttributesWithFrameRange['frame_end'],
-        // globalAttributesWithFrameRange['attributes']);
         this.updateGlobalAttributesModal();
-        // console.log(this.globalAttributes);
-
-
-
         console.log('Initiate global attributes modal complete');
+    }
+
+    private changeSpatialTag = (tag_str: string): void => {
+        this.currentSpatialTag = tag_str;
+        console.log('tag=',this.currentSpatialTag);
     }
 
     private fetchAttributeForCurrentFrame = (frame_num: number): void => {
@@ -796,8 +802,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Spatial Properties
 
                 <Col>
-                        <button onClick={() => console.log("open clicked!")} className="radio-toolbar"> Open area </button>
-                        <button onClick={() => console.log("encolsed clicked!")} className="radio-toolbar"> Enclosed </button>
+                        <button onClick={() => this.changeSpatialTag('open')} className="radio-toolbar"> Open area </button>
+                        <button onClick={() => this.changeSpatialTag('enclosed')} className="radio-toolbar"> Enclosed </button>
 
                     </Col>
 
@@ -828,10 +834,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
             </Row>
         )
-            // 24 AUG 2020
+
         for (const key in this.globalAttributes) {
-            // console.log('this', this.globalAttributes);
-            // console.log('key', key);
+            console.log('fwerawe', Object.keys(this.globalAttributes).indexOf(key));
+            const{
+                jobInstance
+            } =this.props;
+
             items.push(<div class="attribute-container" onMouseOver={event => this.onMouseOver(key)} onMouseOut={event => this.onMouseOut(key)}>
                 <button type='button' class="x" id={'xBtn' + key} onClick={event => this.handleDeleteChoice(key, key)} onsubmit="return false">
                     x
@@ -840,13 +849,19 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     <Text className='cvat-title'>{key}</Text>
                     <div>
                 <Tooltip title='Change attribute'>
-                    <Select size='default' value={key} onChange={this.handleSelectAttribute}>
-                        {Object.keys(this.globalAttributes).map((label: any): JSX.Element => (
+                <Select
+                        placeholder={key}
+                        onChange={this.handleSelectAttribute}
+                        labelInValue
+                        style={{ width: 200 }}
+                    >
+                        {this.AllAttributeNames.map((label: any): JSX.Element => (
                             <Select.Option key={label} value={`${label}`}>
 
                                 {label}
                             </Select.Option>
-                        ))}
+                        ))
+                        }
                     </Select>
                 </Tooltip>
             </div>
@@ -880,7 +895,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
         items.push(
             <div>
-                <Tooltip title='Select an attribute'>
+                {/* <Tooltip title='Select an attribute'>
                     <Select
                         placeholder={"Select an attribute"}
                         onChange={this.handleSelectAttribute}
@@ -897,7 +912,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                         Other
                         </Select.Option>
                     </Select>
-                </Tooltip>
+                </Tooltip> */}
             </div>
         );
         return items;
@@ -938,7 +953,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             content:
                 <div>{items}</div>
             ,
-
         });
 
     }

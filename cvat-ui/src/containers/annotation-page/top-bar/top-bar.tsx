@@ -918,9 +918,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
         for (const key in this.globalAttributes) {
             // console.log('fwerawe', Object.keys(this.globalAttributes).indexOf(key));
-            const{
-                jobInstance
-            } =this.props;
+
 
             items.push(<div class="attribute-container" onMouseOver={event => this.onMouseOver(key)} onMouseOut={event => this.onMouseOut(key)}>
                 <button type='button' class="x" id={'xBtn' + key} onClick={event => this.handleDeleteChoice(key, key)} onsubmit="return false">
@@ -951,15 +949,33 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             let temp = []
             for (const [index, value] of this.globalAttributes[key].entries()) {
                 if (value != '+') {
-                    temp.push(
-                        <div class="container" onMouseOver={event => this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
-                            <button type='button' class="x" id={'xBtn' + value} onClick={event => this.handleDeleteChoice(key, value)} onsubmit="return false">
+                    // only enable x button for newly added choices
+                    let xBtn =  <button type='button' class="x" id={'xBtn' + value} onClick={event => this.handleDeleteChoice(key, value)} onsubmit="return false">
                                 x
-                            </button>
-                            <input type='radio' id={'radio' + key + 'Option' + index} key={index} name={'radio' + key} value={value}></input>
-                            <label for={'radio' + key + 'Option' + index}>{value}</label>
-                        </div>
-                    );
+                                </button>;
+                    let choiceIndex = -1;
+                    for(let attribute of jobInstance.task.labels[0].attributes){
+                        if(attribute.name == key){
+                            choiceIndex = attribute.values.indexOf(value);
+                        }
+                    }
+                    if(choiceIndex == -1){
+                        // choice is new
+                        temp.push(
+                            <div class="container" onMouseOver={event => this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
+                                {xBtn}
+                                <input type='radio' id={'radio' + key + 'Option' + index} key={index} name={'radio' + key} value={value}></input>
+                                <label for={'radio' + key + 'Option' + index}>{value}</label>
+                            </div>
+                        );
+                    }else{
+                        temp.push(
+                            <div class="container" onMouseOver={event => this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
+                                <input type='radio' id={'radio' + key + 'Option' + index} key={index} name={'radio' + key} value={value}></input>
+                                <label for={'radio' + key + 'Option' + index}>{value}</label>
+                            </div>
+                        );
+                    }
                 } else {
 
                 }

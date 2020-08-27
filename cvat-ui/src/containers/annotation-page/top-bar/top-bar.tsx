@@ -539,6 +539,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private frame_end: number = 0;
     private AllAttributeNames: string[] = [];
     private firstTime: boolean = true;
+    private requireReload: boolean = false;
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
         visible: true,
@@ -574,6 +575,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     private initiateGlobalAttributesModal = (): void => {
         const { jobInstance } = this.props;
+        console.log(jobInstance);
         this.getAllAttributeNames();
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
@@ -583,6 +585,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
             if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
                 this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
+                this.globalAttributesSelected[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].defaultValue;
             }
         }
         this.frame_start = 0;
@@ -767,6 +770,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 alert('Unknown Error! Check console for more details');
             }
         }
+        if(this.requireReload){
+            alert('Reload the page for the changes to take effect.');
+        }
         // console.log('Ok button pressed');
     }
 
@@ -781,17 +787,15 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // console.log(event);
         let num_keys = Object.keys(this.globalAttributes).length;
         // console.log(num_keys)
-        if (num_keys >= 5) {
-            alert('You cannot add more than 5 global attributes');
-        } else {
-            if(event.key == 'Other'){
-                let result = prompt("Input new attribute (maximum of 5 only)");
-                if (result != null) {
-                    this.globalAttributes[result] = [];
-                }
-                this.updateGlobalAttributesModal();
+
+        if(event.key == 'Other'){
+            let result = prompt("Input new attribute (maximum of 5 only)");
+            if (result != null) {
+                this.globalAttributes[result] = [];
             }
+            this.updateGlobalAttributesModal();
         }
+
     }
     private handleAddAttributeValue = (event: any): void => {
         let num_keys = Object.keys(this.globalAttributes).length;
@@ -1025,6 +1029,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     //call update
                     // console.log(this.globalAttributes[key]);
                     this.updateGlobalAttributesModal();
+                    this.requireReload = true;
                 }else{
                     alert('Cannot add more options for this attribute.');
                 }
@@ -1069,6 +1074,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             if(frame_start !== null && frame_end !== null){
                 frame_start.value = this.frame_start + "";
                 frame_end.value = this.frame_end +"";
+                for(let key in this.globalAttributesSelected){
+                    let index = this.globalAttributes[key].indexOf(this.globalAttributesSelected[key]);
+                    let id = 'radio' + key + 'Option' + index;
+                    let checkedElement = document.getElementById(id);
+                    if(checkedElement){
+                        checkedElement.checked = true;
+                    }
+                }
             }else{
                 setTimeout(this.waitPageToCompleteLoading, 300);
             }

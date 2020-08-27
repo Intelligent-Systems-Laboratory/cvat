@@ -600,6 +600,78 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private changeSpatialTag = (tag_str: string): void => {
         this.currentSpatialTag = tag_str;
         console.log('tag=',this.currentSpatialTag);
+
+        //spatialprops
+        if (this.currentSpatialTag == "open") {
+            document.getElementById('spatialTagOpen').className = "radioclicked";
+            document.getElementById('spatialTagEnclosed').className = "radio-toolbar";
+        }
+        else if (this.currentSpatialTag == "enclosed"){
+            document.getElementById('spatialTagEnclosed').className = "radioclicked";
+            document.getElementById('spatialTagOpen').className = "radio-toolbar";
+        }
+
+        //subjects
+        if (this.currentSpatialTag == "vehicles") {
+            document.getElementById('spatialTagVehicles').className = "radioclicked";
+            document.getElementById('spatialTagPeople').className = "radio-toolbar";
+        }
+        else if (this.currentSpatialTag == "people"){
+            document.getElementById('spatialTagPeople').className = "radioclicked";
+            document.getElementById('spatialTagVehicles').className = "radio-toolbar";
+        }
+
+        // Use Case
+        if (this.currentSpatialTag == "counting") {
+            document.getElementById('spatialTagCounting').className = "radioclicked";
+            document.getElementById('spatialTagTracking').className = "radio-toolbar";
+            document.getElementById('spatialTagDetection').className = "radio-toolbar";
+        }
+        else if (this.currentSpatialTag == "tracking") {
+            document.getElementById('spatialTagTracking').className = "radioclicked";
+            document.getElementById('spatialTagCounting').className = "radio-toolbar";
+            document.getElementById('spatialTagDetection').className = "radio-toolbar";
+        }
+        else if (this.currentSpatialTag == "detection") {
+            document.getElementById('spatialTagCounting').className = "radio-toolbar";
+            document.getElementById('spatialTagTracking').className = "radio-toolbar";
+            document.getElementById('spatialTagDetection').className = "radioclicked";
+        }
+
+        //Camera Location
+        if (this.currentSpatialTag == "side") {
+            document.getElementById('spatialTagSide').className = "radioclicked";
+            document.getElementById('spatialTagCorner').className = "radio-toolbar";
+        }
+        else if (this.currentSpatialTag == "corner"){
+            document.getElementById('spatialTagCorner').className = "radioclicked";
+            document.getElementById('spatialTagSide').className = "radio-toolbar";
+        }
+
+        //View point
+        if (this.currentSpatialTag == "left") {
+            document.getElementById('spatialTagLeft').className = "radioclicked";
+            document.getElementById('spatialTagRight').className = "radio-toolbar";
+            document.getElementById('spatialTagFront').className = "radio-toolbar";
+            document.getElementById('spatialTagBack').className = "radio-toolbar";}
+        else if (this.currentSpatialTag == "right") {
+            document.getElementById('spatialTagLeft').className = "radio-toolbar";
+            document.getElementById('spatialTagRight').className = "radioclicked";
+            document.getElementById('spatialTagFront').className = "radio-toolbar";
+            document.getElementById('spatialTagBack').className = "radio-toolbar";}
+        else if (this.currentSpatialTag == "front") {
+            document.getElementById('spatialTagLeft').className = "radio-toolbar";
+            document.getElementById('spatialTagRight').className = "radio-toolbar";
+            document.getElementById('spatialTagFront').className = "radioclicked";
+            document.getElementById('spatialTagBack').className = "radio-toolbar";}
+        else if (this.currentSpatialTag == "back") {
+            document.getElementById('spatialTagLeft').className = "radio-toolbar";
+            document.getElementById('spatialTagRight').className = "radio-toolbar";
+            document.getElementById('spatialTagFront').className = "radio-toolbar";
+            document.getElementById('spatialTagBack').className = "radioclicked";}
+
+
+
     }
 
     private fetchAttributeForCurrentFrame = (frame_num: number): void => {
@@ -788,8 +860,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Subjects
 
                 <Col>
-                        <button onClick={() => console.log("Vehicles clicked!")} className="radio-toolbar"> Vehicles </button>
-                        <button onClick={() => console.log("b clicked!")} className="radio-toolbar"> People </button>
+                        <button onClick={() => this.changeSpatialTag('vehicles')} className="radio-toolbar" id="spatialTagVehicles"> Vehicles </button>
+                        <button onClick={() => this.changeSpatialTag('people')} className="radio-toolbar" id="spatialTagPeople"> People </button>
                     </Col>
 
                 </Col>
@@ -797,9 +869,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Use Case
 
                 <Col>
-                        <button onClick={() => console.log("counting clicked!")} className="radio-toolbar"> Counting </button>
-                        <button onClick={() => console.log("tracking clicked!")} className="radio-toolbar"> Tracking </button>
-                        <button onClick={() => console.log("detection clicked!")} className="radio-toolbar"> Detection </button>
+                        <button onClick={() => this.changeSpatialTag('counting')} className="radio-toolbar" id="spatialTagCounting"> Counting </button>
+                        <button onClick={() => this.changeSpatialTag('tracking')} className="radio-toolbar" id="spatialTagTracking"> Tracking </button>
+                        <button onClick={() => this.changeSpatialTag('detection')} className="radio-toolbar" id="spatialTagDetection"> Detection </button>
                     </Col>
 
                 </Col>
@@ -807,8 +879,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Spatial Properties
 
                 <Col>
-                        <button onClick={() => this.changeSpatialTag('open')} className="radio-toolbar"> Open area </button>
-                        <button onClick={() => this.changeSpatialTag('enclosed')} className="radio-toolbar"> Enclosed </button>
+                        <button onClick={() => this.changeSpatialTag('open')} className="radio-toolbar" id="spatialTagOpen"> Open area </button>
+                        <button onClick={() => this.changeSpatialTag('enclosed')} className="radio-toolbar" id="spatialTagEnclosed"> Enclosed </button>
 
                     </Col>
 
@@ -820,8 +892,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Camera Location
 
                 <Col>
-                        <button onClick={() => console.log("Vehicles clicked!")} className="radio-toolbar"> Side </button>
-                        <button onClick={() => console.log("b clicked!")} className="radio-toolbar"> Corner </button>
+                        <button onClick={() => this.changeSpatialTag('side')} className="radio-toolbar" id="spatialTagSide"> Side </button>
+                        <button onClick={() => this.changeSpatialTag('corner')} className="radio-toolbar" id="spatialTagCorner"> Corner </button>
                     </Col>
 
                 </Col>
@@ -829,10 +901,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Camera Viewpoint Orientation
 
                 <Col>
-                        <button onClick={() => console.log("counting clicked!")} className="radio-toolbar"> Left </button>
-                        <button onClick={() => console.log("tracking clicked!")} className="radio-toolbar"> Right </button>
-                        <button onClick={() => console.log("detection clicked!")} className="radio-toolbar"> Front </button>
-                        <button onClick={() => console.log("detection clicked!")} className="radio-toolbar"> Back </button>
+                        <button onClick={() => this.changeSpatialTag('left')} className="radio-toolbar" id="spatialTagLeft"> Left </button>
+                        <button onClick={() => this.changeSpatialTag('right')} className="radio-toolbar" id="spatialTagRight"> Right </button>
+                        <button onClick={() => this.changeSpatialTag('front')} className="radio-toolbar" id="spatialTagFront"> Front </button>
+                        <button onClick={() => this.changeSpatialTag('back')} className="radio-toolbar" id="spatialTagBack"> Back </button>
                     </Col>
 
                 </Col>

@@ -110,3 +110,8 @@
     margin: auto;
   }
 
+  .radioclicked{
+    background-color: #57585A;
+    border-color: #5F5F61;
+    color: #ffffff;
+  }

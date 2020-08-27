@@ -1007,14 +1007,27 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     }
     private onChangeOptionHandler = (value: string, key: string): void => {
+        const {jobInstance} = this.props;
+        // console.log(jobInstance.task.labels[0].attributes);
         if (value) {
             if (value == '+') {
-                let result = prompt("Input new option");
-                this.globalAttributes[key].push(result);
+                let origLength = 0;
+                let currentLength = this.globalAttributes[key].length;
+                for(let attribute of jobInstance.task.labels[0].attributes){
+                    if(attribute.name == key){
+                        origLength = attribute.values.length;
+                    }
+                }
+                if(currentLength - origLength <5){
+                    let result = prompt("Input new option");
+                    this.globalAttributes[key].push(result);
 
-                //call update
-                // console.log(this.globalAttributes[key]);
-                this.updateGlobalAttributesModal();
+                    //call update
+                    // console.log(this.globalAttributes[key]);
+                    this.updateGlobalAttributesModal();
+                }else{
+                    alert('Cannot add more options for this attribute.');
+                }
 
             } else {
                 this.globalAttributesSelected[key] = value;

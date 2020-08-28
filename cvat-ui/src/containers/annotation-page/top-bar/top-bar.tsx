@@ -11,7 +11,7 @@ import { GlobalHotKeys, ExtendedKeyMapOptions } from 'react-hotkeys';
 import InputNumber from 'antd/lib/input-number';
 import { SliderValue } from 'antd/lib/slider';
 // ISL GLOBAL ATTRIBUTES
-import Select from 'antd/lib/select';
+import Select, { SelectValue } from 'antd/lib/select';
 import Tooltip from 'antd/lib/tooltip';
 // ISL END
 
@@ -537,7 +537,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private currentSpatialTag: string = "open";
     private frame_start: number = 0;
     private frame_end: number = 0;
-    private AllAttributeNames: string[] = [];
+    private AllAttributes: any[] = [];
+    private AllAttributeNames: any[] = [];
     private firstTime: boolean = true;
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
@@ -562,19 +563,23 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         onCancel: (event) => this.handleCancel(event),
     });
 
-    private getAllAttributeNames = (): void => {
+    private getAllAttributes = (): void => {
         const { jobInstance } = this.props;
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
+                this.AllAttributes[i] = {
+                    name: jobInstance.task.labels[0].attributes[i].name,
+                    value: jobInstance.task.labels[0].attributes[i].values.slice(),
+                }
                 this.AllAttributeNames[i] = jobInstance.task.labels[0].attributes[i].name;
             }
         }
-        // console.log(this.AllAttributeNames);
+        // console.log(this.AllAttributes);
     }
 
     private initiateGlobalAttributesModal = (): void => {
         const { jobInstance } = this.props;
-        this.getAllAttributeNames();
+        this.getAllAttributes();
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
         let globalAttributesWithFrameRange: any = {};
@@ -605,6 +610,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         if (this.currentSpatialTag == "open") {
             document.getElementById('spatialTagOpen').className = "radioclicked";
             document.getElementById('spatialTagEnclosed').className = "radio-toolbar";
+
         }
         else if (this.currentSpatialTag == "enclosed"){
             document.getElementById('spatialTagEnclosed').className = "radioclicked";
@@ -777,34 +783,65 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         });
         // console.log('cancel');
     }
-    private handleSelectAttribute = (event: any): void => {
-        // console.log(event);
-        let num_keys = Object.keys(this.globalAttributes).length;
-        // console.log(num_keys)
-        if (num_keys >= 5) {
-            alert('You cannot add more than 5 global attributes');
-        } else {
-            if(event.key == 'Other'){
-                let result = prompt("Input new attribute (maximum of 5 only)");
-                if (result != null) {
-                    this.globalAttributes[result] = [];
-                }
-                this.updateGlobalAttributesModal();
+    private handleSelectAttribute = (attribute: any, index: any, event:any): void => {
+        console.log(attribute);
+        console.log(index);
+        //var x = document.getElementById('SelectAttribute'+attribute);
+        console.log(event.label);
+        console.log(this.globalAttributes);
+
+        var ObjectOrder = Object.keys(this.globalAttributes);
+        console.log(ObjectOrder, 'FRESH');
+        ObjectOrder[index] = event.label;
+        console.log(ObjectOrder, 'NEW');
+
+        if (event.label!==attribute){
+            this.globalAttributes[event.label] = this.globalAttributes[attribute];
+            delete this.globalAttributes[attribute];
+        }
+        this.globalAttributes = this.preferredOrder(this.globalAttributes,Array.from(new Set(ObjectOrder)));
+        this.updateSelectedAttributeValues(0);
+        this.updateGlobalAttributesModal();
+        console.log(this.globalAttributes);
+    }
+
+    private updateSelectedAttributeValues = (value: any): void => {
+        const {jobInstance,onEditLabels} = this.props;
+        // Assign global attributes
+        for (const key in this.globalAttributes) {
+            console.log(key);
+            console.log('lfe');
+        }
+        // // Assign global attributes
+        // for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
+        //     // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
+        //     if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
+        //         this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
+        //     }
+        // }
+    }
+    private preferredOrder(obj: any[], order: any[]) {
+        var newObject = [];
+        for(var i = 0; i < order.length; i++) {
+            if(obj.hasOwnProperty(order[i])) {
+                newObject[order[i]] = obj[order[i]];
             }
         }
+        return newObject;
     }
+
     private handleAddAttributeValue = (event: any): void => {
         let num_keys = Object.keys(this.globalAttributes).length;
         // console.log(num_keys)
-        if(num_keys>=5){
-            alert('You cannot add more than 5 global attributes');
-        } else {
+        // if(num_keys>=5){
+        //     alert('You cannot add more than 5 global attributes');
+        // } else {
             let result = prompt("Input new attribute (maximum of 5 only)");
             if (result != null) {
                 this.globalAttributes[result] = [];
             }
             this.updateGlobalAttributesModal();
-        }
+        // }
     }
     private onMouseOver = (value: any): void => {
         // console.log('mouse over on ',value);
@@ -913,7 +950,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         )
 
         for (const key in this.globalAttributes) {
-            // console.log('fwerawe', Object.keys(this.globalAttributes).indexOf(key));
             const{
                 jobInstance
             } =this.props;
@@ -928,8 +964,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 <Tooltip title='Change attribute'>
                 <Select
                         placeholder={key}
-                        onChange={this.handleSelectAttribute}
+                        onChange={(value: SelectValue) => (
+                            this.handleSelectAttribute(key,Object.keys(this.globalAttributes).indexOf(key),value as String)
+                            )}
                         labelInValue
+                        id = {'SelectAttribute'+key}
                         style={{ width: 200 }}
                     >
                         {this.AllAttributeNames.map((label: any): JSX.Element => (

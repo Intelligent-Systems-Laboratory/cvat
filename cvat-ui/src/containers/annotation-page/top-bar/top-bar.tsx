@@ -541,6 +541,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private AllAttributeNames: any[] = [];
     private firstTime: boolean = true;
     private requireReload: boolean = false;
+    private addAttribute: boolean = false;
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
         visible: true,
@@ -607,7 +608,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private changeSpatialTag = (tag_str: string): void => {
         this.currentSpatialTag = tag_str;
         console.log('tag=',this.currentSpatialTag);
-
+        console.log (this.AllAttributes);
         //spatialprops
         if (this.currentSpatialTag == "open") {
             document.getElementById('spatialTagOpen').className = "radioclicked";
@@ -734,8 +735,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
 
         //check if the form is valid
-        let valid_range = new_frame_start >= 0 && new_frame_end < jobInstance.stopFrame && new_frame_end >= 0 && new_frame_end >= new_frame_start;
-        if (attributesLength == currentLength && !hasEmptyValues) {//dont forget to add check for valid_range
+        let valid_range = new_frame_start >= 0 && new_frame_end <= jobInstance.stopFrame && new_frame_end >= 0 && new_frame_end >= new_frame_start;
+        if (attributesLength == currentLength && !hasEmptyValues && valid_range) {//dont forget to add check for valid_range
             onEditLabels(jobInstance,{...this.globalAttributes},{...this.globalAttributesSelected});//send a copy to the server, not the original data
             this.frame_start = new_frame_start;
             this.frame_end = new_frame_end;
@@ -761,20 +762,23 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             this.onEditGlobalAttributes();
 
         } else {
-            if (attributesLength != currentLength && (hasEmptyValues || currentLength == 0)) {
-                alert('Some attributes were not selected!');
-            } else if (!valid_range) {
-                alert('Invalid frame range')
-            } else {
                 console.log('Attributes:',this.globalAttributes);
                 console.log('Selected:',this.globalAttributesSelected);
                 console.log('Attributes length:',attributesLength);
                 console.log('Selected length:',currentLength);
                 console.log('Valid range:',valid_range);
                 console.log('hasEmptyValues:',hasEmptyValues);
+            if (attributesLength != currentLength && (hasEmptyValues || currentLength == 0)) {
+                alert('Some attributes were not selected!');
+            } else if (hasEmptyValues) {
+                alert('Some attributes were not selected!');
+            } else if (!valid_range) {
+                alert('Invalid frame range')
+            } else {
                 alert('Unknown Error! Check console for more details');
             }
         }
+        this.addAttribute = false;
         if(this.requireReload){
             alert('Reload the page for the changes to take effect.');
         }
@@ -794,20 +798,33 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         //var x = document.getElementById('SelectAttribute'+attribute);
         console.log(event.label);
         console.log(this.globalAttributes);
+        if(index == -1){
+            //index == -1 means Other is selected
+            console.log('Other selected');
+            let result = prompt("Input new attribute (maximum of 5 only)");
+            if (result != null) {
+                this.globalAttributes[result] = [];
+                this.globalAttributesSelected[result] = "";
+            }
+            this.addAttribute = false; // remove the drop down
+        }else{
+            var ObjectOrder = Object.keys(this.globalAttributes);
+            console.log(ObjectOrder, 'FRESH');
+            ObjectOrder[index] = event.label;
+            console.log(ObjectOrder, 'NEW');
 
-        var ObjectOrder = Object.keys(this.globalAttributes);
-        console.log(ObjectOrder, 'FRESH');
-        ObjectOrder[index] = event.label;
-        console.log(ObjectOrder, 'NEW');
-
-        if (event.label!==attribute){
-            this.globalAttributes[event.label] = this.globalAttributes[attribute];
-            delete this.globalAttributes[attribute];
-        }
+            if (event.label!==attribute){
+                this.globalAttributes[event.label] = this.globalAttributes[attribute];
+                delete this.globalAttributes[attribute];
+            }
         this.globalAttributes = this.preferredOrder(this.globalAttributes,Array.from(new Set(ObjectOrder)));
+        }
+
+
         this.updateSelectedAttributeValues(0);
         this.updateGlobalAttributesModal();
         console.log(this.globalAttributes);
+
     }
 
     private updateSelectedAttributeValues = (value: any): void => {
@@ -842,10 +859,11 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         // if(num_keys>=5){
         //     alert('You cannot add more than 5 global attributes');
         // } else {
-            let result = prompt("Input new attribute (maximum of 5 only)");
-            if (result != null) {
-                this.globalAttributes[result] = [];
-            }
+            // let result = prompt("Input new attribute (maximum of 5 only)");
+            // if (result != null) {
+            //     this.globalAttributes[result] = [];
+            // }
+            this.addAttribute = true;
             this.updateGlobalAttributesModal();
         // }
     }
@@ -982,7 +1000,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
                                 {label}
                             </Select.Option>
+
                         ))
+
                         }
                     </Select>
                 </Tooltip>
@@ -1033,28 +1053,38 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
             items.push(<form class="radio-toolbar" onClick={event => this.onChangeOptionHandler(event.target.value, key)}>{temp}</form>);
         }
-        items.push(
-            <div>
-                {/* <Tooltip title='Select an attribute'>
+        if(this.addAttribute){
+            items.push(
+                <div>
+                    <Tooltip title='Select an attribute'>
                     <Select
-                        placeholder={"Select an attribute"}
-                        onChange={this.handleSelectAttribute}
+                        placeholder='Select an attribute'
+                        onChange={(value: string) =>
+                            {
+                                console.log(value);
+                                this.handleSelectAttribute(value,Object.keys(this.globalAttributes).indexOf(value),value as String)
+                            }
+                        }
                         labelInValue
+                        id = {'SelectAttribute'+"key"}
                         style={{ width: 200 }}
                     >
-                        {Object.keys(this.globalAttributes).map((label: any,index:number): JSX.Element => (
-                            <Select.Option key={index} value={`${label}`}>
+                        {this.AllAttributeNames.map((label: any): JSX.Element => (
+                            <Select.Option key={label} value={`${label}`}>
+
                                 {label}
                             </Select.Option>
-
-                        ))}
-                        <Select.Option key='Other' value='Other'>
-                        Other
+                        ))
+                        }
+                        <Select.Option key={'Other'} value={'Other'}>
+                            Other
                         </Select.Option>
                     </Select>
-                </Tooltip> */}
-            </div>
-        );
+                    </Tooltip>
+                </div>
+            );
+        }
+
         return items;
     }
     private onChangeFrameRangeHandler = (id: string): void => {

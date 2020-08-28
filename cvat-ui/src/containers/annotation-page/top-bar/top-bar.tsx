@@ -540,6 +540,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private AllAttributes: any[] = [];
     private AllAttributeNames: any[] = [];
     private firstTime: boolean = true;
+    private requireReload: boolean = false;
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
         visible: true,
@@ -588,6 +589,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
             if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
                 this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
+                this.globalAttributesSelected[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].defaultValue;
             }
         }
         this.frame_start = 0;
@@ -773,6 +775,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 alert('Unknown Error! Check console for more details');
             }
         }
+        if(this.requireReload){
+            alert('Reload the page for the changes to take effect.');
+        }
         // console.log('Ok button pressed');
     }
 
@@ -826,6 +831,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             if(obj.hasOwnProperty(order[i])) {
                 newObject[order[i]] = obj[order[i]];
             }
+            this.updateGlobalAttributesModal();
         }
         return newObject;
     }
@@ -986,15 +992,33 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             let temp = []
             for (const [index, value] of this.globalAttributes[key].entries()) {
                 if (value != '+') {
-                    temp.push(
-                        <div class="container" onMouseOver={event => this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
-                            <button type='button' class="x" id={'xBtn' + value} onClick={event => this.handleDeleteChoice(key, value)} onsubmit="return false">
+                    // only enable x button for newly added choices
+                    let xBtn =  <button type='button' class="x" id={'xBtn' + value} onClick={event => this.handleDeleteChoice(key, value)} onsubmit="return false">
                                 x
-                            </button>
-                            <input type='radio' id={'radio' + key + 'Option' + index} key={index} name={'radio' + key} value={value}></input>
-                            <label for={'radio' + key + 'Option' + index}>{value}</label>
-                        </div>
-                    );
+                                </button>;
+                    let choiceIndex = -1;
+                    for(let attribute of jobInstance.task.labels[0].attributes){
+                        if(attribute.name == key){
+                            choiceIndex = attribute.values.indexOf(value);
+                        }
+                    }
+                    if(choiceIndex == -1){
+                        // choice is new
+                        temp.push(
+                            <div class="container" onMouseOver={event => this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
+                                {xBtn}
+                                <input type='radio' id={'radio' + key + 'Option' + index} key={index} name={'radio' + key} value={value}></input>
+                                <label for={'radio' + key + 'Option' + index}>{value}</label>
+                            </div>
+                        );
+                    }else{
+                        temp.push(
+                            <div class="container" onMouseOver={event => this.onMouseOver(value)} onMouseOut={event => this.onMouseOut(value)}>
+                                <input type='radio' id={'radio' + key + 'Option' + index} key={index} name={'radio' + key} value={value}></input>
+                                <label for={'radio' + key + 'Option' + index}>{value}</label>
+                            </div>
+                        );
+                    }
                 } else {
 
                 }
@@ -1046,14 +1070,28 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     }
     private onChangeOptionHandler = (value: string, key: string): void => {
+        const {jobInstance} = this.props;
+        // console.log(jobInstance.task.labels[0].attributes);
         if (value) {
             if (value == '+') {
-                let result = prompt("Input new option");
-                this.globalAttributes[key].push(result);
+                let origLength = 0;
+                let currentLength = this.globalAttributes[key].length;
+                for(let attribute of jobInstance.task.labels[0].attributes){
+                    if(attribute.name == key){
+                        origLength = attribute.values.length;
+                    }
+                }
+                if(currentLength - origLength <5){
+                    let result = prompt("Input new option");
+                    this.globalAttributes[key].push(result);
 
-                //call update
-                // console.log(this.globalAttributes[key]);
-                this.updateGlobalAttributesModal();
+                    //call update
+                    // console.log(this.globalAttributes[key]);
+                    this.updateGlobalAttributesModal();
+                    this.requireReload = true;
+                }else{
+                    alert('Cannot add more options for this attribute.');
+                }
 
             } else {
                 this.globalAttributesSelected[key] = value;
@@ -1095,6 +1133,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             if(frame_start !== null && frame_end !== null){
                 frame_start.value = this.frame_start + "";
                 frame_end.value = this.frame_end +"";
+                for(let key in this.globalAttributesSelected){
+                    let index = this.globalAttributes[key].indexOf(this.globalAttributesSelected[key]);
+                    let id = 'radio' + key + 'Option' + index;
+                    let checkedElement = document.getElementById(id);
+                    if(checkedElement){
+                        checkedElement.checked = true;
+                    }
+                }
             }else{
                 setTimeout(this.waitPageToCompleteLoading, 300);
             }

@@ -542,6 +542,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private firstTime: boolean = true;
     private requireReload: boolean = false;
     private addAttribute: boolean = false;
+    private dropDownAttributes = {};
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
         visible: true,
@@ -578,13 +579,136 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
         // console.log(this.AllAttributes);
     }
+    private initDropDown = (): void =>{
+        this.dropDownAttributes ={
+            vehicles:[
+                {
+                    name: 'type',
+                    value: ["ignore",
+                    "car",
+                    "suv",
+                    "van",
+                    "taxi",
+                    "truck",
+                    "motorcycle",
+                    "bicycle",
+                    "tricycle",
+                    "jeep",
+                    "bus"]
+                },
+                {
+                    name:'FOV',
+                    value:['front','side','back']
+                }
+            ],
+            people:[
+                {
+                    name: 'sex',
+                    value: ['male','female']
+                }
+            ],
+            open:[
+                {
+                    name: 'Scene Temperature',
+                    value: ['Warm/Hot','Cold']
+                }
+            ],
+            enclosed:[
+                {
+                    name: 'Light Amount',
+                    value: ['dark','bright','glowing']
+                }
+            ],
+            counting:[
+                {
+                    name:'counting',
+                    value: ['counting 1','counting2']
+                }
+            ],
+            tracking:[
+                {
+                    name:'tracking',
+                    value: ['tracking 1','tracking 2']
+                }
+            ],
+            detection:[
+                {
+                    name: 'detection',
+                    value: ['detection 1', 'detection 2']
+                }
+            ]
 
+        }
+    }
+    private updateDropDown = ():void => {
+        this.AllAttributes = [];
+        this.getAllAttributes();
+        if(this.spatial == 'open'){
+            for (let attribute of this.dropDownAttributes['open']){
+                this.AllAttributes.push(attribute);
+            }
+            // for (var i = 0; i < this.AllAttributes.length; i++) {
+            //     // console.log(this.dropDownAttributes['enclosed']);
+            //     for(let attribute of this.dropDownAttributes['enclosed']){
+            //         console.log(attribute);
+            //         // console.log('MARKER',this.AllAttributes[i].name,attribute.name);
+            //         if(this.AllAttributes[i].name == attribute.name){
+            //             this.AllAttributes.splice(i,1);
+            //             console.log('MARKER');
+            //         }
+            //     }
+
+            // }
+        }else{
+            // enclosed
+            for (let attribute of this.dropDownAttributes['enclosed']){
+                this.AllAttributes.push(attribute);
+            }
+            // for (var i = 0; i < this.AllAttributes.length; i++) {
+            //     for(let attribute in this.dropDownAttributes['open']){
+            //         if(this.AllAttributes[i].name == attribute.name){
+            //             this.AllAttributes.splice(i,1);
+            //         }
+            //     }
+
+            // }
+        }
+        if(this.subject == 'vehicle'){
+            for (let attribute of this.dropDownAttributes['vehicle']){
+                this.AllAttributes.push(attribute);
+            }
+        }else{
+            //people
+            for (let attribute of this.dropDownAttributes['people']){
+                this.AllAttributes.push(attribute);
+            }
+        }
+        if(this.useCase == 'counting'){
+            for (let attribute of this.dropDownAttributes['counting']){
+                this.AllAttributes.push(attribute);
+            }
+        }else if(this.useCase == 'tracking'){
+            for (let attribute of this.dropDownAttributes['tracking']){
+                this.AllAttributes.push(attribute);
+            }
+        }else{
+            //detection
+            for (let attribute of this.dropDownAttributes['detection']){
+                this.AllAttributes.push(attribute);
+            }
+        }
+        this.AllAttributeNames = [];
+        for (var i = 0; i < this.AllAttributes.length; i++) {
+            this.AllAttributeNames[i] = this.AllAttributes[i].name;
+        }
+    }
     private initiateGlobalAttributesModal = (): void => {
         const { jobInstance } = this.props;
         this.getAllAttributes();
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
         let globalAttributesWithFrameRange: any = {};
+        this.initDropDown();
         // Assign global attributes
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
@@ -604,7 +728,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.updateGlobalAttributesModal();
         // console.log('Initiate global attributes modal complete');
     }
-
+    private spatial:string = "open";
+    private useCase:string = 'counting';
+    private subject:string = 'vehicles';
     private changeSpatialTag = (tag_str: string): void => {
         this.currentSpatialTag = tag_str;
         console.log('tag=',this.currentSpatialTag);
@@ -613,21 +739,25 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         if (this.currentSpatialTag == "open") {
             document.getElementById('spatialTagOpen').className = "radioclicked";
             document.getElementById('spatialTagEnclosed').className = "radio-toolbar";
-
+            console.log(this.AllAttributes);
+            this.spatial = 'open';
         }
         else if (this.currentSpatialTag == "enclosed"){
             document.getElementById('spatialTagEnclosed').className = "radioclicked";
             document.getElementById('spatialTagOpen').className = "radio-toolbar";
+            this.spatial = 'enclosed';
         }
 
         //subjects
         if (this.currentSpatialTag == "vehicles") {
             document.getElementById('spatialTagVehicles').className = "radioclicked";
             document.getElementById('spatialTagPeople').className = "radio-toolbar";
+            this.subject = 'vehicles';
         }
         else if (this.currentSpatialTag == "people"){
             document.getElementById('spatialTagPeople').className = "radioclicked";
             document.getElementById('spatialTagVehicles').className = "radio-toolbar";
+            this.subject = 'people';
         }
 
         // Use Case
@@ -635,16 +765,19 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             document.getElementById('spatialTagCounting').className = "radioclicked";
             document.getElementById('spatialTagTracking').className = "radio-toolbar";
             document.getElementById('spatialTagDetection').className = "radio-toolbar";
+            this.useCase = 'counting';
         }
         else if (this.currentSpatialTag == "tracking") {
             document.getElementById('spatialTagTracking').className = "radioclicked";
             document.getElementById('spatialTagCounting').className = "radio-toolbar";
             document.getElementById('spatialTagDetection').className = "radio-toolbar";
+            this.useCase = 'tracking';
         }
         else if (this.currentSpatialTag == "detection") {
             document.getElementById('spatialTagCounting').className = "radio-toolbar";
             document.getElementById('spatialTagTracking').className = "radio-toolbar";
             document.getElementById('spatialTagDetection').className = "radioclicked";
+            this.useCase = 'detection';
         }
 
         //Camera Location
@@ -679,7 +812,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             document.getElementById('spatialTagFront').className = "radio-toolbar";
             document.getElementById('spatialTagBack').className = "radioclicked";}
 
-
+            this.updateDropDown();
+            this.updateGlobalAttributesModal();
 
     }
 
@@ -798,7 +932,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         //var x = document.getElementById('SelectAttribute'+attribute);
         console.log(event.label);
         console.log(this.globalAttributes);
-        if(index == -1){
+        if(index == -1 && attribute == 'Other'){
             //index == -1 means Other is selected
             console.log('Other selected');
             let result = prompt("Input new attribute (maximum of 5 only)");

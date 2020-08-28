@@ -539,6 +539,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private frame_end: number = 0;
     private AllAttributes: any[] = [];
     private AllAttributeNames: any[] = [];
+    private dropdownEntries: any[] = [];
     private firstTime: boolean = true;
     private requireReload: boolean = false;
     private addAttribute: boolean = false;
@@ -601,11 +602,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             attributes: this.globalAttributes,
         }
         this.globalAttributesDB.push(globalAttributesWithFrameRange);
+        this.dropdownEntries = this.AllAttributeNames;
         this.updateGlobalAttributesModal();
         // console.log('Initiate global attributes modal complete');
     }
 
     private changeSpatialTag = (tag_str: string): void => {
+        var half_length = Math.floor(this.AllAttributeNames.length/2);
         this.currentSpatialTag = tag_str;
         console.log('tag=',this.currentSpatialTag);
         console.log (this.AllAttributes);
@@ -613,11 +616,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         if (this.currentSpatialTag == "open") {
             document.getElementById('spatialTagOpen').className = "radioclicked";
             document.getElementById('spatialTagEnclosed').className = "radio-toolbar";
+            this.dropdownEntries = this.AllAttributeNames.slice(0,half_length);
 
         }
         else if (this.currentSpatialTag == "enclosed"){
             document.getElementById('spatialTagEnclosed').className = "radioclicked";
             document.getElementById('spatialTagOpen').className = "radio-toolbar";
+            this.dropdownEntries = this.AllAttributeNames.slice(half_length,this.AllAttributeNames.length);
         }
 
         //subjects
@@ -680,7 +685,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             document.getElementById('spatialTagBack').className = "radioclicked";}
 
 
-
+            this.updateGlobalAttributesModal();
     }
 
     private fetchAttributeForCurrentFrame = (frame_num: number): void => {
@@ -828,19 +833,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     private updateSelectedAttributeValues = (value: any): void => {
-        const {jobInstance,onEditLabels} = this.props;
-        // Assign global attributes
         for (const key in this.globalAttributes) {
             console.log(key);
+            console.log(this.AllAttributeNames.indexOf(key));
+            console.log(this.AllAttributes[this.AllAttributeNames.indexOf(key)].value);
+            this.globalAttributes[key] = this.AllAttributes[this.AllAttributeNames.indexOf(key)].value;
             console.log('lfe');
         }
-        // // Assign global attributes
-        // for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
-        //     // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
-        //     if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
-        //         this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
-        //     }
-        // }
     }
     private preferredOrder(obj: any[], order: any[]) {
         var newObject = [];
@@ -995,7 +994,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                         id = {'SelectAttribute'+key}
                         style={{ width: 200 }}
                     >
-                        {this.AllAttributeNames.map((label: any): JSX.Element => (
+                        {this.dropdownEntries.map((label: any): JSX.Element => (
                             <Select.Option key={label} value={`${label}`}>
 
                                 {label}

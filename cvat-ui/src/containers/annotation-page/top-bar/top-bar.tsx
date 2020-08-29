@@ -14,7 +14,7 @@ import { SliderValue } from 'antd/lib/slider';
 import Select, { SelectValue } from 'antd/lib/select';
 import Tooltip from 'antd/lib/tooltip';
 // ISL END
-
+import notification from 'antd/lib/notification';
 import {
     changeFrameAsync,
     switchPlay,
@@ -292,6 +292,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             console.log('FIRST TIME DETECTED');
             this.firstTime = false;
             this.showGlobalAttributesModal();
+            this.waitPageToCompleteLoading();
         }
     }
 
@@ -773,14 +774,23 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 console.log('Selected length:',currentLength);
                 console.log('Valid range:',valid_range);
                 console.log('hasEmptyValues:',hasEmptyValues);
-            if (attributesLength != currentLength && (hasEmptyValues || currentLength == 0)) {
+
+            if (attributesLength != currentLength || (hasEmptyValues || currentLength == 0)) {
                 alert('Some attributes were not selected!');
-            } else if (hasEmptyValues) {
-                alert('Some attributes were not selected!');
+                notification.error({
+                    message: 'Could not change global attributes',
+                    description: 'Some attributes are not selected.',
+                });
             } else if (!valid_range) {
-                alert('Invalid frame range')
+                notification.error({
+                    message: 'Could not change global attributes',
+                    description: `Choose frame range from 0 to ${jobInstance.stopFrame}`,
+                });
             } else {
-                alert('Unknown Error! Check console for more details');
+                notification.error({
+                    message: 'Unknown error',
+                    description: 'Check console for more details.',
+                });
             }
         }
         this.addAttribute = false;

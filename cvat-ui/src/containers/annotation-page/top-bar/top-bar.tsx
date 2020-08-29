@@ -776,7 +776,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 console.log('hasEmptyValues:',hasEmptyValues);
 
             if (attributesLength != currentLength || (hasEmptyValues || currentLength == 0)) {
-                alert('Some attributes were not selected!');
                 notification.error({
                     message: 'Could not change global attributes',
                     description: 'Some attributes are not selected.',
@@ -795,7 +794,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
         this.addAttribute = false;
         if(this.requireReload){
-            alert('Reload the page for the changes to take effect.');
+            notification.error({
+                message: 'Reload required',
+                description: 'For the new attributes to reflect. Please save your work and reload the page. ',
+            });
         }
         // console.log('Ok button pressed');
     }
@@ -1147,7 +1149,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 <div>{items}</div>
             ,
         });
-
+        this.waitPageToCompleteLoading();
     }
 
     private showGlobalAttributesModal = (): void => {

@@ -37,7 +37,7 @@ from cvat.apps.authentication import auth
 from cvat.apps.authentication.decorators import login_required
 from cvat.apps.dataset_manager.serializers import DatasetFormatsSerializer
 from cvat.apps.engine.frame_provider import FrameProvider
-from cvat.apps.engine.models import Job, Plugin, StatusChoice, Task
+from cvat.apps.engine.models import Job, Plugin, StatusChoice, Task, Attributes
 from cvat.apps.engine.serializers import (
     AboutSerializer, AnnotationFileSerializer, BasicUserSerializer,
     DataMetaSerializer, DataSerializer, ExceptionSerializer,
@@ -54,7 +54,7 @@ from .log import clogger, slogger
 # ISL AUTOFIT
 import cvat.apps.engine.grabcut as grabcut # autofit algorithm
 from PIL import Image
-import numpy as np 
+import numpy as np
 # ISL END
 import cvat.apps.dataset_manager.task as DatumaroTask
 
@@ -393,7 +393,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             shutil.rmtree(instance.data.get_data_dirname(), ignore_errors=True)
             instance.data.delete()
 
-    # ISL AUTOFIT   
+    # ISL AUTOFIT
     @swagger_auto_schema(method='get', operation_summary='Returns automatically snapped or fitted coordinates of a box')
     @action(detail=True, methods=['GET'])
     def autofit(self, request, pk):
@@ -414,9 +414,9 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         data, dim = grabcut.run(image, xtl, ytl, xbr, ybr)
 
         try:
-            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
                 snap_points = data
-                
+
                 new_coords = {
                     "points" : snap_points,
                 }
@@ -424,10 +424,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
-            
+
     # ISL END
 
-    # EDITED FOR TRACKING  
+    # EDITED FOR TRACKING
     @swagger_auto_schema(method='get', operation_summary='Returns tracker coordinates')
     @action(detail=True, methods=['GET'])
     def tracking(self, request, pk):
@@ -455,7 +455,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
 
 
         try:
-            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                                
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
                 new_coords = {
                     "object" : objectID,
                     "frameStart" : frameStart,
@@ -468,9 +468,36 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
-            
-    # EDITED END
 
+    # EDITED END
+    # ISL GLOBAL ATTRIBUTES
+    @swagger_auto_schema(method='get', operation_summary='Get saved attributes for a task')
+    @action(detail=True, methods=['GET'])
+    def getattributes(self, request, pk):
+        snap_points = [0,0,0,0]
+        try:
+            task = Task.objects.get(pk=pk)
+            attribute = Attributes.objects.get(task=task)
+            new_coords = attribute.value
+            return Response(new_coords)
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+    @swagger_auto_schema(method='post', operation_summary='Set saved attributes for a task')
+    @action(detail=True, methods=['POST'])
+    def saveattributes(self, request, pk):
+        print(request.data)
+        try:
+            task = Task.objects.get(pk=pk)
+            attribute = Attributes.objects.get(task=task)
+            attribute.value = request.data
+            attribute.save()
+            return Response('valid request: this is sample response')
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+
+    # ISL END
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',
         responses={'200': JobSerializer(many=True)})
     @action(detail=True, methods=['GET'], serializer_class=JobSerializer)

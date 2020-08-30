@@ -587,6 +587,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
         let globalAttributesWithFrameRange: any = {};
+        let globalAttributesSelectedWithFrameRange: any = {};
         // Assign global attributes
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
@@ -602,7 +603,15 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             frame_end: jobInstance.stopFrame,
             attributes: this.globalAttributes,
         }
+        globalAttributesSelectedWithFrameRange = {
+            frame_start: this.frame_start,
+            frame_end: jobInstance.stopFrame,
+            attributes: this.globalAttributesSelected,
+        }
         this.globalAttributesDB.push(globalAttributesWithFrameRange);
+        this.globalAttributesSelectedDB.push(globalAttributesSelectedWithFrameRange);
+        // console.log('Attributes DB: ',this.globalAttributesDB);
+        // console.log('Selected DB: ',this.globalAttributesSelectedDB);
         this.dropdownEntries = this.AllAttributeNames;
         this.updateGlobalAttributesModal();
         // console.log('Initiate global attributes modal complete');
@@ -696,15 +705,17 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         for (let globalAttributes of this.globalAttributesDB) {
             if (frame_num >= globalAttributes['frame_start'] && frame_num <= globalAttributes['frame_end']) {
                 this.globalAttributes = globalAttributes['attributes'];
-                console.log('attribute found: ',this.globalAttributes);
+                // console.log('attribute found: ',this.globalAttributes);
             } else {
-                console.log('attributes not found for', frame_num, 'in', globalAttributes);
+                // console.log('attributes not found for', frame_num, 'in', globalAttributes);
             }
         }
         for (let globalAttributesSelected of this.globalAttributesSelectedDB) {
             if (frame_num >= parseInt(globalAttributesSelected['frame_start']) && frame_num <= parseInt(globalAttributesSelected['frame_end'])) {
                 this.globalAttributesSelected = globalAttributesSelected['attributes'];
-                console.log('selected found: ',this.globalAttributesSelected);
+                // console.log('selected found: ',this.globalAttributesSelected);
+            } else {
+                // console.log('attributes not found for', frame_num, 'in', globalAttributesSelected);
             }
         }
         // console.log('attributes db', this.globalAttributesDB);
@@ -1125,11 +1136,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 if(currentLength - origLength <5){
                     let result = prompt("Input new option");
                     this.globalAttributes[key].push(result);
-
-                    //call update
-                    // console.log(this.globalAttributes[key]);
+                    //call update to reflect changes
                     this.updateGlobalAttributesModal();
                     this.requireReload = true;
+
                 }else{
                     alert('Cannot add more options for this attribute.');
                 }

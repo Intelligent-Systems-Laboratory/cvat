@@ -474,25 +474,42 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     @swagger_auto_schema(method='get', operation_summary='Get saved attributes for a task')
     @action(detail=True, methods=['GET'])
     def getattributes(self, request, pk):
-        snap_points = [0,0,0,0]
         try:
             task = Task.objects.get(pk=pk)
             attribute = Attributes.objects.get(task=task)
-            new_coords = attribute.value
-            return Response(new_coords)
+            attributesDB = attribute.value
+            return Response(attributesDB)
+        except Attributes.DoesNotExist:
+            msg = "Requested attributes for task %s does not exist" % pk
+            return Response(data="%s" %(msg), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             msg = "something is wrong"
-            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+            return Response(data="%s \n %s" %(msg, str(e)), status=status.HTTP_400_BAD_REQUEST)
+
     @swagger_auto_schema(method='post', operation_summary='Set saved attributes for a task')
     @action(detail=True, methods=['POST'])
     def saveattributes(self, request, pk):
         print(request.data)
         try:
             task = Task.objects.get(pk=pk)
-            attribute = Attributes.objects.get(task=task)
+            attribute,created = Attributes.objects.get_or_create(task=task)
             attribute.value = request.data
             attribute.save()
-            return Response('valid request: this is sample response')
+            print('MARKER ATTRIBUTE')
+            print(attribute.value)
+            return Response(data=attribute.value,status=200)
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(method='get', operation_summary='Delete saved attributes for a task')
+    @action(detail=True, methods=['GET'])
+    def deletettributes(self, request, pk):
+        print(request.data)
+        try:
+            task = Task.objects.get(pk=pk)
+            attribute = Attributes.objects.filter(task=task).delete()
+            return Response(data="Delete OK",status=200)
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)

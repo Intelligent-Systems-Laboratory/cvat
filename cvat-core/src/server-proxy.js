@@ -725,12 +725,6 @@
             // ISL GLOBAL ATTRIBUTES
             async function updateLabels(id, data,selected) {
                 const { backendAPI } = config;
-                console.log('MARKER server-proxy');
-                console.log('updating lables');
-                console.log('id: ', id);
-                console.log('data: ',data);
-                console.log('selected: ',selected);
-                console.log('MARKER END');
                 let task_details = {},labels = null;
 
                 try {
@@ -780,6 +774,36 @@
                 }
                 return updateLabel.data;
             }
+            async function fetchAttributes(id){
+                const { backendAPI } = config;
+                let request = null;
+                try {
+                    request = await Axios.get(`${backendAPI}/tasks/${id}/getattributes`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                    });
+                } catch (errorData) {
+                    console.log(errorData);
+                    return {};
+                }
+                return request.data;
+            }
+            async function saveAttributes(id,attributes,selected){
+                const { backendAPI } = config;
+                let request = null;
+                let data = {
+                    attributes:attributes,
+                    selected:selected
+                }
+                try {
+                    request = await Axios.post(`${backendAPI}/tasks/${id}/saveattributes`, { // EDITED to  add the URL parameters instead
+                        data
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+                console.log(request.data.data)
+                return request.data.data;
+            }
             // ISL END
             Object.defineProperties(this, Object.freeze({
                 server: {
@@ -806,7 +830,11 @@
                         deleteTask,
                         exportDataset,
                         autoFit,           /*ISL AUTOFIT*/
-                        updateLabels,       /*ISL GLOBAL ATTRIBUTES*/
+                        /*ISL GLOBAL ATTRIBUTES*/
+                        updateLabels,
+                        fetchAttributes,
+                        saveAttributes,
+                        /*ISL END*/
                     }),
                     writable: false,
                 },

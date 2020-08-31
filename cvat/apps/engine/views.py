@@ -66,6 +66,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 import cvat.apps.engine.tracker# EDITED for tracking
 
+import json # ISL GLOBAL ATTRIBUTES
+
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
 # We map the required paramater explicitly and add it into query arguments
@@ -493,7 +495,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         try:
             task = Task.objects.get(pk=pk)
             attribute,created = Attributes.objects.get_or_create(task=task)
-            attribute.value = request.data
+            attribute.value = json.dumps(request.data)
             attribute.save()
             print('MARKER ATTRIBUTE')
             print(attribute.value)

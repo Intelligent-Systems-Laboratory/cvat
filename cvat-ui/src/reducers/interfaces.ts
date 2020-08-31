@@ -413,6 +413,9 @@ export interface AnnotationState {
     // ISL GLOBAL ATTRIBUTES
     globalAttributes: any,
     globalAttributesVisibility:boolean,
+    isFetchingAttributes: boolean,
+    isSavingAttributes: boolean,
+    globalAttributesDB:any,
     // ISL END
 }
 

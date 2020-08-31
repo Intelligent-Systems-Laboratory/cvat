@@ -200,7 +200,11 @@ export enum AnnotationActionTypes {
     EDIT_GLOBAL_ATTRIBUTES = 'EDIT_GLOBAL_ATTRIBUTES',
     START_EDIT_LABEL = 'START_EDIT_LABEL',
     STOP_EDIT_LABEL = 'STOP_EDIT_LABEL',
-    SET_ATTRIBUTE_VISIBILITY = 'SET_ATTRIBUTE_VISIBILITY'
+    SET_ATTRIBUTE_VISIBILITY = 'SET_ATTRIBUTE_VISIBILITY',
+    START_SAVE_ATTRIBUTES = 'START_SAVE_ATTRIBUTES',
+    STOP_SAVE_ATRIBUTES = 'STOP_SAVE_ATRIBUTES',
+    START_FETCH_ATTRIBUTES = 'START_FETCH_ATTRIBUTES',
+    STOP_FETCH_ATTRIBUTES = 'STOP_FETCH_ATTRIBUTES',
     // ISL END
 }
 
@@ -270,9 +274,9 @@ export function editGlobalAttributes(globalAttributes:any): AnyAction {
 }
 
 export function editLabels(jobInstance: any,labels_data:any ,selected:any): AnyAction {
-    console.log('Editing label for task ',jobInstance.task.id);
-    console.log('attributes: ', labels_data);
-    console.log('selected: ', selected);
+    // console.log('Editing label for task ',jobInstance.task.id);
+    // console.log('attributes: ', labels_data);
+    // console.log('selected: ', selected);
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             dispatch({
@@ -283,14 +287,70 @@ export function editLabels(jobInstance: any,labels_data:any ,selected:any): AnyA
                     status: true,
                 },
             });
-            console.log(jobInstance);
+            // console.log(jobInstance);
             jobInstance.annotations.updateLabels(labels_data,selected).then((data: any) => {
-                console.log('data received from server: ', data);
+                // console.log('data received from server: ', data);
                 dispatch({
                     type: AnnotationActionTypes.STOP_EDIT_LABEL,
                     payload: {
                         task_id: jobInstance.task.id,
                         data:labels_data,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error Occured While editing labels', error);
+
+        }
+    };
+};
+export function fetchAttributes(jobInstance: any): AnyAction {
+    // console.log('Editing label for task ',jobInstance.task.id);
+    // console.log('attributes: ', labels_data);
+    // console.log('selected: ', selected);
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch({
+                type: AnnotationActionTypes.START_FETCH_ATTRIBUTES,
+                payload: {
+                    task_id: jobInstance.task.id,
+                },
+            });
+            // console.log(jobInstance);
+            jobInstance.annotations.fetchAttributes().then((data: any) => {
+                // console.log('MARKER data fetched: ', data);
+                dispatch({
+                    type: AnnotationActionTypes.STOP_FETCH_ATTRIBUTES,
+                    payload: {
+                        data:data,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error Occured While editing labels', error);
+
+        }
+    };
+};
+export function saveAttributes(jobInstance: any,attributes:any,selected:any): AnyAction {
+    // console.log('Editing label for task ',jobInstance.task.id);
+    // console.log('attributes: ', labels_data);
+    // console.log('selected: ', selected);
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch({
+                type: AnnotationActionTypes.START_SAVE_ATTRIBUTES,
+                payload: {
+                    task_id: jobInstance.task.id,
+                },
+            });
+            // console.log(jobInstance);
+            jobInstance.annotations.saveAttributes(attributes,selected).then((data: any) => {
+                console.log('MARKER data fetched: ', data);
+                dispatch({
+                    type: AnnotationActionTypes.STOP_SAVE_ATRIBUTES,
+                    payload: {
+                        task_id: jobInstance.task.id,
                     },
                 });
             });

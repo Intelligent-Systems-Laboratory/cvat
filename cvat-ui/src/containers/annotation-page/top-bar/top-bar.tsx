@@ -32,6 +32,8 @@ import {
     editGlobalAttributes as editGlobalAttributesAction,
     editGlobalAttributes,
     editLabels,
+    fetchAttributes,
+    saveAttributes,
     // ISL END
 } from 'actions/annotation-actions';
 import { Canvas } from 'cvat-canvas-wrapper';
@@ -55,6 +57,7 @@ import jobList from 'components/task-page/job-list';
 interface StateToProps {
     // ISL GLOBAL ATTRIBUTES
     globalAttributesVisibility: boolean;
+    globalAttributesDB:any;
     // ISL END
     jobInstance: any;
     frameNumber: number;
@@ -88,6 +91,8 @@ interface DispatchToProps {
     closeJob(): void;
     onEditGlobalAttributes(globalAttributes:any): void;
     onEditLabels(jobInstance:any,attributes:any,selected:any):void;
+    onFetchAttributes(jobInstance:any):void;
+    onSaveAttributes(jobInstance:any,attributes:any, selected:any): void;
 }
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
@@ -116,6 +121,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
             },
             workspace,
             globalAttributesVisibility,
+            globalAttributesDB,
         },
         settings: {
             player: {
@@ -153,6 +159,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         normalizedKeyMap,
         canvasInstance,
         globalAttributesVisibility,
+        globalAttributesDB,
     };
 }
 
@@ -193,6 +200,12 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onEditLabels(jobInstance:any,attributes:any,selected:any): void {
             dispatch(editLabels(jobInstance,attributes,selected));
         },
+        onFetchAttributes(jobInstance:any): void {
+            dispatch(fetchAttributes(jobInstance));
+        },
+        onSaveAttributes(jobInstance:any,attributes:any, selected:any): void {
+            dispatch(saveAttributes(jobInstance,attributes,selected));
+        },
     };
 }
 
@@ -205,6 +218,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     constructor(props: Props) {
         super(props);
         this.inputFrameRef = React.createRef<InputNumber>();
+
+        props.onFetchAttributes(props.jobInstance);
         this.initiateGlobalAttributesModal(); // ISL GLOBAL ATTRIBUTES
 
     }
@@ -214,10 +229,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             autoSaveInterval,
             history,
             jobInstance,
+            onFetchAttributes,
+            globalAttributesDB
         } = this.props;
 
-
+        //ISL GLOBAL ATTRIBUTES
         this.autoSaveInterval = window.setInterval(this.autoSave.bind(this), autoSaveInterval);
+        // ISL END
 
         this.unblock = history.block((location: any) => {
             const { task, id: jobID } = jobInstance;
@@ -231,7 +249,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         });
 
         window.addEventListener('beforeunload', this.beforeUnloadCallback);
-        this.hideGlobalAttributesModal();
+        this.hideGlobalAttributesModal(); // ISL GLOBAL ATTRIBUTES
     }
 
     public componentDidUpdate(prevProps: Props): void {
@@ -247,13 +265,25 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             onChangeFrame,
             autoSaveInterval,
             globalAttributesVisibility,
+            globalAttributesDB,
         } = this.props;
 
+        // ISL GLOBAL ATTRIBUTES
         if (frameNumber != prevProps.frameNumber) {
-            // TO DO: get the proper global attributes from the database and update the current one
+            // If the frame changes, get the attributes for that frame.
             this.fetchAttributeForCurrentFrame(frameNumber);
 
         }
+
+        if(globalAttributesDB != prevProps.globalAttributesDB){
+            // Get the saved attributes from the props. This should only happen once.
+            if(!this.fetchedAttributesFromServer && Object.keys(globalAttributesDB).length > 0){
+                this.fetchedAttributesFromServer = true;
+                this.globalAttributesDB = globalAttributesDB['data']['attributes'];
+                this.globalAttributesSelectedDB = globalAttributesDB['data']['selected'];
+            }
+        }
+        // ISL END
         if (autoSaveInterval !== prevProps.autoSaveInterval) {
             if (this.autoSaveInterval) window.clearInterval(this.autoSaveInterval);
             this.autoSaveInterval = window.setInterval(this.autoSave.bind(this), autoSaveInterval);
@@ -288,12 +318,15 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 onSwitchPlay(false);
             }
         }
+        // ISL GLOBAL ATTRIBUTES
         if (this.firstTime && globalAttributesVisibility){
-            console.log('FIRST TIME DETECTED');
+            // Detect if there are previous annotations. Open the global attributes modal accordingly.
+            // console.log('FIRST TIME DETECTED');
             this.firstTime = false;
             this.showGlobalAttributesModal();
             this.waitPageToCompleteLoading();
         }
+        // ISL END
     }
 
     public componentWillUnmount(): void {
@@ -466,8 +499,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         const {
             onSaveAnnotation,
             jobInstance,
+            onSaveAttributes, // ISL GLOBAL ATTRIBUTES
         } = this.props;
-
+        onSaveAttributes(jobInstance,this.globalAttributesDB,this.globalAttributesSelectedDB);
         onSaveAnnotation(jobInstance);
     };
 
@@ -544,6 +578,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private firstTime: boolean = true;
     private requireReload: boolean = false;
     private addAttribute: boolean = false;
+    private fetchedAttributesFromServer:boolean = false;
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
         visible: true,
@@ -582,7 +617,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     private initiateGlobalAttributesModal = (): void => {
-        const { jobInstance } = this.props;
+        const { jobInstance,globalAttributesDB } = this.props;
         this.getAllAttributes();
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
@@ -699,7 +734,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     private fetchAttributeForCurrentFrame = (frame_num: number): void => {
-        console.log('fetch global attributes for ', frame_num);
+        // console.log('fetch global attributes for ', frame_num);
         this.globalAttributes = {};
         this.globalAttributesSelected = {};
         for (let globalAttributes of this.globalAttributesDB) {
@@ -777,7 +812,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 visible: false
             });
             this.onEditGlobalAttributes();
-
         } else {
                 console.log('Attributes:',this.globalAttributes);
                 console.log('Selected:',this.globalAttributesSelected);
@@ -925,7 +959,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         const { jobInstance } = this.props;
         items.push(
             <div className="radio-frame">
-                <input id='frame_start' type="number" size="small" min="0" max="10000" /><text> to: </text>
+                <input id='frame_start' type="number" size="small" min="0" max="10000" /><Text> to: </Text>
                 <input id='frame_end' type="number" size="small" min="0" max="10000" />
                 <button
                     className="plusbutton"
@@ -1017,8 +1051,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                         id = {'SelectAttribute'+key}
                         style={{ width: 200 }}
                     >
-                        {this.dropdownEntries.map((label: any): JSX.Element => (
-                            <Select.Option key={label} value={`${label}`}>
+                        {this.dropdownEntries.map((label: any,index:number): JSX.Element => (
+                            <Select.Option key={index} value={`${label}`}>
 
                                 {label}
                             </Select.Option>
@@ -1091,8 +1125,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                         id = {'SelectAttribute'+"key"}
                         style={{ width: 200 }}
                     >
-                        {this.AllAttributeNames.map((label: any): JSX.Element => (
-                            <Select.Option key={label} value={`${label}`}>
+                        {this.AllAttributeNames.map((label: any,index:number): JSX.Element => (
+                            <Select.Option key={index} value={`${label}`}>
 
                                 {label}
                             </Select.Option>
@@ -1198,6 +1232,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
     private onGlobalIconClick = (): void => {
         // console.log('click');
+        const {frameNumber} = this.props;
+        this.fetchAttributeForCurrentFrame(frameNumber);
         this.updateGlobalAttributesModal();
 
         this.showGlobalAttributesModal();

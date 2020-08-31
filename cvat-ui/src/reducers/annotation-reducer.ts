@@ -111,7 +111,10 @@ const defaultState: AnnotationState = {
         weather:"",
         lighting:"",
     },
-    globalAttributesVisibility: false
+    globalAttributesVisibility: false,
+    isFetchingAttributes: false,
+    isSavingAttributes: false,
+    globalAttributesDB: {},
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
@@ -127,9 +130,32 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         }
         case AnnotationActionTypes.SET_ATTRIBUTE_VISIBILITY: {
             const{visibility} = action.payload;
-            console.log('MARKER ',visibility)
             return {...state,
                 globalAttributesVisibility: visibility,
+            };
+        }
+        case AnnotationActionTypes.START_FETCH_ATTRIBUTES: {
+            return {...state,
+                isFetchingAttributes: true,
+            };
+        }
+        case AnnotationActionTypes.STOP_FETCH_ATTRIBUTES: {
+            const{data} = action.payload;
+            return {...state,
+                isFetchingAttributes: false,
+                globalAttributesDB:JSON.parse(data),
+            };
+        }
+        case AnnotationActionTypes.START_SAVE_ATTRIBUTES: {
+            console.log('MARKER START SAVE');
+            return {...state,
+                isSavingAttributes: true,
+            };
+        }
+        case AnnotationActionTypes.STOP_SAVE_ATRIBUTES: {
+            console.log('MARKER END STOP SAVE');
+            return {...state,
+                isSavingAttributes: false,
             };
         }
         // ISL END

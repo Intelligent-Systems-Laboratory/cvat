@@ -39,9 +39,18 @@
 
                     // ISL GLOBAL ATTRIBUTES
                     async updateLabels(data,selected) {
-                        console.log('session.js',data,selected);
                         const result = await PluginRegistry
                             .apiWrapper.call(this, prototype.annotations.updateLabels, data,selected);
+                        return result;
+                    },
+                    async fetchAttributes() {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.fetchAttributes);
+                        return result;
+                    },
+                    async saveAttributes(attributes,selected) {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.saveAttributes,attributes,selected);
                         return result;
                     },
                     // ISL END
@@ -768,6 +777,8 @@
                 // ISL END
                 // ISL GLOBAL ATTRIBUTES
                 updateLabels: Object.getPrototypeOf(this).annotations.updateLabels.bind(this),
+                fetchAttributes: Object.getPrototypeOf(this).annotations.fetchAttributes.bind(this),
+                saveAttributes: Object.getPrototypeOf(this).annotations.saveAttributes.bind(this),
                 // ISL END
             };
 
@@ -1331,6 +1342,8 @@
                 // ISL END
                 // ISL GLOBAL ATTRIBUTES
                 updateLabels: Object.getPrototypeOf(this).annotations.updateLabels.bind(this),
+                fetchAttributes: Object.getPrototypeOf(this).annotations.fetchAttributes.bind(this),
+                saveAttributes: Object.getPrototypeOf(this).annotations.saveAttributes.bind(this),
                 // ISL END
             };
 
@@ -1459,7 +1472,7 @@
         return result;
     },
     // ISL END
-    // ISL TRACKING
+    // ISL GLOBAL ATTRIBUTES
     Job.prototype.annotations.updateLabels = async function (data,selected) {
         const result = await serverProxy.tasks.updateLabels(this.task.id, data,selected);
         return result;
@@ -1467,6 +1480,24 @@
 
     Task.prototype.annotations.updateLabels = async function (data,selected) {
         const result = await serverProxy.tasks.updateLabels(this.id, data,selected);
+        return result;
+    },
+    Job.prototype.annotations.fetchAttributes = async function () {
+        const result = await serverProxy.tasks.fetchAttributes(this.task.id);
+        return result;
+    },
+
+    Task.prototype.annotations.fetchAttributes = async function () {
+        const result = await serverProxy.tasks.fetchAttributes(this.id);
+        return result;
+    },
+    Job.prototype.annotations.saveAttributes = async function (attributes,selected) {
+        const result = await serverProxy.tasks.saveAttributes(this.task.id,attributes,selected);
+        return result;
+    },
+
+    Task.prototype.annotations.saveAttributes = async function (attributes,selected) {
+        const result = await serverProxy.tasks.saveAttributes(this.id,attributes,selected);
         return result;
     },
     // ISL END

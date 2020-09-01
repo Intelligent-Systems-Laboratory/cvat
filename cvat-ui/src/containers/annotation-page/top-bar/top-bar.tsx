@@ -1249,8 +1249,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             if(frame_start !== null && frame_end !== null){
                 frame_start.value = this.frame_start + "";
                 frame_end.value = this.frame_end +"";
-                for(let key in this.globalAttributesSelected){
-                    let index = this.globalAttributes[key].indexOf(this.globalAttributesSelected[key]);
+                for(const key in this.globalAttributesSelected){
+                    let index = this.globalAttributesSelected[key].indexOf(this.globalAttributesSelected[key]);
                     let id = 'radio' + key + 'Option' + index;
                     let checkedElement = document.getElementById(id);
                     if(checkedElement){

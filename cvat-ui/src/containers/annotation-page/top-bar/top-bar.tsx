@@ -848,11 +848,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     private handleCancel = (event: any): void => {
-        this.globalAttributesSelected = {};
+        // this.globalAttributesSelected = {};
+
+        this.updateGlobalAttributesModal();
         this.globalAttributesModal.update({
             visible: false
         });
-        // console.log('cancel');
+
+        console.log('cancel');
     }
     private handleSelectAttribute = (attribute: any, index: any, event:any): void => {
         console.log(attribute);
@@ -1103,11 +1106,12 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             temp.push(
                 <div class="container" >
                     <input type='radio' id={'radio' + key + 'Option+'} key={this.globalAttributes[key].entries().length} name={'radio' + key} value={'+'}></input>
-                    <label for={'radio' + key + 'Option+'}>{'+'}</label>
+                    <label for={'radio' + key + 'Option+'} id = {'label' + key + 'Option+'}>{'+'}</label>
+                    <input type="text" class="input " style={{display: 'none'}} id = {'input' + key + 'Option+'} ></input>
                 </div>
             );
 
-            items.push(<form class="radio-toolbar" onClick={event => this.onChangeOptionHandler(event.target.value, key)}>{temp}</form>);
+            items.push(<form class="radio-toolbar" onClick={event => this.onChangeOptionHandler(event.target.value, key)} onSubmit={(event: KeyboardEvent | undefined) => this.enterHandler(event,key)}>{temp}</form>);
         }
         if(this.addAttribute){
             items.push(
@@ -1155,27 +1159,53 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
 
     }
+    private enterHandler = (event: KeyboardEvent,key:string) => {
+        // used for getting the input in the text box created when clicking the + button
+        // this function is called when the 'enter' key is pressed on a keyboard while on an input box
+        let input = document.getElementById('input' + key + 'Option+');
+        if(input){
+            let result = input.value;//value from text box
+            this.globalAttributes[key].push(result);
+            this.requireReload = true;
+            this.updateGlobalAttributesModal();
+        }
+
+        event.preventDefault();
+    }
     private onChangeOptionHandler = (value: string, key: string): void => {
         const {jobInstance} = this.props;
         // console.log(jobInstance.task.labels[0].attributes);
+
         if (value) {
             if (value == '+') {
+                console.log('+ pressed');
                 let origLength = 0;
                 let currentLength = this.globalAttributes[key].length;
+                // check if the added choices exceeds the limit (currently, the limit is 5)
                 for(let attribute of jobInstance.task.labels[0].attributes){
                     if(attribute.name == key){
                         origLength = attribute.values.length;
                     }
                 }
+
+                let label = document.getElementById('label' + key + 'Option+'); // get label of the + button pressed
+                let input = document.getElementById('input' + key + 'Option+'); // get the hidden input of the + button pressed
                 if(currentLength - origLength <5){
-                    let result = prompt("Input new option");
-                    this.globalAttributes[key].push(result);
-                    //call update to reflect changes
-                    this.updateGlobalAttributesModal();
-                    this.requireReload = true;
+                    // change the + button into an input text
+                    if(label){
+                        label.style.display = 'none'; // hide the label
+
+                        if(input){
+                            input.style.display = 'block';// show the input
+                            input.focus();
+                        }
+                    }
 
                 }else{
-                    alert('Cannot add more options for this attribute.');
+                    notification.error({
+                        message: 'Cannot add more options.',
+                        description: 'Limit exceeded. Save and reload the page or delete some attributes.',
+                    });
                 }
 
             } else {

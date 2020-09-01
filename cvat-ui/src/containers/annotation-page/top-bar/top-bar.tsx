@@ -322,7 +322,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         if (this.firstTime && globalAttributesVisibility){
             // Detect if there are previous annotations. Open the global attributes modal accordingly.
             // console.log('FIRST TIME DETECTED');
-            this.firstTime = false;
             this.showGlobalAttributesModal();
             this.waitPageToCompleteLoading();
         }
@@ -761,7 +760,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     private handleOk = (event:any): void => {
-
+        this.firstTime = false;
         const {jobInstance,onEditLabels} = this.props;
         // console.log(jobInstance);
 
@@ -929,8 +928,12 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private onMouseOver = (value: any): void => {
         // console.log('mouse over on ',value);
         var xBtn = document.getElementById('xBtn' + value);
-        if (xBtn != null)
+        if (xBtn != null && this.firstTime){
             xBtn.style.display = "block";
+        }
+        if (xBtn != null && !this.firstTime){
+            xBtn.style.display = "none";
+        }
     }
     private onMouseOut = (value: any): void => {
         // console.log('mouse out on ', value);
@@ -1212,11 +1215,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 this.globalAttributesSelected[key] = value;
             }
         }
-        // console.log(this.globalAttributesSelected);
     }
 
     private updateGlobalAttributesModal = (): void => {
-        // console.log('update modal');
         let items: any = this.generateElements();
         this.globalAttributesModal.update({
             content:
@@ -1261,7 +1262,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             }
     }
     private onGlobalIconClick = (): void => {
-        // console.log('click');
+
         const {frameNumber} = this.props;
         this.fetchAttributeForCurrentFrame(frameNumber);
         this.updateGlobalAttributesModal();

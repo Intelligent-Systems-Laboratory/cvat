@@ -543,7 +543,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             activatedStateID,
             onUpdateContextMenu,
         } = this.props;
-
         if (e.target && !(e.target as HTMLElement).classList.contains('svg_select_points')) {
             onUpdateContextMenu(activatedStateID !== null, e.clientX, e.clientY,
                 ContextMenuType.CANVAS_SHAPE);
@@ -581,7 +580,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasShapeClicked = (e: any): void => {
+        const { onActivateObject, activatedStateID } = this.props;
         const { clientID } = e.detail.state;
+        onActivateObject(clientID);
         const sidebarItem = window.document
             .getElementById(`cvat-objects-sidebar-state-item-${clientID}`);
         if (sidebarItem) {
@@ -631,9 +632,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             }
 
             if (activatedStateID !== result.state.clientID) {
-                if (!tracking && !contextMenuVisibility) { // ISL FIX CONTEXT MENU
-                    onActivateObject(result.state.clientID);
-                }
+                if(!contextMenuVisibility)
+                onActivateObject(result.state.clientID);
             }
         }
     };

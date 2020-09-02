@@ -102,6 +102,7 @@ interface StateToProps {
     globalAttributes: any;
     globalAttributesVisibility: boolean;
     // ISL END
+    contextMenuVisibility: boolean; // ISL FIX CONTEXT MENU
 }
 
 interface DispatchToProps {
@@ -144,6 +145,11 @@ function mapStateToProps(state: CombinedState): StateToProps {
             canvas: {
                 activeControl,
                 instance: canvasInstance,
+                // ISL FIX CONTEXT MENU
+                contextMenu:{
+                    visible: contextMenuVisibility,
+                }
+                // ISL END
             },
             drawing: {
                 activeLabelID,
@@ -271,6 +277,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         globalAttributes,
         globalAttributesVisibility,
         // ISL END
+        contextMenuVisibility, // ISL CONTEXT MENU
     };
 }
 

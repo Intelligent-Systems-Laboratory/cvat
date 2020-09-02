@@ -109,6 +109,7 @@ interface Props {
     globalAttributesVisibility:boolean;
     onSetGlobalAttributesVisibility(visiblity:boolean):void;
     // ISL END
+    contextMenuVisibility:boolean; // ISL FIX CONTEXT MENU
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -556,7 +557,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         } = this.props;
         const { id } = e.detail;
         jobInstance.logger.log(LogType.dragObject, { id });
-        onUpdateContextMenu(false, 0, 0); // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
+        onUpdateContextMenu(false, 0, 0,ContextMenuType.CANVAS_SHAPE); // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
     };
 
     private onCanvasShapeResized = (e: any): void => {
@@ -566,7 +567,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         } = this.props;
         const { id } = e.detail;
         jobInstance.logger.log(LogType.resizeObject, { id });
-        onUpdateContextMenu(false, 0, 0); // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
+        onUpdateContextMenu(false, 0, 0,ContextMenuType.CANVAS_SHAPE); // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
     };
 
     private onCanvasImageFitted = (): void => {
@@ -609,6 +610,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             workspace,
             onActivateObject,
             tracking,
+            contextMenuVisibility, //ISL FIX CONTEXT MENU
         } = this.props;
 
         if (workspace !== Workspace.STANDARD) {
@@ -629,7 +631,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             }
 
             if (activatedStateID !== result.state.clientID) {
-                if (!tracking) {
+                if (!tracking && !contextMenuVisibility) { // ISL FIX CONTEXT MENU
                     onActivateObject(result.state.clientID);
                 }
             }

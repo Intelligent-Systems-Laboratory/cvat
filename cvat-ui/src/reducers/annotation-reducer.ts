@@ -87,6 +87,9 @@ const defaultState: AnnotationState = {
     // ISL AUTOFIT
     autoFitObjects: [],
     // ISL END
+    // ISL INTERPOLATION
+    asLastKeyframeObjects: [],
+    // ISL END
     // ISL MANUAL TRACKING
     trackobject: {
         tracking: false,
@@ -180,6 +183,27 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             };
         }
         // ISL END
+                // ISL INTERPOLATION
+                case AnnotationActionTypes.START_COPY_LAST_KEYFRAME: {
+                    const { clientID } = action.payload;
+                    const newAsLastKeyframeObjects = [...state.asLastKeyframeObjects];
+                    newAsLastKeyframeObjects.push(clientID);
+                    return {
+                        ...state,
+                        asLastKeyframeObjects: newAsLastKeyframeObjects,
+                    };
+                }
+                case AnnotationActionTypes.STOP_AUTO_FIT: {
+                    const { clientID } = action.payload;
+
+                    const newAsLastKeyframeObjects= [...state.asLastKeyframeObjects];
+                    newAsLastKeyframeObjects.splice(state.asLastKeyframeObjects.indexOf(clientID), 1);
+                    return {
+                        ...state,
+                        asLastKeyframeObjects: newAsLastKeyframeObjects,
+                    };
+                }
+                // ISL END
         // ISL MANUAL TRACKING
         case AnnotationActionTypes.SWITCH_TRACKING: {
             const { tracking, trackedStateID } = action.payload;

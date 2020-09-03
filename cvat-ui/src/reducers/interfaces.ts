@@ -409,6 +409,9 @@ export interface AnnotationState {
     // ISL END
     // ISL AUTOFIT
     autoFitObjects: any[];
+    // ISL
+    // ISL INTERPOLATION
+    asLastKeyframeObjects: any[];
     // ISL END
     // ISL GLOBAL ATTRIBUTES
     globalAttributes: any,

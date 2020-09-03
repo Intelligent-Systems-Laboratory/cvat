@@ -56,6 +56,9 @@ function ItemMenu(
     resetCuboidPerspective: (() => void),
     // ISL AUTOFIT
     autoFit: (() => void),
+    // ISL
+    // ISL INTERPOLATION
+    asLastKeyframe: (() => void),
     // ISL END
 ): JSX.Element {
     return (
@@ -150,6 +153,19 @@ function ItemMenu(
                 </Tooltip>
             </Menu.Item>
             {/* ISL END */}
+            {/* ISL INTERPOLATION */}
+            <Menu.Item>
+                <Tooltip title={`Copies the dimensions of the box of the last keyframe.`}>
+                    <Button
+                        type='link'
+                        icon='import'
+                        onClick={asLastKeyframe}
+                    >
+                        Copy last keyframe
+                    </Button>
+                </Tooltip>
+            </Menu.Item>
+            {/* ISL INTERPOLATION */}
         </Menu>
     );
 }
@@ -181,6 +197,9 @@ interface ItemTopComponentProps {
     // ISL AUTOFIT
     autoFit(): void;
     // ISL END
+    // ISL INTERPOLATION
+    asLastKeyframe(): void;
+    // ISL END
 }
 
 function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
@@ -211,6 +230,9 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         resetCuboidPerspective,
         // ISL AUTOFIT
         autoFit,
+        // ISL END
+        // ISL INTERPOLATION
+        asLastKeyframe,
         // ISL END
     } = props;
 
@@ -269,6 +291,9 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
                         resetCuboidPerspective,
                         // ISL AUTOFIT
                         autoFit,
+                        // ISL
+                        // ISL INTERPOLATION
+                        asLastKeyframe,
                         // ISL END
                     )}
                 >
@@ -437,13 +462,13 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                             </Tooltip>
                         </Col>
                         {/* ISL INTERPOLATION */}
-                        <Col>
+                        {/* <Col>
                             <Tooltip title={`Copy last keyframe ${switchKeyFrameShortcut}`}>
                                 {keyframe
                                     ? <Icon type='star' theme='filled' onClick={unsetKeyframe} />
                                     : <Icon type='star' onClick={asLastKeyframe} />}
                             </Tooltip>
-                        </Col>
+                        </Col> */}
                         {/* ISL END */}
                         {
                             shapeType !== ShapeType.POINTS && (
@@ -817,6 +842,9 @@ interface Props {
     // ISL AUTOFIT
     autoFit(): void,
     // ISL END
+    // ISL INTERPOLATION
+    asLastKeyframe(): void,
+    // ISL END
 }
 
 function objectItemsAreEqual(prevProps: Props, nextProps: Props): boolean {
@@ -960,6 +988,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     resetCuboidPerspective={resetCuboidPerspective}
                     // ISL AUTOFIT
                     autoFit={autoFit}
+                    // ISL END
+                    // ISL INTERPOLATION
+                    asLastKeyframe={asLastKeyframe}
                     // ISL END
                 />
                 <ItemButtons

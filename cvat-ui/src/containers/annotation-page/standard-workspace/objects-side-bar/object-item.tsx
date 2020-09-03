@@ -27,6 +27,7 @@ import {
     propagateObject as propagateObjectAction,
     pasteShapeAsync,
     autoFit, // ISL AUTOFIT
+    asLastKeyframe, // ISL INTERPOLATION
 } from 'actions/annotation-actions';
 
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
@@ -66,6 +67,7 @@ interface DispatchToProps {
     changeLabelColor(label: any, color: string): void;
     changeGroupColor(group: number, color: string): void;
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
+    onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void; // ISL INTERPOLATION
 }
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
@@ -172,6 +174,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         // ISL AUTOFIT
         onAutoFit(jobInstance: any, stateToFit: any, frame: number): void {
             dispatch(autoFit(jobInstance, stateToFit, frame));
+        },
+        // ISL END
+        // ISL INTERPOLATION
+        onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void {
+            dispatch(asLastKeyframe(jobInstance, stateToFit, frame));
         },
         // ISL END
     };
@@ -382,16 +389,16 @@ class ObjectItemContainer extends React.PureComponent<Props> {
     };
 
     // ISL INTERPOLATION
-    private asLastKeyframe = (): void => {
-        const { objectState, frameNumber } = this.props;
-        const { prev } = objectState.keyframes;
-        objectState.keyframe = true;
-        if (prev !== null && prev !== frameNumber) {
-            this.changeFrame(prev);
-        }
-        console.log("Called");
-        this.commit();
-    };
+    // private asLastKeyframe = (): void => {
+    //     const { objectState, frameNumber } = this.props;
+    //     const { prev } = objectState.keyframes;
+    //     objectState.keyframe = true;
+    //     if (prev !== null && prev !== frameNumber) {
+    //         this.changeFrame(prev);
+    //     }
+    //     console.log("Called");
+    //     this.commit();
+    // };
     // ISL END
 
     private collapse = (): void => {
@@ -457,7 +464,21 @@ class ObjectItemContainer extends React.PureComponent<Props> {
 
         onAutoFit(jobInstance, objectState, frameNumber);
     }
+    // ISL
+
+    // ISL INTERPOLATION
+    private asLastKeyframe = (): void => {
+        const {
+            objectState,
+            jobInstance,
+            frameNumber,
+            onSetLastKeyframe,
+        } = this.props;
+
+        onSetLastKeyframe(jobInstance, objectState, frameNumber);
+    }
     // ISL END
+
     private switchCuboidOrientation = (): void => {
         function cuboidOrientationIsLeft(points: number[]): boolean {
             return points[12] > points[0];

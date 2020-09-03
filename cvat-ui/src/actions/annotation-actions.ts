@@ -196,6 +196,9 @@ export enum AnnotationActionTypes {
     START_AUTO_FIT = 'START_AUTO_FIT',
     STOP_AUTO_FIT = 'STOP_AUTO_FIT',
     // ISL END
+    // ISL INTERPOLATION
+    START_COPY_LAST_KEYFRAME = 'START_COPY_LAST_KEYFRAME',
+    STOP_COPY_LAST_KEYFRAME = 'STOP_COPY_LAST_KEYFRAME',
     // ISL GLOBAL ATTRIBUTES
     EDIT_GLOBAL_ATTRIBUTES = 'EDIT_GLOBAL_ATTRIBUTES',
     START_EDIT_LABEL = 'START_EDIT_LABEL',
@@ -254,6 +257,53 @@ export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAc
     };
 }
 // ISL END
+
+// ISL INTERPOLATION
+export function asLastKeyframe(jobInstance: any, stateToFit: any, frame: number): AnyAction {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            const state = stateToFit;
+            const stateA: CombinedState = getStore().getState();
+            const { instance: job } = stateA.annotation.job;
+            const { filters, frame, showAllInterpolationTracks } = receiveAnnotationsParameters();
+            const {prev} = state.keyframes;
+            const states = await job.annotations.get(prev, showAllInterpolationTracks, filters);
+            console.log(stateA);
+            console.log(states);
+            console.log(state);
+            console.log(states[0]);
+            dispatch({
+                type: AnnotationActionTypes.START_COPY_LAST_KEYFRAME,
+                payload: {
+                    clientID: state.clientID,
+                },
+            });
+
+            console.log(jobInstance);
+            // jobInstance.annotations.asLastKeyframe(frame, state.points).then((data: any) => {
+                stateToFit.points = states[0].points;
+                dispatch(updateAnnotationsAsync([stateToFit]));
+                dispatch({
+                    type: AnnotationActionTypes.STOP_COPY_LAST_KEYFRAME,
+                    payload: {
+                        clientID: state.clientID,
+                    },
+                });
+            // });
+        } catch (error) {
+            console.log('Error Occured While Copying Last Keyframe', error);
+            const state = stateToFit;
+            dispatch({
+                type: AnnotationActionTypes.STOP_COPY_LAST_KEYFRAME,
+                payload: {
+                    clientID: state.clientID,
+                },
+            });
+        }
+    };
+}
+// ISL END
+
 // ISL GLOBAL ATTRIBUTES
 export function setGlobalAttributesVisibility(visibility:boolean): AnyAction {
     return {

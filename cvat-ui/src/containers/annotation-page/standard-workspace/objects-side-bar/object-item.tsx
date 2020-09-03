@@ -28,9 +28,8 @@ import {
     pasteShapeAsync,
     autoFit, // ISL AUTOFIT
     asLastKeyframe, // ISL INTERPOLATION
-} from 'actions/annotation-actions';
+    updateCanvasContextMenu, // ISL AUTO LOCK
 
-import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
 import { shift } from 'utils/math';
 
 interface OwnProps {
@@ -53,6 +52,7 @@ interface StateToProps {
     maxZLayer: number;
     normalizedKeyMap: Record<string, string>;
     canvasInstance: Canvas;
+    contextMenu: any; // ISL AUTO LOCK
 }
 
 interface DispatchToProps {
@@ -68,6 +68,7 @@ interface DispatchToProps {
     changeGroupColor(group: number, color: string): void;
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
     onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void; // ISL INTERPOLATION
+    onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type: any): void; // ISL AUTO LOCK
 }
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
@@ -96,6 +97,9 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
                 ready,
                 activeControl,
                 instance: canvasInstance,
+                // ISL AUTO LOCK
+                contextMenu:contextMenu,
+                // ISL END
             },
             colors,
         },
@@ -132,6 +136,7 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
         maxZLayer,
         normalizedKeyMap,
         canvasInstance,
+        contextMenu, // ISL AUTO LOCK
     };
 }
 
@@ -176,13 +181,21 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(autoFit(jobInstance, stateToFit, frame));
         },
         // ISL END
-        // ISL INTERPOLATION
         onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void {
             dispatch(asLastKeyframe(jobInstance, stateToFit, frame));
         },
+
+        // ISL AUTOLOCK
+        onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type: any): void; {
+            dispatch(updateCanvasContextMenu(
+                visible,
+                left,
+                top,
+                pointID,
+                ));
+        },
         // ISL END
     };
-}
 
 type Props = StateToProps & DispatchToProps;
 class ObjectItemContainer extends React.PureComponent<Props> {
@@ -440,6 +453,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
+
     private changeAttribute = (id: number, value: string): void => {
         const { objectState, jobInstance } = this.props;
         jobInstance.logger.log(LogType.changeAttribute, {
@@ -539,9 +553,23 @@ class ObjectItemContainer extends React.PureComponent<Props> {
             updateState,
         } = this.props;
 
+        // ISL AUTO LOCK
+        objectState.lock = true;
         updateState(objectState);
+        this.hideContextMenu();
+        // ISL END
     }
+    // ISL AUTO LOCK
+    private hideContextMenu(): void {
+        const {
+            onHideContextMenu,
+            contextMenu
 
+        } = this.props;
+        console.log(contextMenu);
+        onHideContextMenu(false,contextMenu.left,contextMenu.top,contextMenu.pointID,contextMenu.type);
+    }
+    // ISL END
     public render(): JSX.Element {
         const {
             objectState,

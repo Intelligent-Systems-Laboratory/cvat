@@ -186,7 +186,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
 
         // ISL AUTOLOCK
-        onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type: any): void; {
+        onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type: any): void{
             dispatch(updateCanvasContextMenu(
                 visible,
                 left,

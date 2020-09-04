@@ -29,8 +29,9 @@ import {
     autoFit, // ISL AUTOFIT
     asLastKeyframe, // ISL INTERPOLATION
     updateCanvasContextMenu, // ISL AUTO LOCK
-
+} from 'actions/annotation-actions';
 import { shift } from 'utils/math';
+import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
 
 interface OwnProps {
     clientID: number;
@@ -180,13 +181,14 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onAutoFit(jobInstance: any, stateToFit: any, frame: number): void {
             dispatch(autoFit(jobInstance, stateToFit, frame));
         },
-        // ISL END
+        // ISL
+        // ISL INTERPOLATION
         onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void {
             dispatch(asLastKeyframe(jobInstance, stateToFit, frame));
         },
-
+        // ISL END
         // ISL AUTOLOCK
-        onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type: any): void{
+        onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type?: any): void{
             dispatch(updateCanvasContextMenu(
                 visible,
                 left,
@@ -196,7 +198,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         // ISL END
     };
-
+}
 type Props = StateToProps & DispatchToProps;
 class ObjectItemContainer extends React.PureComponent<Props> {
     private navigateFirstKeyframe = (): void => {
@@ -401,18 +403,6 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
-    // ISL INTERPOLATION
-    // private asLastKeyframe = (): void => {
-    //     const { objectState, frameNumber } = this.props;
-    //     const { prev } = objectState.keyframes;
-    //     objectState.keyframe = true;
-    //     if (prev !== null && prev !== frameNumber) {
-    //         this.changeFrame(prev);
-    //     }
-    //     console.log("Called");
-    //     this.commit();
-    // };
-    // ISL END
 
     private collapse = (): void => {
         const {

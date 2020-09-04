@@ -282,6 +282,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 this.globalAttributesDB = globalAttributesDB['data']['attributes'];
                 this.globalAttributesSelectedDB = globalAttributesDB['data']['selected'];
             }
+            if(frameNumber == 0){
+                this.fetchAttributeForCurrentFrame(frameNumber);
+            }
         }
         // ISL END
         if (autoSaveInterval !== prevProps.autoSaveInterval) {
@@ -1224,7 +1227,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 <div>{items}</div>
             ,
         });
-        this.waitPageToCompleteLoading();
+        // this.waitPageToCompleteLoading();
     }
 
     private showGlobalAttributesModal = (): void => {
@@ -1250,11 +1253,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 frame_start.value = this.frame_start + "";
                 frame_end.value = this.frame_end +"";
                 for(const key in this.globalAttributesSelected){
-                    let index = this.globalAttributesSelected[key].indexOf(this.globalAttributesSelected[key]);
+                    let index = this.globalAttributes[key].indexOf(this.globalAttributesSelected[key]);
                     let id = 'radio' + key + 'Option' + index;
                     let checkedElement = document.getElementById(id);
+
                     if(checkedElement){
                         checkedElement.checked = true;
+                        // console.log('update selected',checkedElement.value);
                     }
                 }
             }else{
@@ -1265,6 +1270,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
         const {frameNumber} = this.props;
         this.fetchAttributeForCurrentFrame(frameNumber);
+        console.log('Frame ', frameNumber);
+        console.log('attributes: ', this.globalAttributes);
+        console.log('selected: ', this.globalAttributesSelected);
         this.updateGlobalAttributesModal();
 
         this.showGlobalAttributesModal();

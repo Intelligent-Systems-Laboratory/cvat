@@ -544,9 +544,9 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         } = this.props;
 
         // ISL AUTO LOCK
-        objectState.lock = true;
+        // objectState.lock = true;
         updateState(objectState);
-        this.hideContextMenu();
+        // this.hideContextMenu();
         // ISL END
     }
     // ISL AUTO LOCK

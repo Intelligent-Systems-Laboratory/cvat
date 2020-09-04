@@ -137,7 +137,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         this.initialSetup();
         this.updateCanvas();
     }
-
+    private newBox: number = -1; // ISL AUTO LOCK
     public componentDidUpdate(prevProps: Props): void {
         const {
             opacity,
@@ -258,6 +258,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // ISL AUTOFIT
             if (annotations.length > prevProps.annotations.length && prevProps.frameData === frameData) {
                 this.contextMenuOnDraw();
+                this.newBox = annotations.length - 1;// ISL AUTO LOCK
                 // this.autoFit(annotations[annotations.length - 1].clientID);
             }
             // ISL END
@@ -523,11 +524,29 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasMouseDown = (e: MouseEvent): void => {
-        const { workspace, activatedStateID, onActivateObject } = this.props;
+        const { workspace,
+            activatedStateID,
+            onActivateObject,
+            // ISL AUTO LOCK
+            annotations,
+            onUpdateAnnotations,
+            // ISL END
+        } = this.props;
 
         if ((e.target as HTMLElement).tagName === 'svg') {
             if (activatedStateID !== null && workspace !== Workspace.ATTRIBUTE_ANNOTATION) {
                 onActivateObject(null);
+                // ISL AUTO LOCK
+                if(this.newBox != -1){
+                    const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
+                    const state = annotations[annotations.length - 1];
+                    console.log(state);
+                    state.lock = true;
+                    onUpdateAnnotations([state]);
+                    this.newBox = -1;
+                }
+                // ISL AUTO LOCK
+
             }
         }
     };

@@ -1202,7 +1202,13 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             return { ...defaultState };
         }
         case AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES:{
-            const {globalAttributes} = action.payload;
+            const {globalAttributes,visibility} = action.payload;
+            if(visibility!=undefined){
+                return {
+                    ...state,
+                globalAttributesVisibility:visibility,
+                };
+            }
             return {
                 ...state,
                 globalAttributes:globalAttributes,

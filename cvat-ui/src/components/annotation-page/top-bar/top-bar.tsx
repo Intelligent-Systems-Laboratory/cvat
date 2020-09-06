@@ -13,6 +13,7 @@ import LeftGroup from './left-group';
 import RightGroup from './right-group';
 import PlayerNavigation from './player-navigation';
 import PlayerButtons from './player-buttons';
+import GlobalModalContainer from 'containers/annotation-page/top-bar/global-attributes-modal';
 
 interface Props {
     playing: boolean;
@@ -144,6 +145,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                 changeWorkspace={changeWorkspace}
                 showStatistics={showStatistics}
             />
+            <GlobalModalContainer />
         </Row>
     );
 }

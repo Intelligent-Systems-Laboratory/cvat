@@ -322,7 +322,15 @@ export function editGlobalAttributes(globalAttributes:any): AnyAction {
         },
     };
 }
-
+export function okGlobalAttributes(globalAttributes:any): AnyAction {
+    return {
+        type: AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES,
+        payload: {
+            globalAttributes:globalAttributes,
+            visibility:false,
+        },
+    };
+}
 export function editLabels(jobInstance: any,labels_data:any ,selected:any): AnyAction {
     // console.log('Editing label for task ',jobInstance.task.id);
     // console.log('attributes: ', labels_data);

@@ -34,6 +34,7 @@ import {
     editLabels,
     fetchAttributes,
     saveAttributes,
+    setGlobalAttributesVisibility,
     // ISL END
 } from 'actions/annotation-actions';
 import { Canvas } from 'cvat-canvas-wrapper';
@@ -93,6 +94,7 @@ interface DispatchToProps {
     onEditLabels(jobInstance:any,attributes:any,selected:any):void;
     onFetchAttributes(jobInstance:any):void;
     onSaveAttributes(jobInstance:any,attributes:any, selected:any): void;
+    onSetGlobalAttributesVisibility(visibility:boolean):void;
 }
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
@@ -206,6 +208,9 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSaveAttributes(jobInstance:any,attributes:any, selected:any): void {
             dispatch(saveAttributes(jobInstance,attributes,selected));
         },
+        onSetGlobalAttributesVisibility(visibility:boolean): void{
+            dispatch(setGlobalAttributesVisibility(visibility));
+        },
     };
 }
 
@@ -221,6 +226,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
         props.onFetchAttributes(props.jobInstance);
         this.initiateGlobalAttributesModal(); // ISL GLOBAL ATTRIBUTES
+        console.log(props);
 
     }
 
@@ -1267,17 +1273,20 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             }
     }
     private onGlobalIconClick = (): void => {
+        const {
+            onSetGlobalAttributesVisibility,
+        } = this.props;
+        onSetGlobalAttributesVisibility(true);
+        // const {frameNumber} = this.props;
+        // this.fetchAttributeForCurrentFrame(frameNumber);
+        // console.log('Frame ', frameNumber);
+        // console.log('attributes: ', this.globalAttributes);
+        // console.log('selected: ', this.globalAttributesSelected);
+        // this.updateGlobalAttributesModal();
 
-        const {frameNumber} = this.props;
-        this.fetchAttributeForCurrentFrame(frameNumber);
-        console.log('Frame ', frameNumber);
-        console.log('attributes: ', this.globalAttributes);
-        console.log('selected: ', this.globalAttributesSelected);
-        this.updateGlobalAttributesModal();
+        // this.showGlobalAttributesModal();
 
-        this.showGlobalAttributesModal();
-
-        this.waitPageToCompleteLoading();
+        // this.waitPageToCompleteLoading();
     }
 
     private onEditGlobalAttributes = (): void => {

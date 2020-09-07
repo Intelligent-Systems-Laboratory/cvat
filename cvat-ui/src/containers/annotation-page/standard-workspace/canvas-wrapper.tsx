@@ -29,6 +29,7 @@ import {
     fetchAnnotationsAsync,
     switchTracking, // ISL MANUAL TRACKING
     autoFit, // ISL AUTOFIT
+    asLastKeyframe,
     setGlobalAttributesVisibility,
 } from 'actions/annotation-actions';
 import {
@@ -136,6 +137,7 @@ interface DispatchToProps {
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
+    onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void;
     onSetGlobalAttributesVisibility(visibility:boolean):void; // ISL GLOBAL ATTRIBUTES
 }
 
@@ -379,6 +381,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(autoFit(jobInstance, stateToFit, frame));
         },
         // ISL END
+                // ISL INTERPOLATION
+                onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void {
+                    dispatch(asLastKeyframe(jobInstance, stateToFit, frame));
+                },
+                // ISL END
         // ISL GLOBAL ATTRIBUTES
         onSetGlobalAttributesVisibility(visibility:boolean): void {
             dispatch(setGlobalAttributesVisibility(visibility));

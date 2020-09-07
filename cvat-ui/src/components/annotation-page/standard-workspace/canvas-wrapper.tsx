@@ -102,6 +102,10 @@ interface Props {
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void;
     autoFitObjects: any[];
     // ISL END
+    // ISL INTERPOLATION
+    onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void;
+    asLastKeyframeObjects: any[];
+    // ISL END
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
     // ISL GLOBAL ATTRIBUTES
@@ -174,6 +178,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             automaticBordering,
             // ISL AUTOFIT
             autoFitObjects,
+            asLastKeyframeObject,
             // ISL END
             jobInstance,
             globalAttributes,
@@ -419,7 +424,19 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         }
     }
     // ISL END
-
+    // ISL INTERPOLATION
+    private asLastKeyframe = (clientID: number): void => {
+        const {
+            objectState,
+            jobInstance,
+            frame,
+            onSetLastKeyframe,
+            annotations,
+        } = this.props;
+        const [state] = annotations.filter((el: any) => (el.clientID === clientID));
+        onSetLastKeyframe(jobInstance, state, frame);
+    }
+    // ISL END
     private onCanvasShapeDrawn = (event: any): void => {
         const {
             jobInstance,
@@ -954,6 +971,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             DECREASE_GRID_OPACITY: keyMap.DECREASE_GRID_OPACITY,
             CHANGE_GRID_COLOR: keyMap.CHANGE_GRID_COLOR,
             AUTOFIT: keyMap.AUTOFIT,
+            INTERPOLATION: keyMap.INTERPOLATION,
             SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
         };
 
@@ -1040,6 +1058,14 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 }
             },
             // ISL END
+            // ISL INTERPOLATION
+            INTERPOLATION: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                if(activatedStateID){
+                    this.asLastKeyframe(activatedStateID);
+                    console.log('keyframe hot key pressed');
+                }
+            },
             SWITCH_AUTOMATIC_BORDERING: (event: KeyboardEvent | undefined) => {
                 if (switchableAutomaticBordering) {
                     preventDefault(event);

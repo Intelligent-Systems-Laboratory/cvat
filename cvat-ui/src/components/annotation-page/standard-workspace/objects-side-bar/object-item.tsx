@@ -154,7 +154,7 @@ function ItemMenu(
             </Menu.Item>
             {/* ISL END */}
             {/* ISL INTERPOLATION */}
-            <Menu.Item>
+            {/* <Menu.Item>
                 <Tooltip title={`Copies the dimensions of the box of the last keyframe.`}>
                     <Button
                         type='link'
@@ -164,7 +164,7 @@ function ItemMenu(
                         Copy last keyframe
                     </Button>
                 </Tooltip>
-            </Menu.Item>
+            </Menu.Item> */}
             {/* ISL INTERPOLATION */}
         </Menu>
     );
@@ -322,7 +322,7 @@ interface ItemButtonsComponentProps {
     switchKeyFrameShortcut: string;
     nextKeyFrameShortcut: string;
     prevKeyFrameShortcut: string;
-
+    asLastKeyframeShortcut: void;
     navigateFirstKeyframe: null | (() => void);
     navigatePrevKeyframe: null | (() => void);
     navigateNextKeyframe: null | (() => void);
@@ -362,7 +362,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
         switchKeyFrameShortcut,
         nextKeyFrameShortcut,
         prevKeyFrameShortcut,
-
+        asLastKeyframeShortcut,
         navigateFirstKeyframe,
         navigatePrevKeyframe,
         navigateNextKeyframe,
@@ -462,13 +462,13 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                             </Tooltip>
                         </Col>
                         {/* ISL INTERPOLATION */}
-                        {/* <Col>
-                            <Tooltip title={`Copy last keyframe ${switchKeyFrameShortcut}`}>
+                        <Col>
+                            <Tooltip title={`Copy last keyframe ${asLastKeyframeShortcut}`}>
                                 {keyframe
-                                    ? <Icon type='star' theme='filled' onClick={unsetKeyframe} />
+                                    ? <Icon type='star' onClick={asLastKeyframe} />
                                     : <Icon type='star' onClick={asLastKeyframe} />}
                             </Tooltip>
-                        </Col> */}
+                        </Col>
                         {/* ISL END */}
                         {
                             shapeType !== ShapeType.POINTS && (
@@ -1021,6 +1021,7 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     unsetKeyframe={unsetKeyframe}
                     // ISL INTERPOLATION
                     asLastKeyframe={asLastKeyframe}
+                    asLastKeyframeShortcut={normalizedKeyMap.INTERPOLATION}
                     // ISL END
                     lock={lock}
                     unlock={unlock}

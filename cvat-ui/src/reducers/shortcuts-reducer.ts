@@ -336,6 +336,14 @@ const defaultKeyMap = {
         action: 'keydown',
     },
     // ISL END
+    // ISL INTERPOLATION
+    INTERPOLATION: {
+        name: 'Interpolation',
+        description: 'Copy the dimensions of the last keyframe',
+        sequences: ['w'],
+        action: 'keydown',
+    },
+    // ISL END
     SWITCH_AUTOMATIC_BORDERING: {
         name: 'Switch automatic bordering',
         description: 'Switch automatic bordering for polygons and polylines during drawing/editing',

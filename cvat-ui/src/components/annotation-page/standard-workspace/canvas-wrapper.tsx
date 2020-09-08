@@ -110,6 +110,7 @@ interface Props {
     onSetGlobalAttributesVisibility(visiblity:boolean):void;
     // ISL END
     contextMenuVisibility:boolean; // ISL FIX CONTEXT MENU
+    automaticTracking:any;
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -178,13 +179,18 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             jobInstance,
             globalAttributes,
             globalAttributesVisibility,
-            onSetGlobalAttributesVisibility
+            onSetGlobalAttributesVisibility,
+            automaticTracking
         } = this.props;
         // console.log(this.props);
         // console.log(job);
         // console.log('annotations',annotations);// contains the current attributes. see next line
         // console.log(annotations[0].attributes); // the actual value of attributes
         // console.log('objectState',objectState);
+        if(automaticTracking!== prevProps.automaticTracking){
+            console.log('automatic tracking done');
+            // this.track();
+        }
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
             || prevProps.showProjections !== showProjections
@@ -263,7 +269,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             }
             // ISL END
         }
-
+        if (prevProps.frameData.number !== frameData.number
+        ) {
+            console.log('frame changed');
+            // this.track();
+        }
         if (prevProps.frame !== frameData.number
             && ((resetZoom && workspace !== Workspace.ATTRIBUTE_ANNOTATION) ||
             workspace === Workspace.TAG_ANNOTATION)
@@ -359,14 +369,24 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // ISL END
         window.removeEventListener('resize', this.fitCanvas);
     }
-
+    // ISL MANUAL TRACKING update annotations
+    private track = (): void => {
+        const {
+            onUpdateAnnotations,
+            automaticTracking,
+        } = this.props
+        console.log('STATES TO UPDATE',automaticTracking);
+        onUpdateAnnotations(automaticTracking);
+        // onSwitchTracking(false, null);
+    }
+    // ISL END
     // ISL MANUAL TRACKING update annotations
     private trackingDone = (event: any): void => {
         const {
             onSwitchTracking,
             onUpdateAnnotations,
         } = this.props
-
+        console.log('STATES TO UPDATE',event.detail.states);
         onUpdateAnnotations(event.detail.states);
         onSwitchTracking(false, null);
     }
@@ -449,7 +469,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         state.occluded = state.occluded || false;
         state.frame = frame;
         // ISL GLOBAL ATTRIBUTES
-        // console.log(state);
+        console.log(state);
         const nameToIDMap:Record<string, number> = {};
         for (const attribute of state.label.attributes) {
             //save the corresponding IDs of each attribute

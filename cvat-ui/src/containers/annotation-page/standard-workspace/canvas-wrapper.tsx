@@ -103,6 +103,7 @@ interface StateToProps {
     globalAttributesVisibility: boolean;
     // ISL END
     contextMenuVisibility: boolean; // ISL FIX CONTEXT MENU
+    automaticTracking:any;
 }
 
 interface DispatchToProps {
@@ -192,6 +193,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
             globalAttributes,
             globalAttributesVisibility,
             // ISL END
+            automaticTracking:automaticTracking,
         },
         settings: {
             player: {
@@ -278,6 +280,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         globalAttributesVisibility,
         // ISL END
         contextMenuVisibility, // ISL CONTEXT MENU
+        automaticTracking,
     };
 }
 

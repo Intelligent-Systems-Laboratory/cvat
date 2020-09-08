@@ -420,6 +420,9 @@ export interface AnnotationState {
     isSavingAttributes: boolean,
     globalAttributesDB:any,
     // ISL END
+    // ISL TRACKING
+    automaticTracking:any,
+    // ISL END
 }
 
 export enum Workspace {

@@ -60,6 +60,9 @@ function ItemMenu(
     // ISL INTERPOLATION
     asLastKeyframe: (() => void),
     // ISL END
+    // ISL TRACKING
+    track: (() => void),
+    // ISL END
 ): JSX.Element {
     return (
         <Menu className='cvat-object-item-menu'>
@@ -165,7 +168,20 @@ function ItemMenu(
                     </Button>
                 </Tooltip>
             </Menu.Item>
-            {/* ISL INTERPOLATION */}
+            {/* ISL END */}
+            {/* ISL TRACKING */}
+            <Menu.Item>
+                <Tooltip title={`Track the current bounding box`}>
+                    <Button
+                        type='link'
+                        icon='import'
+                        onClick={track}
+                    >
+                        Track
+                    </Button>
+                </Tooltip>
+            </Menu.Item>
+            {/* ISL END */}
         </Menu>
     );
 }
@@ -200,6 +216,9 @@ interface ItemTopComponentProps {
     // ISL INTERPOLATION
     asLastKeyframe(): void;
     // ISL END
+    // ISL TRACKING
+    track(): void;
+    // ISL END
 }
 
 function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
@@ -233,6 +252,9 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         // ISL END
         // ISL INTERPOLATION
         asLastKeyframe,
+        // ISL END
+        // ISL TRACKING
+        track,
         // ISL END
     } = props;
 
@@ -295,6 +317,9 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
                         // ISL INTERPOLATION
                         asLastKeyframe,
                         // ISL END
+                        // ISL INTERPOLATION
+                        track,
+                        // ISL END
                     )}
                 >
                     <Icon type='more' />
@@ -343,6 +368,9 @@ interface ItemButtonsComponentProps {
     unpin(): void;
     hide(): void;
     show(): void;
+    // ISL INTERPOLATION
+    track(): void;
+    // ISL END
 }
 
 function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
@@ -842,8 +870,8 @@ interface Props {
     // ISL AUTOFIT
     autoFit(): void,
     // ISL END
-    // ISL INTERPOLATION
-    asLastKeyframe(): void,
+    // ISL TRACKING
+    track(): void,
     // ISL END
 }
 
@@ -930,6 +958,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
         // ISL AUTOFIT
         autoFit,
         // ISL END
+        // ISL AUTOFIT
+        track,
+        // ISL END
     } = props;
 
     const type = objectType === ObjectType.TAG ? ObjectType.TAG.toUpperCase()
@@ -992,6 +1023,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     // ISL INTERPOLATION
                     asLastKeyframe={asLastKeyframe}
                     // ISL END
+                    // ISL TRACKING
+                    track={track}
+                    // ISL END
                 />
                 <ItemButtons
                     shapeType={shapeType}
@@ -1028,6 +1062,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     unpin={unpin}
                     hide={hide}
                     show={show}
+                    // ISL TRACKING
+                    track={track}
+                    // ISL END
                 />
                 {!!attributes.length
                     && (

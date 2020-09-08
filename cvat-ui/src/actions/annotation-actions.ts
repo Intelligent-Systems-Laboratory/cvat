@@ -26,6 +26,7 @@ import getCore from 'cvat-core-wrapper';
 import logger, { LogType } from 'cvat-logger';
 import { RectDrawingMethod } from 'cvat-canvas-wrapper';
 import { getCVATStore } from 'cvat-store';
+import { object } from 'prop-types';
 
 interface AnnotationsParameters {
     filters: string[];
@@ -209,6 +210,10 @@ export enum AnnotationActionTypes {
     START_FETCH_ATTRIBUTES = 'START_FETCH_ATTRIBUTES',
     STOP_FETCH_ATTRIBUTES = 'STOP_FETCH_ATTRIBUTES',
     // ISL END
+    // ISL TRACKING
+    START_TRACK = 'START_TRACK',
+    STOP_TRACK= 'STOP_TRACK'
+    // ISL END
 }
 
 // ISL MANUAL TRACKING
@@ -221,6 +226,43 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
         },
     };
 }
+// ISL END
+
+// ISL TRACKING
+export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,points:number[]): AnyAction {
+    // console.log('Editing label for task ',jobInstance.task.id);
+    // console.log('attributes: ', labels_data);
+    // console.log('selected: ', selected);
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            // dispatch({
+            //     type: AnnotationActionTypes.START_TRACK,
+            //     payload: {
+            //         clientID:objectState.clientID,
+            //     },
+            // });
+            // // console.log(jobInstance);
+            jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,points).then((data: any) => {
+                console.log('data received from server: ', data.tracker_coords);
+
+                // data.tracker_coords.map( (points: number[],index:number) =>{
+
+                // });
+                // console.log('final states',states);
+                dispatch(trackObjectAsync(jobInstance,objectState,frameStart,frameEnd,data.tracker_coords));
+                dispatch({
+                    type: AnnotationActionTypes.STOP_TRACK,
+                    payload: {
+                        clientID:objectState.clientID,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error occured while tracking.', error);
+
+        }
+    };
+};
 // ISL END
 
 // ISL AUTOFIT
@@ -268,10 +310,10 @@ export function asLastKeyframe(jobInstance: any, stateToFit: any, frame: number)
             const { filters, frame, showAllInterpolationTracks } = receiveAnnotationsParameters();
             const {prev} = state.keyframes;
             const states = await job.annotations.get(prev, showAllInterpolationTracks, filters);
-            console.log(stateA);
-            console.log(states);
-            console.log(state);
-            console.log(states[0]);
+            // console.log(stateA);
+            // console.log(states);
+            // console.log(state);
+            // console.log(states[0]);
             dispatch({
                 type: AnnotationActionTypes.START_COPY_LAST_KEYFRAME,
                 payload: {
@@ -691,6 +733,90 @@ export function showStatistics(visible: boolean): AnyAction {
         },
     };
 }
+
+// ISL TRACKING
+export function trackObjectAsync(
+    sessionInstance: any,
+    objectState: any,
+    from: number,
+    to: number,
+    points: any[],
+): ThunkAction<Promise<void>, {}, {}, AnyAction> {
+    console.log('MARKER trackObjectAsync');
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            const copy = {
+                attributes: objectState.attributes,
+                points: objectState.points,
+                occluded: objectState.occluded,
+                objectType: objectState.objectType !== ObjectType.TRACK
+                    ? objectState.objectType : ObjectType.SHAPE,
+                shapeType: objectState.shapeType,
+                label: objectState.label,
+                zOrder: objectState.zOrder,
+                frame: from,
+                keyframe:true,
+                // clientID:objectState.clientID,
+            };
+
+            await sessionInstance.logger.log(
+                LogType.propagateObject, { count: to - from + 1 },
+            );
+            const states = [];
+            for (let frame = from+1; frame <= to; frame++) {
+                copy.frame = frame;
+                copy.points= points[frame-from-1];
+                const newState = new cvat.classes.ObjectState(copy);
+                console.log(newState);
+                states.push(newState);
+                // dispatch(updateAnnotationsAsync([newState]));
+                // dispatch(createAnnotationsAsync(sessionInstance,frame,[newState]));
+            }
+
+            await sessionInstance.annotations.put(states);
+            const history = await sessionInstance.actions.get();
+            // dispatch(updateAnnotationsAsync(states));
+            dispatch({
+                type: AnnotationActionTypes.START_TRACK,
+                payload: {
+                    objectState,
+                    history,
+                    statesToUpdate:states,
+                },
+            });
+            // try {
+            //     const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();
+            //     await sessionInstance.annotations.merge(states);
+            //     const states_merge = await sessionInstance.annotations
+            //         .get(to, showAllInterpolationTracks, filters);
+            //     const history = await sessionInstance.actions.get();
+
+            //     dispatch({
+            //         type: AnnotationActionTypes.MERGE_ANNOTATIONS_SUCCESS,
+            //         payload: {
+            //             states:states_merge,
+            //             history,
+            //         },
+            //     });
+            // } catch (error) {
+            //     dispatch({
+            //         type: AnnotationActionTypes.MERGE_ANNOTATIONS_FAILED,
+            //         payload: {
+            //             error,
+            //         },
+            //     });
+            // }
+        } catch (error) {
+            dispatch({
+                type: AnnotationActionTypes.STOP_TRACK,
+                payload: {
+                    error,
+                },
+            });
+        }
+    };
+}
+// ISL END
 
 export function propagateObjectAsync(
     sessionInstance: any,
@@ -1417,6 +1543,7 @@ export function createAnnotationsAsync(sessionInstance: any, frame: number, stat
 
 export function mergeAnnotationsAsync(sessionInstance: any, frame: number, statesToMerge: any[]):
     ThunkAction<Promise<void>, {}, {}, AnyAction> {
+        console.log('MARKER mergeAnnotationsAsync',statesToMerge);
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();

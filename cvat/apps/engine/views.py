@@ -430,13 +430,30 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     # ISL END
 
     # EDITED FOR TRACKING
-    @swagger_auto_schema(method='get', operation_summary='Returns tracker coordinates')
+    @swagger_auto_schema(method='get', operation_summary='Returns tracker coordinates',
+        manual_parameters=[
+            openapi.Parameter('object-id', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the objectID of the box"),
+            openapi.Parameter('frame-start', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the tracking will begin"),
+            openapi.Parameter('frame-end', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the tracking will end"),
+            openapi.Parameter('x1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left x-coordinate"),
+            openapi.Parameter('y1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left y-coordinate"),
+            openapi.Parameter('x2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right x-coordinate"),
+            openapi.Parameter('y2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right y-coordinate"),
+            ]
+    )
     @action(detail=True, methods=['GET'])
     def tracking(self, request, pk):
         frameList = []
-        objectID = request.query_params.get('objectID', None)
-        frameStart = int(request.query_params.get('frameStart', None))
-        frameEnd = int(request.query_params.get('frameEnd', None))
+        objectID = request.query_params.get('object-id', None)
+        frameStart = int(request.query_params.get('frame-start', None))
+        frameEnd = int(request.query_params.get('frame-end', None))
         xtl = int(request.query_params.get('x1', None))
         ytl = int(request.query_params.get('y1', None))
         xbr = int(request.query_params.get('x2', None))

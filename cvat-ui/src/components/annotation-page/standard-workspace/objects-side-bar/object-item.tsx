@@ -465,8 +465,8 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                         <Col>
                             <Tooltip title={`Copy last keyframe ${asLastKeyframeShortcut}`}>
                                 {keyframe
-                                    ? <Icon type='star' onClick={asLastKeyframe} />
-                                    : <Icon type='star' onClick={asLastKeyframe} />}
+                                    ? <Icon type='environment' onClick={asLastKeyframe} />
+                                    : <Icon type='environment' onClick={asLastKeyframe} />}
                             </Tooltip>
                         </Col>
                         {/* ISL END */}

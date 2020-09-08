@@ -500,6 +500,15 @@ class HelpList extends React.Component {
                 animation: true,
                 giflink: "https://s6.gifyu.com/images/propagate.gif",
             });
+        } else if (value === 'interpolate') {
+            this.setState({
+                title: 'Interpolate',
+                hotkey: '[W]',
+                icontype: 'environment',
+                description: 'Copes the shape of the previous keyframe.',
+                label5: null,
+                howto: [],
+            });
         } else if (value === 'background') {
             this.setState({
                 title: 'To background',

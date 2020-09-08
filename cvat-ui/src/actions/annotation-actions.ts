@@ -270,7 +270,7 @@ export function asLastKeyframe(jobInstance: any, stateToFit: any, frame: number)
             const states = await job.annotations.get(prev, showAllInterpolationTracks, filters);
             console.log(stateA);
             console.log(states);
-            console.log(state);
+            console.log(state.clientID - 1);
             console.log(states[0]);
             dispatch({
                 type: AnnotationActionTypes.START_COPY_LAST_KEYFRAME,
@@ -281,7 +281,7 @@ export function asLastKeyframe(jobInstance: any, stateToFit: any, frame: number)
 
             console.log(jobInstance);
             // jobInstance.annotations.asLastKeyframe(frame, state.points).then((data: any) => {
-                stateToFit.points = states[0].points;
+                stateToFit.points = states[state.clientID - 1].points;
                 dispatch(updateAnnotationsAsync([stateToFit]));
                 dispatch({
                     type: AnnotationActionTypes.STOP_COPY_LAST_KEYFRAME,

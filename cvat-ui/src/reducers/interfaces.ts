@@ -422,10 +422,14 @@ export interface AnnotationState {
     // ISL END
     // ISL TRACKING
     automaticTracking: {
+        jobInstance:any,
+        sourceState: any,
         tracking: boolean,
         states: any[];
         frameStart: number,
         clientID:number,
+        modalVisible:boolean,
+        numberOfFramesToTrack: number,
     }
     // ISL END
 }

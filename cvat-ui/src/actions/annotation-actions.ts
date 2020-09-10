@@ -214,6 +214,8 @@ export enum AnnotationActionTypes {
     START_TRACK = 'START_TRACK',
     STOP_TRACK= 'STOP_TRACK',
     SWITCH_AUTO_TRACK = 'SWITCH_AUTO_TRACK',
+    SWITCH_AUTO_TRACK_MODAL = 'SWITCH_AUTO_TRACK_MODAL',
+    CHANGE_NUM_FRAMES_TO_TRACK = 'CHANGE_NUM_FRAMES_TO_TRACK',
     // ISL END
 }
 
@@ -230,8 +232,26 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
 // ISL END
 
 // ISL TRACKING
+export function changeNumFramesToTrack(num_frames:number): AnyAction {
+    return {
+        type: AnnotationActionTypes.CHANGE_NUM_FRAMES_TO_TRACK,
+        payload: {
+            num_frames: num_frames,
+        },
+    };
+}
+export function switchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_AUTO_TRACK_MODAL,
+        payload: {
+            visibility: visibility,
+            jobInstance:jobInstance,
+            frame_num:frame_num,
+            sourceState:sourceState,
+        },
+    };
+}
 export function switchAutoTrack(status:boolean): AnyAction {
-    console.log('marker',status);
     return {
         type: AnnotationActionTypes.SWITCH_AUTO_TRACK,
         payload: {
@@ -239,7 +259,7 @@ export function switchAutoTrack(status:boolean): AnyAction {
         },
     };
 }
-export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,points:number[]): AnyAction {
+export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number): AnyAction {
     // console.log('Editing label for task ',jobInstance.task.id);
     // console.log('attributes: ', labels_data);
     // console.log('selected: ', selected);
@@ -252,7 +272,7 @@ export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd
             //     },
             // });
             // // console.log(jobInstance);
-            jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,points).then((data: any) => {
+            jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,objectState.points).then((data: any) => {
                 console.log('data received from server: ', data.tracker_coords);
 
                 // data.tracker_coords.map( (points: number[],index:number) =>{

@@ -124,7 +124,11 @@ const defaultState: AnnotationState = {
         tracking: false,
         frameStart: 0,
         states: [],
-        clientID:0
+        clientID:0,
+        modalVisible:false,
+        numberOfFramesToTrack:1,
+        jobInstance:null,
+        sourceState:null,
 
     },
     // ISL END
@@ -133,6 +137,33 @@ const defaultState: AnnotationState = {
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
         // ISL TRACKING
+        case AnnotationActionTypes.CHANGE_NUM_FRAMES_TO_TRACK: {
+            const { num_frames } = action.payload;
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    numberOfFramesToTrack:num_frames,
+                    modalVisible:false,
+                }
+            };
+        }
+        case AnnotationActionTypes.SWITCH_AUTO_TRACK_MODAL: {
+            const { visibility,
+                    jobInstance,
+                    frame_num,
+                    sourceState } = action.payload;
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    modalVisible:visibility,
+                    jobInstance:jobInstance,
+                    frameStart: frame_num,
+                    sourceState:sourceState,
+                }
+            };
+        }
         case AnnotationActionTypes.SWITCH_AUTO_TRACK: {
             const { status } = action.payload;
             if(status==false){
@@ -153,6 +184,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             return {
                 ...state,
                 automaticTracking: {
+                    ...state.automaticTracking,
                     states:statesToUpdate,
                     tracking:tracking,
                     frameStart: from,

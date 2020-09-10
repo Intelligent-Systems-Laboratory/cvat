@@ -116,6 +116,7 @@ interface Props {
     onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
     // ISL END
     onSwitchAutoTrack(status:boolean):void;
+    onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -339,20 +340,21 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         this.activateOnCanvas();
 
-        if(automaticTracking.tracking == true){
+        if(automaticTracking.tracking){
             setTimeout(()=>{
+                this.changeFrame(frameData.number+1);
+                let index = frameData.number - automaticTracking.frameStart;
                 if(frameData.number!== prevProps.frameData.number && automaticTracking.tracking){
                     const [state] = annotations.filter((el: any) => (el.clientID === automaticTracking.clientID));
-                    console.log(state);
-                    console.log('states',automaticTracking.states);
-                    console.log('index',frameData.number-automaticTracking.frameStart);
+                    // console.log(state);
+                    // console.log('states',automaticTracking.states);
+                    // console.log('index',frameData.number-automaticTracking.frameStart);
                     try{
-                        let index = frameData.number - automaticTracking.frameStart-1;
-                        if(index>this.num_frame_to_track){
+                        if(index>=automaticTracking.states.length){
                             onSwitchAutoTrack(false);
                         }
                         let temp = automaticTracking.states[index];
-                        console.log(temp);
+                        // console.log(temp);
                         state.points = temp;
                         onUpdateAnnotations([state]);
                     }catch{
@@ -360,7 +362,6 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                     }
 
                 }
-                this.changeFrame(frameData.number+1);
             },100);
         }
     }
@@ -413,18 +414,25 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             annotations,
             frameData,
             onSwitchAutoTrack,
+            onSwitchTrackModalVisibility,
         } = this.props
 
 
-        if(automaticTracking.tracking == true){
-            onSwitchAutoTrack(false);
-        }else{
+        // if(automaticTracking.tracking == true){
+        //     onSwitchAutoTrack(false);
+        // }else{
+
+        //     onSwitchAutoTrack(true);
+        // }
+        if(automaticTracking.tracking == false){
             const [state] = annotations.filter((el: any) => (el.clientID === clientID));
-        console.log(state);
-        if (state && state.shapeType === ShapeType.RECTANGLE) {
-            onTrack(jobInstance,state,frameData.number,(frameData.number+this.num_frame_to_track),state.points);
-        }
-            onSwitchAutoTrack(true);
+            console.log(state);
+            if (state && state.shapeType === ShapeType.RECTANGLE) {
+            // onTrack(jobInstance,state,frameData.number,(frameData.number+this.num_frame_to_track),state.points);
+            onSwitchTrackModalVisibility(true,jobInstance,frameData.number,state);
+            }
+        }else{
+            onSwitchAutoTrack(false);
         }
     }
     private changeFrame(frame: number): void {

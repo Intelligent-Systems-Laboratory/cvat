@@ -32,7 +32,8 @@ import {
     setGlobalAttributesVisibility,
     track,
     changeFrameAsync,
-    switchAutoTrack
+    switchAutoTrack,
+    switchTrackModalVisibility
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -145,6 +146,7 @@ interface DispatchToProps {
     onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void;
     onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
     onSwitchAutoTrack(status:boolean):void;
+    onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
     // ISL END
 }
 
@@ -405,7 +407,10 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         // ISL END
         onSwitchAutoTrack(status:boolean):void{
             dispatch(switchAutoTrack(status));
-        }
+        },
+        onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void{
+            dispatch(switchTrackModalVisibility(visibility,jobInstance,frame_num,sourceState));
+        },
     };
 }
 

@@ -67,11 +67,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 import cvat.apps.engine.tracker# EDITED for tracking
 
 import json # ISL GLOBAL ATTRIBUTES
-
+import time # ISL TESTING
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
 # We map the required paramater explicitly and add it into query arguments
 # on the server side.
+current_milli_time = lambda: int(round(time.time() * 1000))
 def wrap_swagger(view):
     @login_required
     def _map_format_to_schema(request, scheme=None):
@@ -450,6 +451,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     )
     @action(detail=True, methods=['GET'])
     def tracking(self, request, pk):
+        startTime = current_milli_time()
         frameList = []
         objectID = request.query_params.get('object-id', None)
         frameStart = int(request.query_params.get('frame-start', None))
@@ -460,9 +462,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         ybr = int(request.query_params.get('y2', None))
 
         # ADD code for getting the image here
+        start_frame_fetch = current_milli_time()
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
-        data_quality = FrameProvider.Quality.ORIGINAL
+        data_quality = FrameProvider.Quality.COMPRESSED
         for x in range(frameStart, frameEnd+1):
             img, mime = frame_provider.get_frame(x, data_quality)
             img = Image.open(img)
@@ -470,8 +473,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             image = orig_img[:, :, ::-1].copy()
             frameList.append(image)
         data = (xtl, ytl, xbr-xtl, ybr-ytl)
+        print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
+        start_csrt = current_milli_time()
         results = cvat.apps.engine.tracker.track(frameList, data)
-
+        print('Tracking algo time: %d' % (current_milli_time() - start_csrt))
 
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
@@ -483,6 +488,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     "path" : request.build_absolute_uri(),
                     "tracker_coords" : results,
                 }
+            print('Total execution time: %d' % (current_milli_time()-startTime))
             return Response(new_coords)
         except Exception as e:
             msg = "something is wrong"

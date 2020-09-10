@@ -111,6 +111,11 @@ interface Props {
     // ISL END
     contextMenuVisibility:boolean; // ISL FIX CONTEXT MENU
     automaticTracking:any;
+    // ISL TRACKING
+    onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void;
+    onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
+    // ISL END
+    onSwitchAutoTrack(status:boolean):void;
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -180,7 +185,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             globalAttributes,
             globalAttributesVisibility,
             onSetGlobalAttributesVisibility,
-            automaticTracking
+            automaticTracking,
+            onUpdateAnnotations,onSwitchAutoTrack
         } = this.props;
         // console.log(this.props);
         // console.log(job);
@@ -188,9 +194,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // console.log(annotations[0].attributes); // the actual value of attributes
         // console.log('objectState',objectState);
         if(automaticTracking!== prevProps.automaticTracking){
-            console.log('automatic tracking done');
+            console.log('automatic tracking coordinates received');
+            console.log('STATES TO UPDATE',automaticTracking);
             // this.track();
         }
+
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
             || prevProps.showProjections !== showProjections
@@ -330,6 +338,31 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         }
 
         this.activateOnCanvas();
+
+        if(automaticTracking.tracking == true){
+            setTimeout(()=>{
+                if(frameData.number!== prevProps.frameData.number && automaticTracking.tracking){
+                    const [state] = annotations.filter((el: any) => (el.clientID === automaticTracking.clientID));
+                    console.log(state);
+                    console.log('states',automaticTracking.states);
+                    console.log('index',frameData.number-automaticTracking.frameStart);
+                    try{
+                        let index = frameData.number - automaticTracking.frameStart-1;
+                        if(index>this.num_frame_to_track){
+                            onSwitchAutoTrack(false);
+                        }
+                        let temp = automaticTracking.states[index];
+                        console.log(temp);
+                        state.points = temp;
+                        onUpdateAnnotations([state]);
+                    }catch{
+                        console.log('error that should happen once');
+                    }
+
+                }
+                this.changeFrame(frameData.number+1);
+            },100);
+        }
     }
 
     public componentWillUnmount(): void {
@@ -370,14 +403,42 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         window.removeEventListener('resize', this.fitCanvas);
     }
     // ISL MANUAL TRACKING update annotations
-    private track = (): void => {
+    private num_frame_to_track = 50;
+    private track = (clientID:number): void => {
         const {
             onUpdateAnnotations,
             automaticTracking,
+            onTrack,
+            jobInstance,
+            annotations,
+            frameData,
+            onSwitchAutoTrack,
         } = this.props
-        console.log('STATES TO UPDATE',automaticTracking);
-        onUpdateAnnotations(automaticTracking);
-        // onSwitchTracking(false, null);
+
+
+        if(automaticTracking.tracking == true){
+            onSwitchAutoTrack(false);
+        }else{
+            const [state] = annotations.filter((el: any) => (el.clientID === clientID));
+        console.log(state);
+        if (state && state.shapeType === ShapeType.RECTANGLE) {
+            onTrack(jobInstance,state,frameData.number,(frameData.number+this.num_frame_to_track),state.points);
+        }
+            onSwitchAutoTrack(true);
+        }
+    }
+    private changeFrame(frame: number): void {
+        const { onChangeFrame,
+            canvasInstance ,
+            annotations,
+            automaticTracking,
+            frameData,
+            onUpdateAnnotations} = this.props;
+
+        if (canvasInstance.isAbleToChangeFrame()) {
+            onChangeFrame(frame);
+        }
+
     }
     // ISL END
     // ISL MANUAL TRACKING update annotations
@@ -975,6 +1036,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             CHANGE_GRID_COLOR: keyMap.CHANGE_GRID_COLOR,
             AUTOFIT: keyMap.AUTOFIT,
             SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
+            AUTO_TRACK: keyMap.AUTO_TRACK,
         };
 
 
@@ -1066,6 +1128,15 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                     onSwitchAutomaticBordering(!automaticBordering);
                 }
             },
+            // ISL TRACKING
+            AUTO_TRACK: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                console.log('track track track');
+                if (activatedStateID){
+                    this.track(activatedStateID);
+                }
+            },
+            // ISL END
         };
 
         return (

@@ -421,7 +421,12 @@ export interface AnnotationState {
     globalAttributesDB:any,
     // ISL END
     // ISL TRACKING
-    automaticTracking:any,
+    automaticTracking: {
+        tracking: boolean,
+        states: any[];
+        frameStart: number,
+        clientID:number,
+    }
     // ISL END
 }
 

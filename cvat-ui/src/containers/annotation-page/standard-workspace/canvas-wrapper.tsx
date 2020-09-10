@@ -30,6 +30,9 @@ import {
     switchTracking, // ISL MANUAL TRACKING
     autoFit, // ISL AUTOFIT
     setGlobalAttributesVisibility,
+    track,
+    changeFrameAsync,
+    switchAutoTrack
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -138,6 +141,11 @@ interface DispatchToProps {
     onFetchAnnotation(): void;
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
     onSetGlobalAttributesVisibility(visibility:boolean):void; // ISL GLOBAL ATTRIBUTES
+    // ISL TRACKING
+    onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void;
+    onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
+    onSwitchAutoTrack(status:boolean):void;
+    // ISL END
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -386,6 +394,18 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSetGlobalAttributesVisibility(visibility:boolean): void {
             dispatch(setGlobalAttributesVisibility(visibility));
         },
+        // ISL END
+        // ISL TRACK
+        onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void {
+            dispatch(track(jobInstance,clientID,frameStart,frameEnd,points));
+        },
+        onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void {
+            dispatch(changeFrameAsync(frame, fillBuffer, frameStep));
+        },
+        // ISL END
+        onSwitchAutoTrack(status:boolean):void{
+            dispatch(switchAutoTrack(status));
+        }
     };
 }
 

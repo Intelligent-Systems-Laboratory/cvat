@@ -17,6 +17,7 @@ import {
     Workspace,
 } from './interfaces';
 import LabelsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/labels-list';
+import { clientID } from 'cvat-core/src/logger-storage';
 
 const defaultState: AnnotationState = {
     activities: {
@@ -119,28 +120,44 @@ const defaultState: AnnotationState = {
     isSavingAttributes: false,
     globalAttributesDB: {},
     // ISL TRACKING
-    automaticTracking:{},
+    automaticTracking:{
+        tracking: false,
+        frameStart: 0,
+        states: [],
+        clientID:0
+
+    },
     // ISL END
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
         // ISL TRACKING
-        case AnnotationActionTypes.START_TRACK: {
-            const { history,
-                statesToUpdate } = action.payload;
+        case AnnotationActionTypes.SWITCH_AUTO_TRACK: {
+            const { status } = action.payload;
+            if(status==false){
             return {
                 ...state,
-                annotations: {
-                    ...state.annotations,
-                    history,
-
-                },
-                propagate: {
-                    ...state.propagate,
-                    objectState: null,
-                },
-                automaticTracking: statesToUpdate,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    tracking:status,
+                }
+            };
+            }
+            else{
+                return {...state}
+            }
+        }
+        case AnnotationActionTypes.START_TRACK: {
+            const { statesToUpdate,tracking,from,clientID} = action.payload;
+            return {
+                ...state,
+                automaticTracking: {
+                    states:statesToUpdate,
+                    tracking:tracking,
+                    frameStart: from,
+                    clientID:clientID,
+                }
             };
 
 

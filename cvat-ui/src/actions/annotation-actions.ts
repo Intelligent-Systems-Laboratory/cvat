@@ -212,7 +212,8 @@ export enum AnnotationActionTypes {
     // ISL END
     // ISL TRACKING
     START_TRACK = 'START_TRACK',
-    STOP_TRACK= 'STOP_TRACK'
+    STOP_TRACK= 'STOP_TRACK',
+    SWITCH_AUTO_TRACK = 'SWITCH_AUTO_TRACK',
     // ISL END
 }
 
@@ -229,6 +230,15 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
 // ISL END
 
 // ISL TRACKING
+export function switchAutoTrack(status:boolean): AnyAction {
+    console.log('marker',status);
+    return {
+        type: AnnotationActionTypes.SWITCH_AUTO_TRACK,
+        payload: {
+            status: status,
+        },
+    };
+}
 export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,points:number[]): AnyAction {
     // console.log('Editing label for task ',jobInstance.task.id);
     // console.log('attributes: ', labels_data);
@@ -250,12 +260,12 @@ export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd
                 // });
                 // console.log('final states',states);
                 dispatch(trackObjectAsync(jobInstance,objectState,frameStart,frameEnd,data.tracker_coords));
-                dispatch({
-                    type: AnnotationActionTypes.STOP_TRACK,
-                    payload: {
-                        clientID:objectState.clientID,
-                    },
-                });
+                // dispatch({
+                //     type: AnnotationActionTypes.STOP_TRACK,
+                //     payload: {
+                //         clientID:objectState.clientID,
+                //     },
+                // });
             });
         } catch (error) {
             console.log('Error occured while tracking.', error);
@@ -762,26 +772,27 @@ export function trackObjectAsync(
             await sessionInstance.logger.log(
                 LogType.propagateObject, { count: to - from + 1 },
             );
-            const states = [];
-            for (let frame = from+1; frame <= to; frame++) {
-                copy.frame = frame;
-                copy.points= points[frame-from-1];
-                const newState = new cvat.classes.ObjectState(copy);
-                console.log(newState);
-                states.push(newState);
-                // dispatch(updateAnnotationsAsync([newState]));
-                // dispatch(createAnnotationsAsync(sessionInstance,frame,[newState]));
-            }
+            // const states = [];
+            // for (let frame = from+1; frame <= to; frame++) {
+            //     copy.frame = frame;
+            //     copy.points= points[frame-from-1];
+            //     const newState = new cvat.classes.ObjectState(copy);
+            //     console.log(newState);
+            //     states.push(newState);
+            //     // dispatch(updateAnnotationsAsync([newState]));
+            //     // dispatch(createAnnotationsAsync(sessionInstance,frame,[newState]));
+            // }
 
-            await sessionInstance.annotations.put(states);
-            const history = await sessionInstance.actions.get();
+            // await sessionInstance.annotations.put(states);
+            // const history = await sessionInstance.actions.get();
             // dispatch(updateAnnotationsAsync(states));
             dispatch({
                 type: AnnotationActionTypes.START_TRACK,
                 payload: {
-                    objectState,
-                    history,
-                    statesToUpdate:states,
+                    statesToUpdate:points,
+                    tracking:true,
+                    from: from,
+                    clientID:objectState.clientID,
                 },
             });
             // try {

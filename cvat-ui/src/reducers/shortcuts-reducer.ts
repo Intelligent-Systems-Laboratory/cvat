@@ -348,6 +348,14 @@ const defaultKeyMap = {
         sequences: ['Enter'],
         action: 'keydown',
     },
+    // ISL TRACKING
+    AUTO_TRACK: {
+        name: 'Track bounding box using automatic tracking algorithms',
+        description: 'Run tracking algorithm in the current frame',
+        sequences: ['y'],
+        action: 'keydown',
+    },
+    // ISL END
 } as any as Record<string, ExtendedKeyMapOptions>;
 
 

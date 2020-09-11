@@ -137,7 +137,7 @@ function HeaderContainer(props: Props): JSX.Element {
         Modal.info({
             title: 'CVAT User Guide',
             content: (
-        
+
                 <div className="clearfix">
                     <table>
                         <thead>
@@ -413,13 +413,15 @@ function HeaderContainer(props: Props): JSX.Element {
                                     }
                                 >
                                     <Icon type='question-circle' />
-                Help
-            </Button>
+                                    Help
+                                </Button>
                             </span>
 
                 </div>
             ),
             width: 1000,
+            style : { top: 900},
+            maskClosable: true ,
             okButtonProps: {
                             style: {
                             width: '100px',

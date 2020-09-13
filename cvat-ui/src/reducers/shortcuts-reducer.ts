@@ -356,6 +356,14 @@ const defaultKeyMap = {
         action: 'keydown',
     },
     // ISL END
+    // ISL AUTO OCCLUDE
+    AUTO_OCCLUDE: {
+        name: 'Automatically assign occlusion property',
+        description: 'Run auto occlusion algorithm in the current frame',
+        sequences: ['u'],
+        action: 'keydown',
+    },
+    // ISL END
 } as any as Record<string, ExtendedKeyMapOptions>;
 
 

@@ -23,7 +23,7 @@ import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas-wrapper';
 import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
-
+import {checkOccluded} from './auto-occlude';
 const cvat = getCore();
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
@@ -282,6 +282,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         ) {
             console.log('frame changed');
             // this.track();
+            // this.autoOcclude();
         }
         if (prevProps.frame !== frameData.number
             && ((resetZoom && workspace !== Workspace.ATTRIBUTE_ANNOTATION) ||
@@ -480,6 +481,38 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
     }
     // ISL END
+
+    // ISL AUTO OCCLUDE
+    private autoOcclude = ():void => {
+
+        console.log('auto occlude');
+        const {annotations,
+        onUpdateAnnotations}= this.props;
+
+        // annotations[0].occluded = true;
+        console.log(annotations);
+        for (let state of annotations){
+            for(let state2 of annotations){
+                if(state != state2){
+                    let result = checkOccluded(state,state2,0.025,[960,1080]);
+                    if(result[0].occluded){
+                        state.occluded = result[0].occluded;
+                    }
+                    else{
+                    }
+                    if(result[1].occluded){
+                        state2.occluded = result[1].occluded;
+                    }
+                    else{
+                    }
+                }
+            }
+        }
+        onUpdateAnnotations(annotations);
+    }
+    // ISL END
+
+
     // ISL AUTOFIT
     private onShapedblClicked = (e: any): void => {
         const {
@@ -1045,6 +1078,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             AUTOFIT: keyMap.AUTOFIT,
             SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
             AUTO_TRACK: keyMap.AUTO_TRACK,
+            AUTO_OCCLUDE: keyMap.AUTO_OCCLUDE,
         };
 
 
@@ -1143,6 +1177,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 if (activatedStateID){
                     this.track(activatedStateID);
                 }
+            },
+            // ISL END
+            // ISL AUTO OCCLUDE
+            AUTO_OCCLUDE: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                this.autoOcclude();
             },
             // ISL END
         };

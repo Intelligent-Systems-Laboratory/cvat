@@ -343,8 +343,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         if(automaticTracking.tracking){
             setTimeout(()=>{
-                this.changeFrame(frameData.number+1);
-                let index = frameData.number - automaticTracking.frameStart;
+                this.changeFrame(frameData.number+2);
+                let index = (frameData.number - automaticTracking.frameStart)/2;
                 if(frameData.number!== prevProps.frameData.number && automaticTracking.tracking){
                     const [state] = annotations.filter((el: any) => (el.clientID === automaticTracking.clientID));
                     // console.log(state);

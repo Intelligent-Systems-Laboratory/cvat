@@ -467,11 +467,14 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         frame_provider = FrameProvider(db_task.data)
         data_quality = FrameProvider.Quality.COMPRESSED
         for x in range(frameStart, frameEnd+1):
+            if((x-frameStart) % 2 == 1):
+                continue
             img, mime = frame_provider.get_frame(x, data_quality)
             img = Image.open(img)
             orig_img = np.array(img)
             image = orig_img[:, :, ::-1].copy()
             frameList.append(image)
+        print('frameList length: %d' % len(frameList))
         data = (xtl, ytl, xbr-xtl, ybr-ytl)
         print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
         start_csrt = current_milli_time()

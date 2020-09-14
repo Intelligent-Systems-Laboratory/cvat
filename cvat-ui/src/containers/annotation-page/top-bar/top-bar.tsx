@@ -614,10 +614,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         const { jobInstance } = this.props;
         for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
-                this.AllAttributes[i] = {
-                    name: jobInstance.task.labels[0].attributes[i].name,
-                    value: jobInstance.task.labels[0].attributes[i].values.slice(),
-                }
+                this.AllAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
                 this.AllAttributeNames[i] = jobInstance.task.labels[0].attributes[i].name;
             }
         }
@@ -632,12 +629,12 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         let globalAttributesWithFrameRange: any = {};
         let globalAttributesSelectedWithFrameRange: any = {};
         // Assign global attributes
-        for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
+        for (var i = 0; i < 1; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
-            if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
-                this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
-                this.globalAttributesSelected[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].defaultValue;
-            }
+            // if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
+            //     this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
+            //     this.globalAttributesSelected[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].defaultValue;
+            // }
         }
         this.frame_start = 0;
         this.frame_end = jobInstance.stopFrame;
@@ -669,13 +666,15 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         if (this.currentSpatialTag == "open") {
             document.getElementById('spatialTagOpen').className = "radioclicked";
             document.getElementById('spatialTagEnclosed').className = "radio-toolbar";
-            this.dropdownEntries = this.AllAttributeNames.slice(0,half_length);
+            var openList = ["Lighting", "Amount", "Color Intensity", "Weather", "Scene Temperature", "Surface Property", "Seasons", "Additional Attributes"];
+            this.dropdownEntries = openList;
 
         }
         else if (this.currentSpatialTag == "enclosed"){
             document.getElementById('spatialTagEnclosed').className = "radioclicked";
             document.getElementById('spatialTagOpen').className = "radio-toolbar";
-            this.dropdownEntries = this.AllAttributeNames.slice(half_length,this.AllAttributeNames.length);
+            var enclosedList = ["Lighting", "Surface Properties", "Light Amount", "Color Intensity", "Scene Temperature"];
+            this.dropdownEntries = enclosedList;
         }
 
         //subjects
@@ -871,6 +870,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         //var x = document.getElementById('SelectAttribute'+attribute);
         console.log(event.label);
         console.log(this.globalAttributes);
+        console.log(this.AllAttributes);
+        console.log(this.AllAttributeNames);
+        console.log(this.dropdownEntries);
         if(index == -1){
             //index == -1 means Other is selected
             console.log('Other selected');
@@ -881,16 +883,34 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             }
             this.addAttribute = false; // remove the drop down
         }else{
+
             var ObjectOrder = Object.keys(this.globalAttributes);
             console.log(ObjectOrder, 'FRESH');
-            ObjectOrder[index] = event.label;
-            console.log(ObjectOrder, 'NEW');
+            console.log(ObjectOrder.indexOf(attribute));
 
-            if (event.label!==attribute){
-                this.globalAttributes[event.label] = this.globalAttributes[attribute];
+            if (ObjectOrder.indexOf(attribute)>-1){
+                ObjectOrder[ObjectOrder.indexOf(attribute)] = event.label;
+            }
+            else {
+                ObjectOrder.push(event.label);
+            }
+            ObjectOrder =  Array.from(new Set(ObjectOrder));
+            console.log(ObjectOrder, 'NEW');
+            if (event.label!==attribute && this.AllAttributes[event.label]){
+                this.globalAttributes[event.label] = this.AllAttributes[event.label];
                 delete this.globalAttributes[attribute];
             }
-        this.globalAttributes = this.preferredOrder(this.globalAttributes,Array.from(new Set(ObjectOrder)));
+            if (event.label!==attribute && !this.AllAttributes[event.label]){
+                delete this.globalAttributes[attribute];
+                this.globalAttributes[event.label] = [];
+            }
+            else{
+                this.globalAttributes[event.label] = [];
+            }
+            this.addAttribute = false;
+            console.log(this.globalAttributes);
+            this.globalAttributes = this.preferredOrder(this.globalAttributes,Array.from(new Set(ObjectOrder)));
+        console.log(this.globalAttributes);
         }
 
 
@@ -902,11 +922,12 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     private updateSelectedAttributeValues = (value: any): void => {
         for (const key in this.globalAttributes) {
+            if (this.AllAttributes[key]) {
             console.log(key);
-            console.log(this.AllAttributeNames.indexOf(key));
-            console.log(this.AllAttributes[this.AllAttributeNames.indexOf(key)].value);
-            this.globalAttributes[key] = this.AllAttributes[this.AllAttributeNames.indexOf(key)].value;
+            console.log(this.AllAttributes[key]);
+            this.globalAttributes[key] = this.AllAttributes[key];
             console.log('lfe');
+            }
         }
     }
     private preferredOrder(obj: any[], order: any[]) {
@@ -1060,7 +1081,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                 <Select
                         placeholder={key}
                         onChange={(value: SelectValue) => (
-                            this.handleSelectAttribute(key,Object.keys(this.globalAttributes).indexOf(key),value as String)
+                            this.handleSelectAttribute(key,this.dropdownEntries.indexOf(value.key),value as String)
                             )}
                         labelInValue
                         id = {'SelectAttribute'+key}
@@ -1131,17 +1152,17 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     <Tooltip title='Select an attribute'>
                     <Select
                         placeholder='Select an attribute'
-                        onChange={(value: string) =>
+                        onChange={(value: SelectValue) =>
                             {
                                 console.log(value);
-                                this.handleSelectAttribute(value,Object.keys(this.globalAttributes).indexOf(value),value as String)
+                                this.handleSelectAttribute('-new',this.dropdownEntries.indexOf(value.key),value as String)
                             }
                         }
                         labelInValue
                         id = {'SelectAttribute'+"key"}
                         style={{ width: 200 }}
                     >
-                        {this.AllAttributeNames.map((label: any,index:number): JSX.Element => (
+                        {this.dropdownEntries.map((label: any,index:number): JSX.Element => (
                             <Select.Option key={index} value={`${label}`}>
 
                                 {label}

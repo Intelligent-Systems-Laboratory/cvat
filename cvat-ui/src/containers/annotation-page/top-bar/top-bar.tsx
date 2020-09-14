@@ -582,6 +582,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private frame_end: number = 0;
     private AllAttributes: any[] = [];
     private AllAttributeNames: any[] = [];
+    private openList: any[] = ["Lighting", "Light Amount", "Color Intensity", "Weather", "Scene Temperature", "Surface Property", "Seasons", "Additional Attributes"];
+    private enclosedList: any[] = ["Lighting", "Surface Property", "Light Amount", "Color Intensity", "Scene Temperature"];
     private dropdownEntries: any[] = [];
     private firstTime: boolean = true;
     private requireReload: boolean = false;
@@ -652,13 +654,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.globalAttributesSelectedDB.push(globalAttributesSelectedWithFrameRange);
         // console.log('Attributes DB: ',this.globalAttributesDB);
         // console.log('Selected DB: ',this.globalAttributesSelectedDB);
-        this.dropdownEntries = this.AllAttributeNames;
+        this.dropdownEntries = this.openList;
+
         this.updateGlobalAttributesModal();
+
         // console.log('Initiate global attributes modal complete');
     }
 
     private changeSpatialTag = (tag_str: string): void => {
-        var half_length = Math.floor(this.AllAttributeNames.length/2);
         this.currentSpatialTag = tag_str;
         console.log('tag=',this.currentSpatialTag);
         console.log (this.AllAttributes);
@@ -666,15 +669,17 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         if (this.currentSpatialTag == "open") {
             document.getElementById('spatialTagOpen').className = "radioclicked";
             document.getElementById('spatialTagEnclosed').className = "radio-toolbar";
-            var openList = ["Lighting", "Amount", "Color Intensity", "Weather", "Scene Temperature", "Surface Property", "Seasons", "Additional Attributes"];
-            this.dropdownEntries = openList;
 
+            this.dropdownEntries = this.openList;
+            this.updateSelectedAttributeValues(0);
+            this.updateGlobalAttributesModal;
         }
         else if (this.currentSpatialTag == "enclosed"){
             document.getElementById('spatialTagEnclosed').className = "radioclicked";
             document.getElementById('spatialTagOpen').className = "radio-toolbar";
-            var enclosedList = ["Lighting", "Surface Properties", "Light Amount", "Color Intensity", "Scene Temperature"];
-            this.dropdownEntries = enclosedList;
+            this.dropdownEntries = this.enclosedList;
+            this.updateSelectedAttributeValues(0);
+            this.updateGlobalAttributesModal;
         }
 
         //subjects
@@ -907,7 +912,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             else{
                 this.globalAttributes[event.label] = [];
             }
-            this.addAttribute = false;
+            // this.addAttribute = false;
             console.log(this.globalAttributes);
             this.globalAttributes = this.preferredOrder(this.globalAttributes,Array.from(new Set(ObjectOrder)));
         console.log(this.globalAttributes);
@@ -923,10 +928,33 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     private updateSelectedAttributeValues = (value: any): void => {
         for (const key in this.globalAttributes) {
             if (this.AllAttributes[key]) {
-            console.log(key);
-            console.log(this.AllAttributes[key]);
-            this.globalAttributes[key] = this.AllAttributes[key];
-            console.log('lfe');
+                this.globalAttributes[key] = this.AllAttributes[key];
+                if(this.currentSpatialTag=='open'){
+                    console.log
+                    if(this.globalAttributes.hasOwnProperty('Lighting')){
+                        this.globalAttributes['Lighting'] = ['Daylight', 'Night', 'Sunrise/Sunset', 'Dawn/Dusk', 'Noon/Midday'];
+                    }
+                    if(this.globalAttributes.hasOwnProperty('Weather')){
+                        this.globalAttributes['Weather'] = ['Sunny/Direct Sun', 'Clouds/Overcast', 'Fog/Haze', 'Rain', 'Snow'];
+                    }
+                    if(this.globalAttributes.hasOwnProperty('Surface Property')){
+                        this.globalAttributes['Surface Property'] = ['Dry', 'Moist/Muddy', 'Ice/Frost'];
+                    }
+                    if(this.globalAttributes.hasOwnProperty('Seasons')){
+                        this.globalAttributes['Seasons'] = ['Spring', 'Summer', 'Autumn', 'Winter'];
+                    }
+                    if(this.globalAttributes.hasOwnProperty('Additional Attributes')){
+                        this.globalAttributes['Additional Attributes'] = ['Active/Busy', 'Rugged', 'Cluttered'];
+                    }
+                }
+                if(this.currentSpatialTag=='enclosed'){
+                    if(this.globalAttributes.hasOwnProperty('Lighting')){
+                        this.globalAttributes['Lighting'] = ['Ambient Lighting', 'Low Illumination', 'Single Light Source', 'Object Illumination', 'Multiple Light Sources', 'Screen Illumination', 'Window', 'Tinted'];
+                    }
+                    if(this.globalAttributes.hasOwnProperty('Surface Property')){
+                        this.globalAttributes['Surface Property'] = ['Glossy', 'Matte', 'Damp/Moist', 'Rusty'];
+                    }
+                }
             }
         }
     }
@@ -1032,7 +1060,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     Spatial Properties
 
                 <Col>
-                        <button onClick={() => this.changeSpatialTag('open')} className="radio-toolbar" id="spatialTagOpen"> Open area </button>
+                        <button onClick={() => this.changeSpatialTag('open')} className="radioclicked" id="spatialTagOpen"> Open area </button>
                         <button onClick={() => this.changeSpatialTag('enclosed')} className="radio-toolbar" id="spatialTagEnclosed"> Enclosed </button>
 
                     </Col>

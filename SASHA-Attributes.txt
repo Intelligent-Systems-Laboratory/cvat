@@ -1,0 +1,16 @@
+Lighting = ['Daylight', 'Night', 'Sunrise/Sunset', 'Dawn/Dusk', 'Noon/Midday']
+Light Amount = ['Dark', 'Bright/Luminous', 'Glowing/Radiant']
+Color Intensity = ['Colorful/Vivid', 'Dull/Faded']
+Weather = ['Sunny/Direct Sun', 'Clouds/Overcast', 'Fog/Haze', 'Rain', 'Snow']
+Scene Temperature = ['Warm/Hot', 'Cold']
+Surface Property = ['Dry', 'Moist/Muddy', 'Ice/Frost']
+Seasons= ['Spring', 'Summer', 'Autumn', 'Winter']
+Additional Attributes = ['Active/Busy', 'Rugged', 'Cluttered']
+
+
+
+Lighting = ['Ambient Lighting', 'Low Illumination', 'Single Light Source', 'Object Illumination', 'Multiple Light Sources', 'Screen Illumination', 'Window', 'Tinted']
+Surface Property = ['Glossy', 'Matte', 'Damp/Moist', 'Rusty']
+Light Amount = ['Dark', 'Bright/Luminous', 'Glowing/Radiant']
+Color Intensity = ['Colorful/Vivid', 'Dull/Faded']
+Scene Temperature = ['Warm/Hot', 'Cold']

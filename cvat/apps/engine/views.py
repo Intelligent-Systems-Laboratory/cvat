@@ -451,6 +451,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     )
     @action(detail=True, methods=['GET'])
     def tracking(self, request, pk):
+        useCroppedBG = False
         startTime = current_milli_time()
         frameList = []
         objectID = request.query_params.get('object-id', None)
@@ -461,20 +462,21 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         xbr = int(request.query_params.get('x2', None))
         ybr = int(request.query_params.get('y2', None))
 
-        # ADD code for getting the image here
-        w = xbr - xtl
-        h = ybr - ytl
-        # compute the cropped image relative to original frame
-        # imagine a 5x5 grid in which the bbox is in the center
-        cropped_xtl = max(0,xtl-(2*w))
-        cropped_ytl = max(0,ytl-(2*h))
-        cropped_xbr = min(1919, xbr+(2*w))
-        cropped_ybr = min(1079,ybr+(2*h))
-        # compute new coordinates of the bbox to be tracked
-        new_xtl = (xtl if cropped_xtl==0 else 2*w)
-        new_ytl = (ytl if cropped_ytl==0 else 2*h)
-        new_xbr = new_xtl + w
-        new_ybr = new_ytl + h
+        if(useCroppedBG):
+            # ADD code for getting the image here
+            w = xbr - xtl
+            h = ybr - ytl
+            # compute the cropped image relative to original frame
+            # imagine a 5x5 grid in which the bbox is in the center
+            cropped_xtl = max(0,xtl-(2*w))
+            cropped_ytl = max(0,ytl-(2*h))
+            cropped_xbr = min(1919, xbr+(2*w))
+            cropped_ybr = min(1079,ybr+(2*h))
+            # compute new coordinates of the bbox to be tracked
+            new_xtl = (xtl if cropped_xtl==0 else 2*w)
+            new_ytl = (ytl if cropped_ytl==0 else 2*h)
+            new_xbr = new_xtl + w
+            new_ybr = new_ytl + h
         start_frame_fetch = current_milli_time()
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
@@ -486,11 +488,14 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             img = Image.open(img)
             orig_img = np.array(img)
             image = orig_img[:, :, ::-1].copy()
-            image = image[cropped_ytl:cropped_ybr,cropped_xtl:cropped_xbr,:]
+            if(useCroppedBG):
+                image = image[cropped_ytl:cropped_ybr,cropped_xtl:cropped_xbr,:]
             frameList.append(image)
         # print('frameList length: %d' % len(frameList))
-        # data = (xtl, ytl, xbr-xtl, ybr-ytl)
-        data = (new_xtl, new_ytl, new_xbr-new_xtl, new_ybr-new_ytl)
+        if(useCroppedBG):
+            data = (new_xtl, new_ytl, new_xbr-new_xtl, new_ybr-new_ytl)
+        else:
+            data = (xtl, ytl, xbr-xtl, ybr-ytl)
         print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
         start_csrt = current_milli_time()
         results = cvat.apps.engine.tracker.track(frameList, data)
@@ -499,11 +504,12 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         # for result,frame in zip(results,frameList):
         #     data, dim = grabcut.run(frame,result[0],result[1],result[2],result[3])
         #     result = data
-        for result in results:
-            result[0] = result[0] + cropped_xtl
-            result[1] = result[1] + cropped_ytl
-            result[2] = result[2] + cropped_xtl
-            result[3] = result[3] + cropped_ytl
+        if(useCroppedBG):
+            for result in results:
+                result[0] = result[0] + cropped_xtl
+                result[1] = result[1] + cropped_ytl
+                result[2] = result[2] + cropped_xtl
+                result[3] = result[3] + cropped_ytl
 
         print('Tracking algo time: %d' % (current_milli_time() - start_csrt))
         print('results', results)

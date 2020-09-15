@@ -69,7 +69,7 @@ class GlobalModalContainer extends React.PureComponent<Props> {
         return (
             <GlobalModal
                 title='Global Attributes'
-                visible={visible}
+                visible={false}
                 handleCancel={onCloseGlobalAttributesModal}
                 handleOk={onSubmitGlobalAttributesModal}
                 attributes={labels[0].attributes}

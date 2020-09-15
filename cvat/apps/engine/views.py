@@ -396,7 +396,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             shutil.rmtree(instance.data.get_data_dirname(), ignore_errors=True)
             instance.data.delete()
 
-    # ISL AUTOFIT
+    # ISL AUTOSNAP
     @swagger_auto_schema(method='get', operation_summary='Returns automatically snapped or fitted coordinates of a box')
     @action(detail=True, methods=['GET'])
     def autofit(self, request, pk):
@@ -494,14 +494,19 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
         start_csrt = current_milli_time()
         results = cvat.apps.engine.tracker.track(frameList, data)
-        print('results', results)
+
+        # enable/disable grabcut on the results
+        # for result,frame in zip(results,frameList):
+        #     data, dim = grabcut.run(frame,result[0],result[1],result[2],result[3])
+        #     result = data
         for result in results:
             result[0] = result[0] + cropped_xtl
             result[1] = result[1] + cropped_ytl
             result[2] = result[2] + cropped_xtl
             result[3] = result[3] + cropped_ytl
-        print('Tracking algo time: %d' % (current_milli_time() - start_csrt))
 
+        print('Tracking algo time: %d' % (current_milli_time() - start_csrt))
+        print('results', results)
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
                 new_coords = {

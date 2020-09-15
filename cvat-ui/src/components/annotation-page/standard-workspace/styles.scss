@@ -192,3 +192,31 @@
         }
     }
 }
+
+#track-content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 3px solid rgb(64, 66, 64);
+}
+
+#track-canvas-container {
+    border: 3px solid rgb(64, 66, 64);
+}
+
+#track-bottom-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-self: stretch;
+}
+
+.btn-bottom {
+    margin: auto;
+}
+
+.btn-bottom:hover {
+    background: #57585A;
+    color: #ffffff;
+    border-color: #000000;
+}

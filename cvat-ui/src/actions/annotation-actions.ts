@@ -26,6 +26,7 @@ import getCore from 'cvat-core-wrapper';
 import logger, { LogType } from 'cvat-logger';
 import { RectDrawingMethod } from 'cvat-canvas-wrapper';
 import { getCVATStore } from 'cvat-store';
+import { object } from 'prop-types';
 
 interface AnnotationsParameters {
     filters: string[];
@@ -209,6 +210,13 @@ export enum AnnotationActionTypes {
     START_FETCH_ATTRIBUTES = 'START_FETCH_ATTRIBUTES',
     STOP_FETCH_ATTRIBUTES = 'STOP_FETCH_ATTRIBUTES',
     // ISL END
+    // ISL TRACKING
+    START_TRACK = 'START_TRACK',
+    STOP_TRACK= 'STOP_TRACK',
+    SWITCH_AUTO_TRACK = 'SWITCH_AUTO_TRACK',
+    SWITCH_AUTO_TRACK_MODAL = 'SWITCH_AUTO_TRACK_MODAL',
+    CHANGE_NUM_FRAMES_TO_TRACK = 'CHANGE_NUM_FRAMES_TO_TRACK',
+    // ISL END
 }
 
 // ISL MANUAL TRACKING
@@ -221,6 +229,57 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
         },
     };
 }
+// ISL END
+
+// ISL TRACKING
+export function changeNumFramesToTrack(num_frames:number): AnyAction {
+    return {
+        type: AnnotationActionTypes.CHANGE_NUM_FRAMES_TO_TRACK,
+        payload: {
+            num_frames: num_frames,
+        },
+    };
+}
+export function switchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_AUTO_TRACK_MODAL,
+        payload: {
+            visibility: visibility,
+            jobInstance:jobInstance,
+            frame_num:frame_num,
+            sourceState:sourceState,
+        },
+    };
+}
+export function switchAutoTrack(status:boolean): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_AUTO_TRACK,
+        payload: {
+            status: status,
+        },
+    };
+}
+export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number): AnyAction {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,objectState.points).then((data: any) => {
+                console.log('data received from server: ', data.tracker_coords);
+                dispatch({
+                    type: AnnotationActionTypes.START_TRACK,
+                    payload: {
+                        statesToUpdate:data.tracker_coords,
+                        tracking:true,
+                        from: frameStart,
+                        clientID:objectState.clientID,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error occured while tracking.', error);
+
+        }
+    };
+};
 // ISL END
 
 // ISL AUTOFIT
@@ -268,10 +327,10 @@ export function asLastKeyframe(jobInstance: any, stateToFit: any, frame: number)
             const { filters, frame, showAllInterpolationTracks } = receiveAnnotationsParameters();
             const {prev} = state.keyframes;
             const states = await job.annotations.get(prev, showAllInterpolationTracks, filters);
-            console.log(stateA);
-            console.log(states);
-            console.log(state.clientID - 1);
-            console.log(states[0]);
+            // console.log(stateA);
+            // console.log(states);
+            // console.log(state);
+            // console.log(states[0]);
             dispatch({
                 type: AnnotationActionTypes.START_COPY_LAST_KEYFRAME,
                 payload: {
@@ -1425,6 +1484,7 @@ export function createAnnotationsAsync(sessionInstance: any, frame: number, stat
 
 export function mergeAnnotationsAsync(sessionInstance: any, frame: number, statesToMerge: any[]):
     ThunkAction<Promise<void>, {}, {}, AnyAction> {
+        console.log('MARKER mergeAnnotationsAsync',statesToMerge);
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();

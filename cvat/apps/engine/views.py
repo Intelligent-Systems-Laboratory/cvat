@@ -67,11 +67,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 import cvat.apps.engine.tracker# EDITED for tracking
 
 import json # ISL GLOBAL ATTRIBUTES
-
+import time # ISL TESTING
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
 # We map the required paramater explicitly and add it into query arguments
 # on the server side.
+current_milli_time = lambda: int(round(time.time() * 1000))
 def wrap_swagger(view):
     @login_required
     def _map_format_to_schema(request, scheme=None):
@@ -395,7 +396,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             shutil.rmtree(instance.data.get_data_dirname(), ignore_errors=True)
             instance.data.delete()
 
-    # ISL AUTOFIT
+    # ISL AUTOSNAP
     @swagger_auto_schema(method='get', operation_summary='Returns automatically snapped or fitted coordinates of a box')
     @action(detail=True, methods=['GET'])
     def autofit(self, request, pk):
@@ -430,32 +431,82 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     # ISL END
 
     # EDITED FOR TRACKING
-    @swagger_auto_schema(method='get', operation_summary='Returns tracker coordinates')
+    @swagger_auto_schema(method='get', operation_summary='Returns tracker coordinates',
+        manual_parameters=[
+            openapi.Parameter('object-id', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the objectID of the box"),
+            openapi.Parameter('frame-start', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the tracking will begin"),
+            openapi.Parameter('frame-end', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the tracking will end"),
+            openapi.Parameter('x1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left x-coordinate"),
+            openapi.Parameter('y1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left y-coordinate"),
+            openapi.Parameter('x2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right x-coordinate"),
+            openapi.Parameter('y2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right y-coordinate"),
+            ]
+    )
     @action(detail=True, methods=['GET'])
     def tracking(self, request, pk):
+        startTime = current_milli_time()
         frameList = []
-        objectID = request.query_params.get('objectID', None)
-        frameStart = int(request.query_params.get('frameStart', None))
-        frameEnd = int(request.query_params.get('frameEnd', None))
+        objectID = request.query_params.get('object-id', None)
+        frameStart = int(request.query_params.get('frame-start', None))
+        frameEnd = int(request.query_params.get('frame-end', None))
         xtl = int(request.query_params.get('x1', None))
         ytl = int(request.query_params.get('y1', None))
         xbr = int(request.query_params.get('x2', None))
         ybr = int(request.query_params.get('y2', None))
 
         # ADD code for getting the image here
+        w = xbr - xtl
+        h = ybr - ytl
+        # compute the cropped image relative to original frame
+        # imagine a 5x5 grid in which the bbox is in the center
+        cropped_xtl = max(0,xtl-(2*w))
+        cropped_ytl = max(0,ytl-(2*h))
+        cropped_xbr = min(1919, xbr+(2*w))
+        cropped_ybr = min(1079,ybr+(2*h))
+        # compute new coordinates of the bbox to be tracked
+        new_xtl = (xtl if cropped_xtl==0 else 2*w)
+        new_ytl = (ytl if cropped_ytl==0 else 2*h)
+        new_xbr = new_xtl + w
+        new_ybr = new_ytl + h
+        start_frame_fetch = current_milli_time()
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
-        data_quality = FrameProvider.Quality.ORIGINAL
+        data_quality = FrameProvider.Quality.COMPRESSED
         for x in range(frameStart, frameEnd+1):
+            if((x-frameStart) % 2 == 1):
+                continue
             img, mime = frame_provider.get_frame(x, data_quality)
             img = Image.open(img)
             orig_img = np.array(img)
             image = orig_img[:, :, ::-1].copy()
+            image = image[cropped_ytl:cropped_ybr,cropped_xtl:cropped_xbr,:]
             frameList.append(image)
-        data = (xtl, ytl, xbr-xtl, ybr-ytl)
+        # print('frameList length: %d' % len(frameList))
+        # data = (xtl, ytl, xbr-xtl, ybr-ytl)
+        data = (new_xtl, new_ytl, new_xbr-new_xtl, new_ybr-new_ytl)
+        print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
+        start_csrt = current_milli_time()
         results = cvat.apps.engine.tracker.track(frameList, data)
 
+        # enable/disable grabcut on the results
+        # for result,frame in zip(results,frameList):
+        #     data, dim = grabcut.run(frame,result[0],result[1],result[2],result[3])
+        #     result = data
+        for result in results:
+            result[0] = result[0] + cropped_xtl
+            result[1] = result[1] + cropped_ytl
+            result[2] = result[2] + cropped_xtl
+            result[3] = result[3] + cropped_ytl
 
+        print('Tracking algo time: %d' % (current_milli_time() - start_csrt))
+        print('results', results)
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
                 new_coords = {
@@ -466,6 +517,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     "path" : request.build_absolute_uri(),
                     "tracker_coords" : results,
                 }
+            print('Total execution time: %d' % (current_milli_time()-startTime))
             return Response(new_coords)
         except Exception as e:
             msg = "something is wrong"

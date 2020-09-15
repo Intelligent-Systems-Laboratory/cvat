@@ -695,6 +695,7 @@
 
             // EDITED FOR TRACKING
             async function tracking(id, objectID, frameStart, frameEnd, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
+                console.log('TRACKING from server-proxy');
                 const { backendAPI } = config;
                 const x1 = Math.trunc(points[0])
                 const y1 = Math.trunc(points[1])
@@ -706,9 +707,9 @@
                     response = await Axios.get(`${backendAPI}/tasks/${id}/tracking`, { // EDITED to  add the URL parameters instead
                         proxy: config.proxy,
                         params: {
-                            objectID: objectID,
-                            frameStart: frameStart,
-                            frameEnd: frameEnd,
+                            "object-id": objectID,
+                            "frame-start": frameStart,
+                            "frame-end": frameEnd,
                             x1: x1,
                             y1: y1,
                             x2: x2,
@@ -835,6 +836,9 @@
                         fetchAttributes,
                         saveAttributes,
                         /*ISL END*/
+                        // ISL TRACKING
+                        tracking,
+                        // ISL END
                     }),
                     writable: false,
                 },

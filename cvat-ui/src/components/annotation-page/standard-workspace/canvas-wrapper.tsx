@@ -23,7 +23,7 @@ import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas-wrapper';
 import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
-
+import {checkOccluded} from './auto-occlude';
 const cvat = getCore();
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
@@ -114,6 +114,13 @@ interface Props {
     onSetGlobalAttributesVisibility(visiblity:boolean):void;
     // ISL END
     contextMenuVisibility:boolean; // ISL FIX CONTEXT MENU
+    automaticTracking:any;
+    // ISL TRACKING
+    onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void;
+    onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
+    // ISL END
+    onSwitchAutoTrack(status:boolean):void;
+    onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -183,13 +190,21 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             jobInstance,
             globalAttributes,
             globalAttributesVisibility,
-            onSetGlobalAttributesVisibility
+            onSetGlobalAttributesVisibility,
+            automaticTracking,
+            onUpdateAnnotations,onSwitchAutoTrack
         } = this.props;
         // console.log(this.props);
         // console.log(job);
         // console.log('annotations',annotations);// contains the current attributes. see next line
         // console.log(annotations[0].attributes); // the actual value of attributes
         // console.log('objectState',objectState);
+        if(automaticTracking!== prevProps.automaticTracking){
+            console.log('automatic tracking coordinates received');
+            console.log('STATES TO UPDATE',automaticTracking);
+            // this.track();
+        }
+
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
             || prevProps.showProjections !== showProjections
@@ -268,7 +283,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             }
             // ISL END
         }
-
+        if (prevProps.frameData.number !== frameData.number
+        ) {
+            console.log('frame changed');
+            // this.track();
+            // this.autoOcclude();
+        }
         if (prevProps.frame !== frameData.number
             && ((resetZoom && workspace !== Workspace.ATTRIBUTE_ANNOTATION) ||
             workspace === Workspace.TAG_ANNOTATION)
@@ -325,6 +345,33 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         }
 
         this.activateOnCanvas();
+
+        if(automaticTracking.tracking){
+            setTimeout(()=>{
+                let index = ((frameData.number - automaticTracking.frameStart)/2) - 1;
+                if(index<automaticTracking.states.length-1){
+                    this.changeFrame(frameData.number+2);
+                }
+                if(frameData.number!== prevProps.frameData.number && automaticTracking.tracking){
+                    const [state] = annotations.filter((el: any) => (el.clientID === automaticTracking.clientID));
+                    // console.log(state);
+                    // console.log('states',automaticTracking.states);
+                    console.log('index',index);
+                    try{
+                        if(index>=automaticTracking.states.length){
+                            onSwitchAutoTrack(false);
+                        }
+                        let temp = automaticTracking.states[index];
+                        // console.log(temp);
+                        state.points = temp;
+                        onUpdateAnnotations([state]);
+                    }catch{
+                        console.log('Indexing error!');
+                    }
+
+                }
+            },100);
+        }
     }
 
     public componentWillUnmount(): void {
@@ -364,14 +411,59 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // ISL END
         window.removeEventListener('resize', this.fitCanvas);
     }
+    // ISL MANUAL TRACKING update annotations
+    private num_frame_to_track = 50;
+    private track = (clientID:number): void => {
+        const {
+            onUpdateAnnotations,
+            automaticTracking,
+            onTrack,
+            jobInstance,
+            annotations,
+            frameData,
+            onSwitchAutoTrack,
+            onSwitchTrackModalVisibility,
+        } = this.props
 
+
+        // if(automaticTracking.tracking == true){
+        //     onSwitchAutoTrack(false);
+        // }else{
+
+        //     onSwitchAutoTrack(true);
+        // }
+        if(automaticTracking.tracking == false){
+            const [state] = annotations.filter((el: any) => (el.clientID === clientID));
+            console.log(state);
+            if (state && state.shapeType === ShapeType.RECTANGLE) {
+            // onTrack(jobInstance,state,frameData.number,(frameData.number+this.num_frame_to_track),state.points);
+            onSwitchTrackModalVisibility(true,jobInstance,frameData.number,state);
+            }
+        }else{
+            onSwitchAutoTrack(false);
+        }
+    }
+    private changeFrame(frame: number): void {
+        const { onChangeFrame,
+            canvasInstance ,
+            annotations,
+            automaticTracking,
+            frameData,
+            onUpdateAnnotations} = this.props;
+
+        if (canvasInstance.isAbleToChangeFrame()) {
+            onChangeFrame(frame);
+        }
+
+    }
+    // ISL END
     // ISL MANUAL TRACKING update annotations
     private trackingDone = (event: any): void => {
         const {
             onSwitchTracking,
             onUpdateAnnotations,
         } = this.props
-
+        console.log('STATES TO UPDATE',event.detail.states);
         onUpdateAnnotations(event.detail.states);
         onSwitchTracking(false, null);
     }
@@ -396,6 +488,38 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
     }
     // ISL END
+
+    // ISL AUTO OCCLUDE
+    private autoOcclude = ():void => {
+
+        console.log('auto occlude');
+        const {annotations,
+        onUpdateAnnotations}= this.props;
+
+        // annotations[0].occluded = true;
+        console.log(annotations);
+        for (let state of annotations){
+            for(let state2 of annotations){
+                if(state != state2){
+                    let result = checkOccluded(state,state2,0.025,[960,1080]);
+                    if(result[0].occluded){
+                        state.occluded = result[0].occluded;
+                    }
+                    else{
+                    }
+                    if(result[1].occluded){
+                        state2.occluded = result[1].occluded;
+                    }
+                    else{
+                    }
+                }
+            }
+        }
+        onUpdateAnnotations(annotations);
+    }
+    // ISL END
+
+
     // ISL AUTOFIT
     private onShapedblClicked = (e: any): void => {
         const {
@@ -466,7 +590,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         state.occluded = state.occluded || false;
         state.frame = frame;
         // ISL GLOBAL ATTRIBUTES
-        // console.log(state);
+        console.log(state);
         const nameToIDMap:Record<string, number> = {};
         for (const attribute of state.label.attributes) {
             //save the corresponding IDs of each attribute
@@ -973,6 +1097,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             AUTOFIT: keyMap.AUTOFIT,
             INTERPOLATION: keyMap.INTERPOLATION,
             SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
+            AUTO_TRACK: keyMap.AUTO_TRACK,
+            AUTO_OCCLUDE: keyMap.AUTO_OCCLUDE,
         };
 
 
@@ -1072,6 +1198,21 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                     onSwitchAutomaticBordering(!automaticBordering);
                 }
             },
+            // ISL TRACKING
+            AUTO_TRACK: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                console.log('track track track');
+                if (activatedStateID){
+                    this.track(activatedStateID);
+                }
+            },
+            // ISL END
+            // ISL AUTO OCCLUDE
+            AUTO_OCCLUDE: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                this.autoOcclude();
+            },
+            // ISL END
         };
 
         return (

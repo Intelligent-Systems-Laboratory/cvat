@@ -422,6 +422,17 @@ export interface AnnotationState {
     // ISL END
     // ISL GA REACT
     globalAttr:any,
+    // ISL TRACKING
+    automaticTracking: {
+        jobInstance:any,
+        sourceState: any,
+        tracking: boolean,
+        states: any[];
+        frameStart: number,
+        clientID:number,
+        modalVisible:boolean,
+        numberOfFramesToTrack: number,
+    }
     // ISL END
 }
 

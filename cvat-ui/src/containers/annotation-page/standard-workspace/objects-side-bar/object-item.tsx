@@ -29,6 +29,7 @@ import {
     autoFit, // ISL AUTOFIT
     asLastKeyframe, // ISL INTERPOLATION
     updateCanvasContextMenu, // ISL AUTO LOCK
+    track, // ISL TRACKING
 } from 'actions/annotation-actions';
 import { shift } from 'utils/math';
 import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
@@ -70,6 +71,7 @@ interface DispatchToProps {
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
     onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void; // ISL INTERPOLATION
     onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type: any): void; // ISL AUTO LOCK
+    onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void; // ISL TRACKING
 }
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
@@ -196,6 +198,11 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
                 pointID,
                 ));
         },
+        // ISL END
+        // ISL TRACKING
+        onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void {
+            dispatch(track(jobInstance,clientID,frameStart,frameEnd,points));
+        }
         // ISL END
     };
 }
@@ -482,6 +489,18 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         onSetLastKeyframe(jobInstance, objectState, frameNumber);
     }
     // ISL END
+    // ISL TRACKING
+    private track = (): void => {
+        const {
+            objectState,
+            jobInstance,
+            frameNumber,
+            onTrack,
+        } = this.props;
+        console.log('MARKER');
+        onTrack(jobInstance,objectState,frameNumber,(frameNumber+10),objectState.points);
+    }
+    // ISL END
 
     private switchCuboidOrientation = (): void => {
         function cuboidOrientationIsLeft(points: number[]): boolean {
@@ -661,6 +680,9 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 resetCuboidPerspective={() => this.resetCuboidPerspective()}
                 // ISL AUTOFIT
                 autoFit={this.autoFit}
+                // ISL END
+                // ISL AUTOFIT
+                track={this.track}
                 // ISL END
             />
         );

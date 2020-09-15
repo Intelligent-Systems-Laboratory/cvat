@@ -17,6 +17,7 @@ import {
     Workspace,
 } from './interfaces';
 import LabelsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/labels-list';
+import { clientID } from 'cvat-core/src/logger-storage';
 
 const defaultState: AnnotationState = {
     activities: {
@@ -118,10 +119,85 @@ const defaultState: AnnotationState = {
     isFetchingAttributes: false,
     isSavingAttributes: false,
     globalAttributesDB: {},
+    // ISL TRACKING
+    automaticTracking:{
+        tracking: false,
+        frameStart: 0,
+        states: [],
+        clientID:0,
+        modalVisible:false,
+        numberOfFramesToTrack:1,
+        jobInstance:null,
+        sourceState:null,
+
+    },
+    // ISL END
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // ISL TRACKING
+        case AnnotationActionTypes.CHANGE_NUM_FRAMES_TO_TRACK: {
+            const { num_frames } = action.payload;
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    numberOfFramesToTrack:num_frames,
+                    modalVisible:false,
+                }
+            };
+        }
+        case AnnotationActionTypes.SWITCH_AUTO_TRACK_MODAL: {
+            const { visibility,
+                    jobInstance,
+                    frame_num,
+                    sourceState } = action.payload;
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    modalVisible:visibility,
+                    jobInstance:jobInstance,
+                    frameStart: frame_num,
+                    sourceState:sourceState,
+                }
+            };
+        }
+        case AnnotationActionTypes.SWITCH_AUTO_TRACK: {
+            const { status } = action.payload;
+            if(status==false){
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    tracking:status,
+                }
+            };
+            }
+            else{
+                return {...state}
+            }
+        }
+        case AnnotationActionTypes.START_TRACK: {
+            const { statesToUpdate,tracking,from,clientID} = action.payload;
+            return {
+                ...state,
+                automaticTracking: {
+                    ...state.automaticTracking,
+                    states:statesToUpdate,
+                    tracking:tracking,
+                    frameStart: from,
+                    clientID:clientID,
+                }
+            };
+
+
+        }
+        case AnnotationActionTypes.STOP_TRACK: {
+            return {...state,};
+        }
+        // ISL END
         // ISL GLOBAL ATTRIBUTES
         case AnnotationActionTypes.START_EDIT_LABEL: {
             const { task_id,
@@ -183,27 +259,27 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             };
         }
         // ISL END
-                // ISL INTERPOLATION
-                case AnnotationActionTypes.START_COPY_LAST_KEYFRAME: {
-                    const { clientID } = action.payload;
-                    const newAsLastKeyframeObjects = [...state.asLastKeyframeObjects];
-                    newAsLastKeyframeObjects.push(clientID);
-                    return {
-                        ...state,
-                        asLastKeyframeObjects: newAsLastKeyframeObjects,
-                    };
-                }
-                case AnnotationActionTypes.STOP_AUTO_FIT: {
-                    const { clientID } = action.payload;
+        // ISL INTERPOLATION
+        case AnnotationActionTypes.START_COPY_LAST_KEYFRAME: {
+            const { clientID } = action.payload;
+            const newAsLastKeyframeObjects = [...state.asLastKeyframeObjects];
+            newAsLastKeyframeObjects.push(clientID);
+            return {
+                ...state,
+                asLastKeyframeObjects: newAsLastKeyframeObjects,
+            };
+        }
+        case AnnotationActionTypes.STOP_AUTO_FIT: {
+            const { clientID } = action.payload;
 
-                    const newAsLastKeyframeObjects= [...state.asLastKeyframeObjects];
-                    newAsLastKeyframeObjects.splice(state.asLastKeyframeObjects.indexOf(clientID), 1);
-                    return {
-                        ...state,
-                        asLastKeyframeObjects: newAsLastKeyframeObjects,
-                    };
-                }
-                // ISL END
+            const newAsLastKeyframeObjects= [...state.asLastKeyframeObjects];
+            newAsLastKeyframeObjects.splice(state.asLastKeyframeObjects.indexOf(clientID), 1);
+            return {
+                ...state,
+                asLastKeyframeObjects: newAsLastKeyframeObjects,
+            };
+        }
+        // ISL END
         // ISL MANUAL TRACKING
         case AnnotationActionTypes.SWITCH_TRACKING: {
             const { tracking, trackedStateID } = action.payload;

@@ -351,16 +351,15 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 let index = ((frameData.number - automaticTracking.frameStart)/2) - 1;
                 if(index<automaticTracking.states.length-1){
                     this.changeFrame(frameData.number+2);
+                }else{
+                    onSwitchAutoTrack(false);
                 }
                 if(frameData.number!== prevProps.frameData.number && automaticTracking.tracking){
                     const [state] = annotations.filter((el: any) => (el.clientID === automaticTracking.clientID));
                     // console.log(state);
                     // console.log('states',automaticTracking.states);
-                    console.log('index',index);
+                    // console.log('index',index);
                     try{
-                        if(index>=automaticTracking.states.length){
-                            onSwitchAutoTrack(false);
-                        }
                         let temp = automaticTracking.states[index];
                         // console.log(temp);
                         state.points = temp;

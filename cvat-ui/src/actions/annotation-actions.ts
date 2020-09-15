@@ -260,32 +260,19 @@ export function switchAutoTrack(status:boolean): AnyAction {
     };
 }
 export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number): AnyAction {
-    // console.log('Editing label for task ',jobInstance.task.id);
-    // console.log('attributes: ', labels_data);
-    // console.log('selected: ', selected);
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
-            // dispatch({
-            //     type: AnnotationActionTypes.START_TRACK,
-            //     payload: {
-            //         clientID:objectState.clientID,
-            //     },
-            // });
-            // // console.log(jobInstance);
             jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,objectState.points).then((data: any) => {
                 console.log('data received from server: ', data.tracker_coords);
-
-                // data.tracker_coords.map( (points: number[],index:number) =>{
-
-                // });
-                // console.log('final states',states);
-                dispatch(trackObjectAsync(jobInstance,objectState,frameStart,frameEnd,data.tracker_coords));
-                // dispatch({
-                //     type: AnnotationActionTypes.STOP_TRACK,
-                //     payload: {
-                //         clientID:objectState.clientID,
-                //     },
-                // });
+                dispatch({
+                    type: AnnotationActionTypes.START_TRACK,
+                    payload: {
+                        statesToUpdate:data.tracker_coords,
+                        tracking:true,
+                        from: frameStart,
+                        clientID:objectState.clientID,
+                    },
+                });
             });
         } catch (error) {
             console.log('Error occured while tracking.', error);
@@ -763,91 +750,6 @@ export function showStatistics(visible: boolean): AnyAction {
         },
     };
 }
-
-// ISL TRACKING
-export function trackObjectAsync(
-    sessionInstance: any,
-    objectState: any,
-    from: number,
-    to: number,
-    points: any[],
-): ThunkAction<Promise<void>, {}, {}, AnyAction> {
-    console.log('MARKER trackObjectAsync');
-    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
-        try {
-            const copy = {
-                attributes: objectState.attributes,
-                points: objectState.points,
-                occluded: objectState.occluded,
-                objectType: objectState.objectType !== ObjectType.TRACK
-                    ? objectState.objectType : ObjectType.SHAPE,
-                shapeType: objectState.shapeType,
-                label: objectState.label,
-                zOrder: objectState.zOrder,
-                frame: from,
-                keyframe:true,
-                // clientID:objectState.clientID,
-            };
-
-            await sessionInstance.logger.log(
-                LogType.propagateObject, { count: to - from + 1 },
-            );
-            // const states = [];
-            // for (let frame = from+1; frame <= to; frame++) {
-            //     copy.frame = frame;
-            //     copy.points= points[frame-from-1];
-            //     const newState = new cvat.classes.ObjectState(copy);
-            //     console.log(newState);
-            //     states.push(newState);
-            //     // dispatch(updateAnnotationsAsync([newState]));
-            //     // dispatch(createAnnotationsAsync(sessionInstance,frame,[newState]));
-            // }
-
-            // await sessionInstance.annotations.put(states);
-            // const history = await sessionInstance.actions.get();
-            // dispatch(updateAnnotationsAsync(states));
-            dispatch({
-                type: AnnotationActionTypes.START_TRACK,
-                payload: {
-                    statesToUpdate:points,
-                    tracking:true,
-                    from: from,
-                    clientID:objectState.clientID,
-                },
-            });
-            // try {
-            //     const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();
-            //     await sessionInstance.annotations.merge(states);
-            //     const states_merge = await sessionInstance.annotations
-            //         .get(to, showAllInterpolationTracks, filters);
-            //     const history = await sessionInstance.actions.get();
-
-            //     dispatch({
-            //         type: AnnotationActionTypes.MERGE_ANNOTATIONS_SUCCESS,
-            //         payload: {
-            //             states:states_merge,
-            //             history,
-            //         },
-            //     });
-            // } catch (error) {
-            //     dispatch({
-            //         type: AnnotationActionTypes.MERGE_ANNOTATIONS_FAILED,
-            //         payload: {
-            //             error,
-            //         },
-            //     });
-            // }
-        } catch (error) {
-            dispatch({
-                type: AnnotationActionTypes.STOP_TRACK,
-                payload: {
-                    error,
-                },
-            });
-        }
-    };
-}
-// ISL END
 
 export function propagateObjectAsync(
     sessionInstance: any,

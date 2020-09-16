@@ -1679,6 +1679,26 @@ export class CanvasViewImpl implements CanvasView, Listener {
         };
     }
     // ISL END
+
+    // ISL LOCKED ICON
+    private lockedBox(focusedBox: any): void {
+        if (focusedBox == true) {
+            if (this.lastShapeClicked == this.activeElement.clientID && this.lastShapeClicked != null) {
+                var ctx = this.background.getContext("2d");
+                var pointsBBox = this.drawnStates[this.activeElement.clientID].points;
+                ctx.putImageData(this.backgroundNew, 0, 0);
+                ctx.putImageData(this.backgroundOriginal, 0, 0, pointsBBox[0], pointsBBox[1], pointsBBox[2] - pointsBBox[0], pointsBBox[3] - pointsBBox[1]);
+                pointsBBox = null;
+                ctx = null;
+            }
+        }
+        else if (focusedBox == false && this.lastShapeClicked != null) {
+            var ctx = this.background.getContext("2d");
+            ctx.putImageData(this.backgroundOriginal, 0, 0);
+            ctx = null;
+        };
+    }
+    // ISL END
     private redrawBitmap(): void {
         const width = +this.background.style.width.slice(0, -2);
         const height = +this.background.style.height.slice(0, -2);
@@ -2072,7 +2092,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const shape = this.svgShapes[clientID];
 
         if (state.lock) {
+            (shape as any).on('mouseover', (): void => {
+            // ISL LOCK ICON
+            console.log('test');
+            this.lastShapeClicked = clientID;
+            this.lockedBox(true);
             return;
+            })
         }
 
         shape.addClass('cvat_canvas_shape_activated');

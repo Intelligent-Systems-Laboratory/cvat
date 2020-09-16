@@ -38,6 +38,7 @@ interface Props {
     onUndoClick(): void;
     onRedoClick(): void;
     onGlobalIconClick(): void; // ISL GLOBAL ATTRIBUTES
+    lastSavePopup(event: any): void; // ISL Save-Popup
 }
 
 function LeftGroup(props: Props): JSX.Element {
@@ -53,6 +54,7 @@ function LeftGroup(props: Props): JSX.Element {
         onUndoClick,
         onRedoClick,
         onGlobalIconClick, // ISL GLOBAL ATTRIBUTES
+        lastSavePopup, // ISL Save-Popup
     } = props;
     // ISL GLOBAL ATTRIBUTES
     // const [show, setShow] = useState(false);
@@ -69,7 +71,7 @@ function LeftGroup(props: Props): JSX.Element {
             </Dropdown>
             <Button
                 title={`Save current changes ${saveShortcut}`}
-                onClick={saving ? undefined : onSaveAnnotation}
+                onClick={lastSavePopup} // ISL Save-Popup
                 type='link'
                 className={saving
                     ? 'cvat-annotation-disabled-header-button'

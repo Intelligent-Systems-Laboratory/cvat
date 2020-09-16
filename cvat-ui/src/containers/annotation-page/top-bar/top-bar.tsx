@@ -1284,6 +1284,24 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         });
         // this.waitPageToCompleteLoading();
     }
+    // ISL Save-Popup
+    private lastSavePopup = (event: any): void => {
+        const {
+        saving,
+        onSaveAnnotation
+        } = this.props;
+
+       //let setCurrentTime = {
+        //      currentTime: new Date().toLocaleTimeString('en-US', { hour12: true })
+        //  }
+                if(saving){
+        // do nothing
+        } else{
+            this.onSaveAnnotation();
+        }
+                console.log('calling save2' );
+            }
+    // ISL END
 
     private showGlobalAttributesModal = (): void => {
         this.globalAttributesModal.update({
@@ -1499,6 +1517,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     focusFrameInputShortcut={normalizedKeyMap.FOCUS_INPUT_FRAME}
                     onUndoClick={this.undo}
                     onRedoClick={this.redo}
+                    lastSavePopup={this.lastSavePopup} // ISL Save-Popup
                     onEditGlobalAttributes={this.onEditGlobalAttributes} // ISL GLOBAL ATTRIBUTES
                     onGlobalIconClick={this.onGlobalIconClick}
 

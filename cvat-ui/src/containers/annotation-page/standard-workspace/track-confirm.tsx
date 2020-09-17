@@ -13,6 +13,7 @@ import {
     changeNumFramesToTrack,
     track,
     switchAutoTrack,
+    previousTrack,
 } from 'actions/annotation-actions';
 
 import { CombinedState } from 'reducers/interfaces';
@@ -32,6 +33,7 @@ interface DispatchToProps {
     propagateObject(sessionInstance: any, objectState: any, from: number, to: number): void;
     onChangeNumFramesToTrack(frames: number,automaticTracking:any): void;
     onChangeCurrentDisplay(frame_num:number,automaticTracking:any): void;
+    onPrevious():void;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -80,6 +82,9 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         onChangeCurrentDisplay(frame_num:number,automaticTracking:any): void{
             dispatch(track(automaticTracking.jobInstance,automaticTracking.sourceState,frame_num,frame_num+30,'APPEND',automaticTracking.states[automaticTracking.states.length-1]));
+        },
+        onPrevious():void{
+            dispatch(previousTrack());
         }
     };
 }
@@ -105,7 +110,13 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
         const {
             automaticTracking
         } = this.props;
-        var index = Math.floor(automaticTracking.current/2)-1;
+
+        // show loading
+        var loading = document.getElementById('track-loading');
+        let canvas = window.document.getElementById('track-canvas') as HTMLCanvasElement;
+
+
+        var index = Math.floor((automaticTracking.current-automaticTracking.frameStart)/2)-1;
         var points = automaticTracking.states[index]; // bounding box of the result of tracking in the current frame
         console.log('index',index);
         console.log('points',points);
@@ -119,12 +130,13 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
 
         }
 
-        let canvas = window.document.getElementById('track-canvas') as HTMLCanvasElement;
+
         if(canvas){
             canvas.height = 3*height;
             canvas.width = 3*width;
             let ctx = canvas.getContext('2d');
             if(ctx && outputImg){
+                ctx.clearRect(0,0,canvas.width,canvas.height);
                 ctx.drawImage(outputImg,background[0],background[1],3*width,3*height,0,0,canvas.width,canvas.height);
                 ctx.beginPath();
                 ctx.lineWidth = 6;
@@ -135,6 +147,11 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
             }
 
             console.log(canvas);
+
+            if(loading){
+                loading.style.display='none';
+            }
+            canvas.style.visibility ='';
         }
     }
     public draw = ():void => {
@@ -173,7 +190,8 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
             propagateFrames,
             cancel,
             objectState,
-            automaticTracking
+            automaticTracking,
+            onPrevious
         } = this.props;
 
         const propagateUpToFrame = Math.min(frameNumber + propagateFrames, stopFrame);
@@ -187,6 +205,7 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
                 onOk = {this.changeNumFramesToTrack}
                 automaticTracking = {automaticTracking}
                 onNext = {this.changeCurrent}
+                onPrevious = {onPrevious}
             />
         );
     }

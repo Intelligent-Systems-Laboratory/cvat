@@ -217,7 +217,9 @@ export enum AnnotationActionTypes {
     SWITCH_AUTO_TRACK_MODAL = 'SWITCH_AUTO_TRACK_MODAL',
     CHANGE_NUM_FRAMES_TO_TRACK = 'CHANGE_NUM_FRAMES_TO_TRACK',
     GET_FRAME = 'GET_FRAME',
-    SWITCH_CURRENT_DISPLAY = 'SWITCH_CURRENT_DISPLAY',
+    SWITCH_CURRENT_DISPLAY = 'SWITCH_CURRENT_DISPLAY', //next track checkpoint
+    PREVIOUS_TRACK = 'PREVIOUS_TRACK',
+
     // ISL END
 }
 
@@ -317,6 +319,15 @@ export function changeCurrentDisplay(frame_num:number): AnyAction {
         type: AnnotationActionTypes.SWITCH_CURRENT_DISPLAY,
         payload: {
             current: frame_num,
+        },
+    };
+}
+
+export function previousTrack(): AnyAction {
+    return {
+        type: AnnotationActionTypes.PREVIOUS_TRACK,
+        payload: {
+
         },
     };
 }

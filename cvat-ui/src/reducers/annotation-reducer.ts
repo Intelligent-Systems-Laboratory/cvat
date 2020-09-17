@@ -173,6 +173,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                     jobInstance:jobInstance,
                     frameStart: frame_num,
                     sourceState:sourceState,
+                    current: frame_num+30,
                 }
             };
         }
@@ -198,6 +199,36 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                     current:current,
                 }
             };
+
+        }
+        case AnnotationActionTypes.PREVIOUS_TRACK: {
+            var index = state.automaticTracking.states.length-15;
+            if(index>0){
+                console.log('start index to remove',index);
+                console.log('before:');
+                var result_states:any[] = [];
+                var counter = 0;
+                var length = state.automaticTracking.states.length;
+                for (var temp of state.automaticTracking.states){
+                    if(counter<length-15){
+                        result_states.push(temp);
+                        counter++;
+                    }
+                }
+
+                return {
+                    ...state,
+                    automaticTracking:{
+                        ...state.automaticTracking,
+                        current: state.automaticTracking.current-30,
+                        states: result_states,
+                    }
+                };
+            }else{
+                return {
+                    ...state
+                }
+            }
 
         }
         case AnnotationActionTypes.START_TRACK: {

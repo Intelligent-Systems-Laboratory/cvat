@@ -86,6 +86,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private lastShapeClicked: number;
     // ISL END
 
+    // ISL LOCK ICON
+    private lastShapeHighlighted: number;
+
     // ISL MAGNIFYING GLASS
     private magnifyingGlassContainer: SVGSVGElement;
     private magnifyingGlassForeignObject: SVGForeignObjectElement;
@@ -1055,6 +1058,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
             // ISL END
 
+
             const { offset } = this.controller.geometry;
             const point = translateToSVG(this.content, [event.clientX, event.clientY]);
             self.controller.zoom(point[0] - offset, point[1] - offset, event.deltaY > 0 ? -1 : 1);
@@ -1066,6 +1070,36 @@ export class CanvasViewImpl implements CanvasView, Listener {
         });
 
         this.content.addEventListener('mousemove', (e): void => {
+            // ISL LOCK ICON
+            // Note: this.lockedBox function draws a solid color box around the highlighted locked shape when set to true
+
+            // This part is intended to 1.) set this.lockedBox = true on mouseover of the locked shape, and
+            // 2.) set this.lockedBox = false on mouseout of the locked shape
+            for (var states in this.drawnStates) {                                  // on mousemove, check all shapes
+                const  clientID  = this.drawnStates[states].clientID;
+                const [state] = this.controller.objects
+                .filter((_state: any): boolean => _state.clientID === clientID);
+                if (state.lock) {                                                   // if a shape is locked
+                    const shape = this.svgShapes[clientID];
+                    (shape as any).on('mouseover', (): void => {                    // listen for mouseover event
+                        console.log('mouseover');
+                        if (this.lastShapeHighlighted !== clientID){
+                            console.log('test');
+                            console.log(clientID);
+                        this.lastShapeHighlighted = clientID;
+                        this.lockedBox(true);                                       // then set lockedBox to true
+                    }
+                        })
+                        (shape as any).on('mouseout', (): void => {                 // also listen for when the mouse leaves the shape
+                            console.log('mouseleave');                              // then set lockedBox to false
+                            this.lastShapeHighlighted = 0;
+                            this.lockedBox(false);
+                        }
+                            )
+                }
+            }
+            // END
+
             self.controller.drag(e.clientX, e.clientY);
 
             // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
@@ -1683,9 +1717,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
     // ISL LOCKED ICON
     private lockedBox(focusedBox: any): void {
         if (focusedBox == true) {
-            if (this.lastShapeClicked == this.activeElement.clientID && this.lastShapeClicked != null) {
+            if (this.lastShapeHighlighted && this.lastShapeClicked != null) {
                 var ctx = this.background.getContext("2d");
-                var pointsBBox = this.drawnStates[this.activeElement.clientID].points;
+                var pointsBBox = this.drawnStates[this.lastShapeHighlighted].points;
                 ctx.putImageData(this.backgroundNew, 0, 0);
                 ctx.putImageData(this.backgroundOriginal, 0, 0, pointsBBox[0], pointsBBox[1], pointsBBox[2] - pointsBBox[0], pointsBBox[3] - pointsBBox[1]);
                 pointsBBox = null;
@@ -2011,15 +2045,29 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     private deactivateShape(): void {
+
         if (this.activeElement.clientID !== null) {
+            console.log('deactivate');
             const { displayAllText } = this.configuration;
             const { clientID } = this.activeElement;
             const drawnState = this.drawnStates[clientID];
             const shape = this.svgShapes[clientID];
-
+            const [state] = this.controller.objects
+            .filter((_state: any): boolean => _state.clientID === clientID);
             shape.removeClass('cvat_canvas_shape_activated');
             shape.removeClass('cvat_canvas_shape_draggable');
-
+            // if (!state.lock) {
+            //     (shape as any).on('mouseout', (): void => {
+            //     // ISL LOCK ICON
+            //     console.log('testoff');
+            //     this.lastShapeClicked = clientID;
+            //     this.lockedBox(false);
+            //     return;
+            //     })
+            // }
+            if(state.lock) {
+                console.log('mouse off state.lcok');
+            }
             if (!drawnState.pinned) {
                 (shape as any).off('dragstart');
                 (shape as any).off('dragend');
@@ -2077,6 +2125,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     private activateShape(clientID: number): void {
+        console.log('activate');
         const [state] = this.controller.objects
             .filter((_state: any): boolean => _state.clientID === clientID);
 
@@ -2092,13 +2141,15 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const shape = this.svgShapes[clientID];
 
         if (state.lock) {
-            (shape as any).on('mouseover', (): void => {
-            // ISL LOCK ICON
-            console.log('test');
-            this.lastShapeClicked = clientID;
-            this.lockedBox(true);
+            // (shape as any).on('mouseover', (): void => {
+            // // ISL LOCK ICON
+            // console.log('test');
+            // this.lastShapeClicked = clientID;
+            // this.lockedBox(true);
+            // return;
+            // })
+            console.log('state.lock activate');
             return;
-            })
         }
 
         shape.addClass('cvat_canvas_shape_activated');

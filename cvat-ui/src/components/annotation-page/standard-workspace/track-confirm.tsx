@@ -21,6 +21,7 @@ interface Props {
     automaticTracking: any;
     onNext(frame_num:number):void;
     onPrevious(): void;
+    onEditLastTrackState(drag:any,resize:any): void;
 }
 
 export default function TrackConfirmComponent(props: Props): JSX.Element {
@@ -32,7 +33,8 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
         onOk,
         automaticTracking,
         onNext,
-        onPrevious
+        onPrevious,
+        onEditLastTrackState,
     } = props;
 
     let num_frames_to_track = 10;
@@ -95,10 +97,32 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
                     <div id='track-center-bottom-buttons'>
                         <Button className='btn-bottom' onClick={
                             (event:any) => {
-                                // onPrevious();
-                                console.log('modify');
+                                var resize={x:5,y:0};
+                                var drag={x:0,y:0};
+                                onEditLastTrackState(drag,resize);
                             }
-                        }> Modify </Button>
+                        }> Width+ </Button>
+                        <Button className='btn-bottom' onClick={
+                            (event:any) => {
+                                var resize={x:-5,y:0};
+                                var drag={x:0,y:0};
+                                onEditLastTrackState(drag,resize);
+                            }
+                        }> Width- </Button>
+                        <Button className='btn-bottom' onClick={
+                            (event:any) => {
+                                var resize={x:0,y:5};
+                                var drag={x:0,y:0};
+                                onEditLastTrackState(drag,resize);
+                            }
+                        }> Height+ </Button>
+                        <Button className='btn-bottom' onClick={
+                            (event:any) => {
+                                var resize={x:0,y:-5};
+                                var drag={x:0,y:0};
+                                onEditLastTrackState(drag,resize);
+                            }
+                        }> Height- </Button>
 
                     </div>
                     <div id='track-right-bottom-buttons'>

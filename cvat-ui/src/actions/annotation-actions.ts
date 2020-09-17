@@ -219,7 +219,7 @@ export enum AnnotationActionTypes {
     GET_FRAME = 'GET_FRAME',
     SWITCH_CURRENT_DISPLAY = 'SWITCH_CURRENT_DISPLAY', //next track checkpoint
     PREVIOUS_TRACK = 'PREVIOUS_TRACK',
-
+    EDIT_LAST_TRACK_STATE = 'EDIT_LAST_TRACK_STATE',
     // ISL END
 }
 
@@ -328,6 +328,15 @@ export function previousTrack(): AnyAction {
         type: AnnotationActionTypes.PREVIOUS_TRACK,
         payload: {
 
+        },
+    };
+}
+export function editLastTrackState(drag:any,resize:any): AnyAction {
+    return {
+        type: AnnotationActionTypes.EDIT_LAST_TRACK_STATE,
+        payload: {
+            drag: drag,
+            resize: resize,
         },
     };
 }

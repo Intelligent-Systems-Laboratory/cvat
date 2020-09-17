@@ -266,6 +266,25 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         case AnnotationActionTypes.STOP_TRACK: {
             return {...state,};
         }
+        case AnnotationActionTypes.EDIT_LAST_TRACK_STATE: {
+            const {
+                drag,
+                resize,
+            } = action.payload;
+            let result_states = state.automaticTracking.states;
+            let stateToEdit = result_states[result_states.length-1];
+            stateToEdit[0] = stateToEdit[0]+drag.x;
+            stateToEdit[1] = stateToEdit[1]+drag.y;
+            stateToEdit[2] = stateToEdit[2]+drag.x+resize.x;
+            stateToEdit[3] = stateToEdit[3]+drag.y+resize.y;
+            return {...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    states: result_states,
+                }
+
+            };
+        }
         // ISL END
         // ISL GLOBAL ATTRIBUTES
         case AnnotationActionTypes.START_EDIT_LABEL: {

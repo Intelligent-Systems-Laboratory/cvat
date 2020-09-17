@@ -14,6 +14,7 @@ import {
     track,
     switchAutoTrack,
     previousTrack,
+    editLastTrackState,
 } from 'actions/annotation-actions';
 
 import { CombinedState } from 'reducers/interfaces';
@@ -34,6 +35,7 @@ interface DispatchToProps {
     onChangeNumFramesToTrack(frames: number,automaticTracking:any): void;
     onChangeCurrentDisplay(frame_num:number,automaticTracking:any): void;
     onPrevious():void;
+    onEditLastTrackState(drag:any,resize:any): void;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -85,12 +87,89 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         onPrevious():void{
             dispatch(previousTrack());
+        },
+        onEditLastTrackState(drag:any,resize:any): void{
+            dispatch(editLastTrackState(drag,resize));
         }
+
     };
 }
 
 type Props = StateToProps & DispatchToProps;
 class TrackConfirmContainer extends React.PureComponent<Props> {
+    constructor(props: Props) {
+        super(props);
+        this.waitPageToCompleteLoading();
+    }
+    private waitPageToCompleteLoading = (): void => {
+        const {
+            onEditLastTrackState
+        } = this.props;
+        // this function is required in order to override the value of the frame range inputs
+        // for some reason document.getElementById('frame_start') returns null even when the modal is being shown
+        // this could be because the modal is shown in asynchronously and is not using the main thread
+            this.canvas = document.getElementById("track-canvas") as HTMLCanvasElement;
+            if(this.canvas){
+                this.context = this.canvas.getContext('2d');
+                this.canvas.addEventListener('mousedown', (event:any) => {
+                    console.log('track canvas mousedown');
+                    this.dragStart = {
+                    x: event.pageX - this.canvas.offsetLeft,
+                    y: event.pageY - this.canvas.offsetTop
+                    }
+
+                    this.drag = true;
+                    console.log(this.dragStart);
+                });
+
+                this.canvas.addEventListener('mousemove', (event:any) => {
+                    if (this.drag) {
+
+                    this.dragEnd = {
+                        x: event.pageX - this.canvas.offsetLeft,
+                        y: event.pageY - this.canvas.offsetTop
+                    }
+                    // this.context.translate(this.dragEnd.x - this.dragStart.x, this.dragEnd.y - this.dragStart.y);
+                    // console.log('dragging. x: ',this.dragEnd.x,'y:',this.dragEnd.y);
+                    var drag = {
+                        x:this.dragEnd.x-this.dragStart.x,
+                        y:this.dragEnd.y-this.dragStart.y,
+                    };
+                    var resize = {
+                        x:0,
+                        y:0,
+                    }
+                    onEditLastTrackState(drag,resize);
+                    this.loadImage();
+                    this.dragStart=this.dragEnd;
+                    }
+
+                });
+                this.canvas.addEventListener('mouseup', (event:any) => {
+                    console.log('track canvas up');
+                    this.dragEnd = {
+                    x: event.pageX - this.canvas.offsetLeft,
+                    y: event.pageY - this.canvas.offsetTop
+                    }
+
+                    this.drag = false;
+                    console.log('dragstart',this.dragStart);
+                    console.log('dragend',this.dragEnd);
+                    console.log('dragged. x: ',this.dragEnd.x-this.dragStart.x,'y:',this.dragEnd.y-this.dragStart.y);
+
+                });
+            }else{
+                setTimeout(this.waitPageToCompleteLoading, 300);
+            }
+    }
+    public canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    public context:any;
+    public drag = false;
+    public dragStart:any;
+    public dragEnd:any;
+
+
+
     private changeNumFramesToTrack = (num_frames:number): void => {
         const {
             onChangeNumFramesToTrack,
@@ -106,10 +185,15 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
         } = this.props;
         onChangeCurrentDisplay(frame_num,automaticTracking);
     }
-    public loadImage = (outputImg:HTMLImageElement):void => {
+    public loadImage = (outputImg:HTMLImageElement|null=null):void => {
         const {
             automaticTracking
         } = this.props;
+
+        if(outputImg==null){
+            outputImg = document.getElementById('track-image') as HTMLImageElement;
+        }
+
 
         // show loading
         var loading = document.getElementById('track-loading');
@@ -118,8 +202,8 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
 
         var index = Math.floor((automaticTracking.current-automaticTracking.frameStart)/2)-1;
         var points = automaticTracking.states[index]; // bounding box of the result of tracking in the current frame
-        console.log('index',index);
-        console.log('points',points);
+        // console.log('index',index);
+        // console.log('points',points);
         var width = points[2] - points[0];
         var height = points[3] - points[1];
         var background:number[] = [points[0]-width,points[1]-height,points[2]+width,points[3]+height]
@@ -146,8 +230,6 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
 
             }
 
-            console.log(canvas);
-
             if(loading){
                 loading.style.display='none';
             }
@@ -159,10 +241,10 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
             automaticTracking
         } = this.props;
 
-        console.log('load the image in frame ',automaticTracking.current);
+        // console.log('load the image in frame ',automaticTracking.current);
         var outputImg = document.getElementById('track-image') as HTMLImageElement;
         outputImg.onload = () =>{
-            console.log("Image 1 ready to append");
+            // console.log("Image 1 ready to append");
             this.loadImage(outputImg);
         };
         this.loadImage(outputImg);
@@ -175,7 +257,7 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
             automaticTracking
         } = this.props;
         if(automaticTracking!== prevProps.automaticTracking){
-            console.log('STATES TO UPDATE track-confirm',automaticTracking);
+            // console.log('STATES TO UPDATE track-confirm',automaticTracking);
             // this.track();
             if(automaticTracking.states.length > 0){
                 this.draw();
@@ -191,7 +273,8 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
             cancel,
             objectState,
             automaticTracking,
-            onPrevious
+            onPrevious,
+            onEditLastTrackState
         } = this.props;
 
         const propagateUpToFrame = Math.min(frameNumber + propagateFrames, stopFrame);
@@ -206,6 +289,8 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
                 automaticTracking = {automaticTracking}
                 onNext = {this.changeCurrent}
                 onPrevious = {onPrevious}
+                onEditLastTrackState = {onEditLastTrackState}
+
             />
         );
     }

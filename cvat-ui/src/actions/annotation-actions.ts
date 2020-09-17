@@ -280,12 +280,18 @@ export function switchAutoTrack(status:boolean): AnyAction {
     };
 }
 
-export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,mode:string = 'OVERRIDE'): AnyAction {
+export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,mode:string = 'OVERRIDE',lastPoints:number[]=[]): AnyAction {
     // if mode == 'OVERRIDE', all of the previous states to be tracked will be deleted
     // if mode == 'APPEND', new tracking states will be added on the end of the list
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
-            jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,objectState.points).then((data: any) => {
+            let points:number[] = [];
+            if(lastPoints.length > 0){
+                points = lastPoints;
+            }else {
+                points = objectState.points;
+            }
+            jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,points).then((data: any) => {
                 console.log('data received from server: ', data.tracker_coords);
                 dispatch({
                     type: AnnotationActionTypes.START_TRACK,

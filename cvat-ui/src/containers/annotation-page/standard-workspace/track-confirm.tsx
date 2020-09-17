@@ -79,7 +79,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(switchTrackModalVisibility(false,null,-1,null));
         },
         onChangeCurrentDisplay(frame_num:number,automaticTracking:any): void{
-            dispatch(track(automaticTracking.jobInstance,automaticTracking.sourceState,frame_num,frame_num+30,'APPEND'));
+            dispatch(track(automaticTracking.jobInstance,automaticTracking.sourceState,frame_num,frame_num+30,'APPEND',automaticTracking.states[automaticTracking.states.length-1]));
         }
     };
 }

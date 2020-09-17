@@ -12,6 +12,7 @@ import {
     switchTrackModalVisibility,
     changeNumFramesToTrack,
     track,
+    switchAutoTrack,
 } from 'actions/annotation-actions';
 
 import { CombinedState } from 'reducers/interfaces';
@@ -30,6 +31,7 @@ interface DispatchToProps {
     cancel(): void;
     propagateObject(sessionInstance: any, objectState: any, from: number, to: number): void;
     onChangeNumFramesToTrack(frames: number,automaticTracking:any): void;
+    onChangeCurrentDisplay(frame_num:number,automaticTracking:any): void;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -71,11 +73,14 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         onChangeNumFramesToTrack(frames: number,automaticTracking:any): void {
             dispatch(changeNumFramesToTrack(frames));
-            dispatch(track(automaticTracking.jobInstance,automaticTracking.sourceState,automaticTracking.frameStart,(automaticTracking.frameStart+frames)));
+            dispatch(switchAutoTrack(true));
         },
         cancel(): void {
             dispatch(switchTrackModalVisibility(false,null,-1,null));
         },
+        onChangeCurrentDisplay(frame_num:number,automaticTracking:any): void{
+            dispatch(track(automaticTracking.jobInstance,automaticTracking.sourceState,frame_num,frame_num+30,'APPEND'));
+        }
     };
 }
 
@@ -89,6 +94,77 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
         onChangeNumFramesToTrack(num_frames,automaticTracking);
 
     };
+    private changeCurrent = (frame_num:number): void => {
+        const {
+            onChangeCurrentDisplay,
+            automaticTracking
+        } = this.props;
+        onChangeCurrentDisplay(frame_num,automaticTracking);
+    }
+    public loadImage = (outputImg:HTMLImageElement):void => {
+        const {
+            automaticTracking
+        } = this.props;
+        var index = Math.floor(automaticTracking.current/2)-1;
+        var points = automaticTracking.states[index]; // bounding box of the result of tracking in the current frame
+        console.log('index',index);
+        console.log('points',points);
+        var width = points[2] - points[0];
+        var height = points[3] - points[1];
+        var background:number[] = [points[0]-width,points[1]-height,points[2]+width,points[3]+height]
+        for (let coord of background){
+            if (coord < 0){
+                coord = 0
+            }
+
+        }
+
+        let canvas = window.document.getElementById('track-canvas') as HTMLCanvasElement;
+        if(canvas){
+            canvas.height = 3*height;
+            canvas.width = 3*width;
+            let ctx = canvas.getContext('2d');
+            if(ctx && outputImg){
+                ctx.drawImage(outputImg,background[0],background[1],3*width,3*height,0,0,canvas.width,canvas.height);
+                ctx.beginPath();
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = "red";
+                ctx.rect(width, height, width, height);
+                ctx.stroke();
+
+            }
+
+            console.log(canvas);
+        }
+    }
+    public draw = ():void => {
+        const {
+            automaticTracking
+        } = this.props;
+
+        console.log('load the image in frame ',automaticTracking.current);
+        var outputImg = document.getElementById('track-image') as HTMLImageElement;
+        outputImg.onload = () =>{
+            console.log("Image 1 ready to append");
+            this.loadImage(outputImg);
+        };
+        this.loadImage(outputImg);
+
+
+
+    }
+    public componentDidUpdate(prevProps: Props): void {
+        const {
+            automaticTracking
+        } = this.props;
+        if(automaticTracking!== prevProps.automaticTracking){
+            console.log('STATES TO UPDATE track-confirm',automaticTracking);
+            // this.track();
+            if(automaticTracking.states.length > 0){
+                this.draw();
+            }
+        }
+    }
 
     public render(): JSX.Element {
         const {
@@ -109,6 +185,8 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
                 frameNumber={frameNumber}
                 cancel={cancel}
                 onOk = {this.changeNumFramesToTrack}
+                automaticTracking = {automaticTracking}
+                onNext = {this.changeCurrent}
             />
         );
     }

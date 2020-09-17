@@ -216,6 +216,8 @@ export enum AnnotationActionTypes {
     SWITCH_AUTO_TRACK = 'SWITCH_AUTO_TRACK',
     SWITCH_AUTO_TRACK_MODAL = 'SWITCH_AUTO_TRACK_MODAL',
     CHANGE_NUM_FRAMES_TO_TRACK = 'CHANGE_NUM_FRAMES_TO_TRACK',
+    GET_FRAME = 'GET_FRAME',
+    SWITCH_CURRENT_DISPLAY = 'SWITCH_CURRENT_DISPLAY',
     // ISL END
 }
 
@@ -232,6 +234,24 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
 // ISL END
 
 // ISL TRACKING
+export function fetch(jobInstance: any, url:string, params:any): AnyAction {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            jobInstance.annotations.fetch(url,params).then((data: any) => {
+                console.log('data from server: ',data);
+                dispatch({
+                    type: AnnotationActionTypes.GET_FRAME,
+                    payload: {
+                        image: data,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error Occured While Fetching', error);
+        }
+    };
+}
+
 export function changeNumFramesToTrack(num_frames:number): AnyAction {
     return {
         type: AnnotationActionTypes.CHANGE_NUM_FRAMES_TO_TRACK,
@@ -259,7 +279,10 @@ export function switchAutoTrack(status:boolean): AnyAction {
         },
     };
 }
-export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number): AnyAction {
+
+export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,mode:string = 'OVERRIDE'): AnyAction {
+    // if mode == 'OVERRIDE', all of the previous states to be tracked will be deleted
+    // if mode == 'APPEND', new tracking states will be added on the end of the list
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,objectState.points).then((data: any) => {
@@ -268,11 +291,13 @@ export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd
                     type: AnnotationActionTypes.START_TRACK,
                     payload: {
                         statesToUpdate:data.tracker_coords,
-                        tracking:true,
+                        tracking:false,
                         from: frameStart,
                         clientID:objectState.clientID,
+                        mode: mode,
                     },
                 });
+                dispatch(changeCurrentDisplay(frameEnd));
             });
         } catch (error) {
             console.log('Error occured while tracking.', error);
@@ -280,6 +305,15 @@ export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd
         }
     };
 };
+
+export function changeCurrentDisplay(frame_num:number): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_CURRENT_DISPLAY,
+        payload: {
+            current: frame_num,
+        },
+    };
+}
 // ISL END
 
 // ISL AUTOFIT

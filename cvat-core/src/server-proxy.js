@@ -693,7 +693,7 @@
             }
             // ISL END
 
-            // EDITED FOR TRACKING
+            // ISL TRACKING
             async function tracking(id, objectID, frameStart, frameEnd, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
                 console.log('TRACKING from server-proxy');
                 const { backendAPI } = config;
@@ -722,7 +722,22 @@
 
                 return response.data;
             }
-            // EDITED END
+            async function fetch(id,url,params) { // generic fetching
+                const { backendAPI } = config;
+                console.log('fetching ',url);
+                let response = null;
+                try {
+                    response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+
+                return response.data;
+            }
+            // ISL END
+
             // ISL GLOBAL ATTRIBUTES
             async function updateLabels(id, data,selected) {
                 const { backendAPI } = config;
@@ -838,6 +853,7 @@
                         /*ISL END*/
                         // ISL TRACKING
                         tracking,
+                        fetch,
                         // ISL END
                     }),
                     writable: false,

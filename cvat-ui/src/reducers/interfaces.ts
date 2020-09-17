@@ -432,6 +432,8 @@ export interface AnnotationState {
         clientID:number,
         modalVisible:boolean,
         numberOfFramesToTrack: number,
+        image: any,
+        current: number, // frame to display
     }
     // ISL END
 }

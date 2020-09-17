@@ -35,6 +35,13 @@
                             .apiWrapper.call(this, prototype.annotations.tracking, objectID, frameStart, frameEnd, points);
                         return result;
                     },
+
+                    async fetch(url,params) {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.fetch, url, params);
+                        return result;
+                    },
+
                     // ISL END
 
                     // ISL GLOBAL ATTRIBUTES
@@ -774,6 +781,7 @@
                 // ISL END
                 // ISL TRACKING
                 tracking: Object.getPrototypeOf(this).annotations.tracking.bind(this),
+                fetch: Object.getPrototypeOf(this).annotations.fetch.bind(this),
                 // ISL END
                 // ISL GLOBAL ATTRIBUTES
                 updateLabels: Object.getPrototypeOf(this).annotations.updateLabels.bind(this),
@@ -1339,6 +1347,7 @@
                 // ISL END
                 // ISL TRACKING
                 tracking: Object.getPrototypeOf(this).annotations.tracking.bind(this),
+                fetch: Object.getPrototypeOf(this).annotations.fetch.bind(this),
                 // ISL END
                 // ISL GLOBAL ATTRIBUTES
                 updateLabels: Object.getPrototypeOf(this).annotations.updateLabels.bind(this),
@@ -1469,6 +1478,15 @@
 
     Task.prototype.annotations.tracking = async function (objectID, frameStart, frameEnd, points) {
         const result = await serverProxy.tasks.tracking(this.id, objectID, frameStart, frameEnd, points)
+        return result;
+    },
+    Job.prototype.annotations.fetch = async function (url,params) {
+        const result = await serverProxy.tasks.fetch(this.task.id, url,params)
+        return result;
+    },
+
+    Task.prototype.annotations.fetch = async function (url,params) {
+        const result = await serverProxy.tasks.fetch(this.id, url,params)
         return result;
     },
     // ISL END

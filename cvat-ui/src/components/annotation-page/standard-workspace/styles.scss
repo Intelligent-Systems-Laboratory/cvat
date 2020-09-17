@@ -134,6 +134,13 @@
     }
 }
 
+.cvat-track-confirm {
+    > .ant-input-number {
+        width: 70px;
+        margin: 0 5px;
+    }
+}
+
 .cvat-canvas-context-menu {
     opacity: 1;  // ISL CONTEXT MENU ON DRAW changed from 0.6
     position: fixed;

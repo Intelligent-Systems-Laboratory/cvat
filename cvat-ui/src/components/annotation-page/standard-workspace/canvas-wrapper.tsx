@@ -116,11 +116,12 @@ interface Props {
     contextMenuVisibility:boolean; // ISL FIX CONTEXT MENU
     automaticTracking:any;
     // ISL TRACKING
-    onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void;
+    onTrack(jobInstance:any,objectState:any,frameStart:number,frameEnd:number):void;
     onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
     // ISL END
     onSwitchAutoTrack(status:boolean):void;
     onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
+    onFetch(jobInstance:any,url:string,params:any):void;
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -200,9 +201,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // console.log(annotations[0].attributes); // the actual value of attributes
         // console.log('objectState',objectState);
         if(automaticTracking!== prevProps.automaticTracking){
-            console.log('automatic tracking coordinates received');
             console.log('STATES TO UPDATE',automaticTracking);
             // this.track();
+
         }
 
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
@@ -422,6 +423,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             frameData,
             onSwitchAutoTrack,
             onSwitchTrackModalVisibility,
+            onFetch,
         } = this.props
 
 
@@ -431,11 +433,13 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
         //     onSwitchAutoTrack(true);
         // }
+        // onFetch(jobInstance,'tasks/1/data?type=frame&quality=compressed&number=30',null);
         if(automaticTracking.tracking == false){
             const [state] = annotations.filter((el: any) => (el.clientID === clientID));
             console.log(state);
             if (state && state.shapeType === ShapeType.RECTANGLE) {
             // onTrack(jobInstance,state,frameData.number,(frameData.number+this.num_frame_to_track),state.points);
+            onTrack(jobInstance,state,frameData.number,frameData.number+30);
             onSwitchTrackModalVisibility(true,jobInstance,frameData.number,state);
             }
         }else{

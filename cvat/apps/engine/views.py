@@ -481,17 +481,21 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
         data_quality = FrameProvider.Quality.COMPRESSED
-        for x in range(frameStart, frameEnd+1):
-            if((x-frameStart) % 2 == 1):
-                continue
-            img, mime = frame_provider.get_frame(x, data_quality)
-            img = Image.open(img)
-            orig_img = np.array(img)
-            image = orig_img[:, :, ::-1].copy()
-            if(useCroppedBG):
-                image = image[cropped_ytl:cropped_ybr,cropped_xtl:cropped_xbr,:]
-            frameList.append(image)
-        # print('frameList length: %d' % len(frameList))
+        # for x in range(frameStart, frameEnd+1):
+        #     if((x-frameStart) % 2 == 1):
+        #         continue
+        #     img, mime = frame_provider.get_frame(x, data_quality)
+        #     img = Image.open(img)
+        #     orig_img = np.array(img)
+        #     image = orig_img[:, :, ::-1].copy()
+        #     if(useCroppedBG):
+        #         image = image[cropped_ytl:cropped_ybr,cropped_xtl:cropped_xbr,:]
+        #     frameList.append(image)
+        skip = 2
+        out_type = FrameProvider.Type.NUMPY_ARRAY
+        frameList = frame_provider.get_frames_improved(frameStart,frameEnd,data_quality,out_type,skip)
+
+        print('frameList length: %d' % len(frameList))
         if(useCroppedBG):
             data = (new_xtl, new_ytl, new_xbr-new_xtl, new_ybr-new_ytl)
         else:
@@ -651,7 +655,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     data_quality = FrameProvider.Quality.COMPRESSED \
                         if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
                     buf, mime = frame_provider.get_frame(data_id, data_quality)
-
+                    print(mime)
                     return HttpResponse(buf.getvalue(), content_type=mime)
 
                 elif data_type == 'preview':

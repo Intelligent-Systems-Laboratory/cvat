@@ -129,6 +129,8 @@ const defaultState: AnnotationState = {
         numberOfFramesToTrack:1,
         jobInstance:null,
         sourceState:null,
+        image: null,
+        current: 30,
 
     },
     // ISL END
@@ -137,6 +139,16 @@ const defaultState: AnnotationState = {
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
         // ISL TRACKING
+        case AnnotationActionTypes.GET_FRAME: {
+            const { image } = action.payload;
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    image: image,
+                }
+            };
+        }
         case AnnotationActionTypes.CHANGE_NUM_FRAMES_TO_TRACK: {
             const { num_frames } = action.payload;
             return {
@@ -166,7 +178,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         }
         case AnnotationActionTypes.SWITCH_AUTO_TRACK: {
             const { status } = action.payload;
-            if(status==false){
+
             return {
                 ...state,
                 automaticTracking:{
@@ -174,24 +186,50 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                     tracking:status,
                 }
             };
-            }
-            else{
-                return {...state}
-            }
+
+        }
+        case AnnotationActionTypes.SWITCH_CURRENT_DISPLAY: {
+            const { current } = action.payload;
+
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    current:current,
+                }
+            };
+
         }
         case AnnotationActionTypes.START_TRACK: {
-            const { statesToUpdate,tracking,from,clientID} = action.payload;
+            const { statesToUpdate,tracking,from,clientID,mode} = action.payload;
+            const result_states: any[] = [];
+            let frame_start = state.automaticTracking.frameStart;
+            if(mode == 'OVERRIDE'){
+                for(let state of statesToUpdate){
+                    result_states.push(state);
+                }
+                frame_start = from;
+            }
+            else if (mode == 'APPEND'){
+                let prev_states = state.automaticTracking.states;
+                for(let state of prev_states){
+                    result_states.push(state);
+                }
+                for(let state of statesToUpdate){
+                    result_states.push(state);
+                }
+
+            }
             return {
                 ...state,
                 automaticTracking: {
                     ...state.automaticTracking,
-                    states:statesToUpdate,
+                    states:result_states,
                     tracking:tracking,
-                    frameStart: from,
+                    frameStart: frame_start,
                     clientID:clientID,
                 }
             };
-
 
         }
         case AnnotationActionTypes.STOP_TRACK: {

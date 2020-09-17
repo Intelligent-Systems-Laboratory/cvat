@@ -34,7 +34,8 @@ import {
     track,
     changeFrameAsync,
     switchAutoTrack,
-    switchTrackModalVisibility
+    switchTrackModalVisibility,
+    fetch
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -149,6 +150,7 @@ interface DispatchToProps {
     onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
     onSwitchAutoTrack(status:boolean):void;
     onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
+    onFetch(jobInstance:any,url:string,params:any):void;
     // ISL END
 }
 
@@ -405,11 +407,14 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         // ISL END
         // ISL TRACK
-        onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void {
-            dispatch(track(jobInstance,clientID,frameStart,frameEnd,points));
+        onTrack(jobInstance:any,objectState:any,frameStart:number,frameEnd:number):void {
+            dispatch(track(jobInstance,objectState,frameStart,frameEnd));
         },
         onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void {
             dispatch(changeFrameAsync(frame, fillBuffer, frameStep));
+        },
+        onFetch(jobInstance:any,url:string,params:any):void{
+            dispatch(fetch(jobInstance,url,params));
         },
         // ISL END
         onSwitchAutoTrack(status:boolean):void{

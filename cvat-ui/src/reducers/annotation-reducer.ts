@@ -273,6 +273,22 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             } = action.payload;
             let result_states = state.automaticTracking.states;
             let stateToEdit = result_states[result_states.length-1];
+            let width = stateToEdit[2]-stateToEdit[0];
+            let height = stateToEdit[3]-stateToEdit[1];
+            let firstStateIndex = result_states.length-15;
+            if(firstStateIndex<0){
+                firstStateIndex=0;
+            }
+            let firstState = result_states[firstStateIndex];
+            for(var i=firstStateIndex+1;i<result_states.length-1;i++){
+                var temp_state = result_states[i];
+                let temp_width = temp_state[2]-temp_state[0];
+                let temp_height = temp_state[3]-temp_state[1];
+                temp_state[0]=temp_state[0]+(temp_width/width)*drag.x;
+                temp_state[1]=temp_state[1]+(temp_height/height)*drag.y;
+                temp_state[2]=temp_state[2]+(temp_width/width)*(drag.x+resize.x);
+                temp_state[3]=temp_state[3]+(temp_height/height)*(drag.y+resize.y);
+            }
             stateToEdit[0] = stateToEdit[0]+drag.x;
             stateToEdit[1] = stateToEdit[1]+drag.y;
             stateToEdit[2] = stateToEdit[2]+drag.x+resize.x;

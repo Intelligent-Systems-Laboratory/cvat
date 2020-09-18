@@ -2380,11 +2380,11 @@ export class CanvasViewImpl implements CanvasView, Listener {
         };
 
         // Find the best place for a text
-        let [clientX, clientY]: number[] = [box.x + box.width, box.y];
-        if (clientX + (text.node as any as SVGTextElement)
-            .getBBox().width + consts.TEXT_MARGIN > this.canvas.offsetWidth) {
-            ([clientX, clientY] = [box.x, box.y]);
-        }
+        let [clientX, clientY]: number[] = [box.x, box.y];
+        // if (clientX + (text.node as any as SVGTextElement)
+        //     .getBBox().width + consts.TEXT_MARGIN > this.canvas.offsetWidth) {
+        //     ([clientX, clientY] = [box.x, box.y]);
+        // }
 
         // Translate back to text SVG
         const [x, y]: number[] = translateToSVG(this.text, [
@@ -2393,7 +2393,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         ]);
 
         // Finally draw a text
-        text.move(x-box.width, y);
+        text.move(x, y);
         for (const tspan of (text.lines() as any).members) {
             tspan.attr('x', text.attr('x'));
         }

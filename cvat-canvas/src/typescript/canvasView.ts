@@ -1071,7 +1071,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         this.content.addEventListener('mousemove', (e): void => {
             // ISL LOCK ICON
-            // Note: this.lockedBox function draws a solid color box around the highlighted locked shape when set to true
+            // Note: this.lockedBox function, when set to true, draws a solid color box around the highlighte shape
 
             // This part is intended to 1.) set this.lockedBox = true on mouseover of the locked shape, and
             // 2.) set this.lockedBox = false on mouseout of the locked shape
@@ -2388,12 +2388,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         // Translate back to text SVG
         const [x, y]: number[] = translateToSVG(this.text, [
-            clientX + consts.TEXT_MARGIN,
-            clientY + consts.TEXT_MARGIN,
+            clientX,
+            clientY,
         ]);
 
         // Finally draw a text
-        text.move(x, y);
+        text.move(x-box.width, y);
         for (const tspan of (text.lines() as any).members) {
             tspan.attr('x', text.attr('x'));
         }

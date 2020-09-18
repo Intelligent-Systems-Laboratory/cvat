@@ -2382,7 +2382,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         // Find the best place for a text
         let [clientX, clientY]: number[] = [box.x, box.y];
         // if (clientX + (text.node as any as SVGTextElement)
-        //     .getBBox().width + consts.TEXT_MARGIN > this.canvas.offsetWidth) {
+        //     .getBBox().width> this.canvas.offsetWidth) {
         //     ([clientX, clientY] = [box.x, box.y]);
         // }
 

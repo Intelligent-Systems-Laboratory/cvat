@@ -705,11 +705,26 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         const {
             activatedStateID,
             onUpdateContextMenu,
+            annotations
         } = this.props;
-        if (e.target && !(e.target as HTMLElement).classList.contains('svg_select_points')) {
-            onUpdateContextMenu(activatedStateID !== null, e.clientX, e.clientY,
-                ContextMenuType.CANVAS_SHAPE);
+        var el:any = null;
+
+        var state:any = null;
+        for(var annotation of annotations){
+            console.log(annotation);
+            if(annotation.clientID == activatedStateID){
+                state = annotation;
+                el = window.document.getElementById(`cvat_canvas_shape_${annotation.clientID}`);
+            }
         }
+        if (el && state.shapeType === ShapeType.RECTANGLE) {
+            const rect = el.getBoundingClientRect();
+            onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
+        }
+        // if (e.target && !(e.target as HTMLElement).classList.contains('svg_select_points')) {
+        //     onUpdateContextMenu(activatedStateID !== null, e.clientX, e.clientY,
+        //         ContextMenuType.CANVAS_SHAPE);
+        // }
     };
 
     private onCanvasShapeDragged = (e: any): void => {

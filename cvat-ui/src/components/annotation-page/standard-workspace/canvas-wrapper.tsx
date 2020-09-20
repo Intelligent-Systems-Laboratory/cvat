@@ -681,14 +681,14 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             if (activatedStateID !== null && workspace !== Workspace.ATTRIBUTE_ANNOTATION) {
                 onActivateObject(null);
                 // ISL AUTO LOCK
-                if(this.newBox != -1){
-                    const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
-                    const state = annotations[annotations.length - 1];
-                    console.log(state);
-                    state.lock = true;
-                    onUpdateAnnotations([state]);
-                    this.newBox = -1;
-                }
+                // if(this.newBox != -1){
+                //     const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
+                //     const state = annotations[annotations.length - 1];
+                //     console.log(state);
+                //     state.lock = true;
+                //     onUpdateAnnotations([state]);
+                //     this.newBox = -1;
+                // }
                 // ISL AUTO LOCK
 
             }

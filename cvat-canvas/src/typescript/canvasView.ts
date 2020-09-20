@@ -1057,7 +1057,21 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 return
             }
             // ISL END
+            // ISL FIXED ZOOM
 
+            if (!event.shiftKey) return;
+            if (event.deltaY < 0 && this.magnifyingGlassParameters.zoomScale > 30) {
+                this.fixedZoomMultiplier = this.fixedZoomMultiplier * 1.1;
+            } else if (event.deltaY > 0 && this.magnifyingGlassParameters.zoomScale < 180) {
+                this.fixedZoomMultiplier = this.fixedZoomMultiplier / 1.1;
+            }
+
+            this.fixedZoomMultiplier = Math.max(0.3,this.fixedZoomMultiplier);
+            this.fixedZoomMultiplier = Math.min(3.7,this.fixedZoomMultiplier);
+            console.log('mult',this.fixedZoomMultiplier);
+            this.updateZoomArea(event);
+            return
+            // ISL END
 
             const { offset } = this.controller.geometry;
             const point = translateToSVG(this.content, [event.clientX, event.clientY]);
@@ -1102,15 +1116,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
             self.controller.drag(e.clientX, e.clientY);
 
-            // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
             const { offset } = this.controller.geometry;    // Declare variables for ISL FIXED ZOOM and CROSSHAIR
             const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
-            var zoomCanvas = document.getElementById('zoom-canvas');
-            var zoomCanvasCtx = zoomCanvas.getContext('2d');
-            var zoomX = x - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
-            var zoomY = y - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
-            var zoomImg = this.background;
-            // ISL END
 
             // ISL MAGNIFYING GLASS
             this.magnifyingGlassParameters.cursorX = e.clientX;
@@ -1121,21 +1128,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
             // ISL END
 
-            // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
-            zoomCanvasCtx.clearRect(0,0,this.fixedZoomSize,this.fixedZoomSize); // Clear canvas
-            zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,(this.fixedZoomSize/this.fixedZoomMultiplier), // Show zoomed image
-                (this.fixedZoomSize/this.fixedZoomMultiplier),0,0,this.fixedZoomSize,this.fixedZoomSize);
-            if (this.mode === Mode.DRAW || this.mode === Mode.RESIZE) { // Operate only on DRAW and RESIZE modes
-            zoomCanvasCtx.beginPath();  // Draw crosshair lines
-            zoomCanvasCtx.lineWidth = 2;
-            zoomCanvasCtx.strokeStyle = 'red';
-            zoomCanvasCtx.moveTo(this.fixedZoomSize/2,0);
-            zoomCanvasCtx.lineTo(this.fixedZoomSize/2,this.fixedZoomSize);
-            zoomCanvasCtx.moveTo(0,this.fixedZoomSize/2);
-            zoomCanvasCtx.lineTo(this.fixedZoomSize,this.fixedZoomSize/2);
-            zoomCanvasCtx.stroke();
-            }
-            // ISL END
+            this.updateZoomArea(e);
 
             if (this.mode !== Mode.IDLE) return;
             if (e.ctrlKey || e.shiftKey) return;
@@ -1160,7 +1153,32 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.content.oncontextmenu = (): boolean => false;
         model.subscribe(this);
     }
-
+    public updateZoomArea(e:MouseEvent): void{
+        // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
+        const { offset } = this.controller.geometry;    // Declare variables for ISL FIXED ZOOM and CROSSHAIR
+        const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
+        var zoomCanvas = document.getElementById('zoom-canvas');
+        var zoomCanvasCtx = zoomCanvas.getContext('2d');
+        var zoomX = x - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
+        var zoomY = y - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
+        var zoomImg = this.background;
+        // ISL END
+        // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
+        zoomCanvasCtx.clearRect(0,0,this.fixedZoomSize,this.fixedZoomSize); // Clear canvas
+        zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,(this.fixedZoomSize/this.fixedZoomMultiplier), // Show zoomed image
+            (this.fixedZoomSize/this.fixedZoomMultiplier),0,0,this.fixedZoomSize,this.fixedZoomSize);
+        if (this.mode === Mode.DRAW || this.mode === Mode.RESIZE) { // Operate only on DRAW and RESIZE modes
+        zoomCanvasCtx.beginPath();  // Draw crosshair lines
+        zoomCanvasCtx.lineWidth = 2;
+        zoomCanvasCtx.strokeStyle = 'red';
+        zoomCanvasCtx.moveTo(this.fixedZoomSize/2,0);
+        zoomCanvasCtx.lineTo(this.fixedZoomSize/2,this.fixedZoomSize);
+        zoomCanvasCtx.moveTo(0,this.fixedZoomSize/2);
+        zoomCanvasCtx.lineTo(this.fixedZoomSize,this.fixedZoomSize/2);
+        zoomCanvasCtx.stroke();
+        }
+        // ISL END
+    }
     public notify(model: CanvasModel & Master, reason: UpdateReasons): void {
         this.geometry = this.controller.geometry;
         if (reason === UpdateReasons.CONFIG_UPDATED) {

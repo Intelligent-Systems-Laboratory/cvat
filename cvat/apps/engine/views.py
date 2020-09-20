@@ -451,7 +451,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     )
     @action(detail=True, methods=['GET'])
     def tracking(self, request, pk):
-        useCroppedBG = True
+        useCroppedBG = False
         startTime = current_milli_time()
         frameList = []
         objectID = request.query_params.get('object-id', None)

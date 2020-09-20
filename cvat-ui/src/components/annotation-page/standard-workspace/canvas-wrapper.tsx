@@ -23,8 +23,7 @@ import { LogType } from 'cvat-logger';
 import { Canvas } from 'cvat-canvas-wrapper';
 import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
-
-
+import {checkOccluded} from './auto-occlude';
 const cvat = getCore();
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
@@ -100,11 +99,29 @@ interface Props {
     onSwitchTracking(tracking: boolean, trackedStateID: number | null): void;
     // ISL END
     // ISL AUTOFIT
-    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; 
-    autoFitObjects: any[]; 
+    onAutoFit(jobInstance: any, stateToFit: any, frame: number): void;
+    autoFitObjects: any[];
+    // ISL END
+    // ISL INTERPOLATION
+    onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void;
+    asLastKeyframeObjects: any[];
     // ISL END
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
+    // ISL GLOBAL ATTRIBUTES
+    globalAttributes: any;
+    globalAttributesVisibility:boolean;
+    onSetGlobalAttributesVisibility(visiblity:boolean):void;
+    // ISL END
+    contextMenuVisibility:boolean; // ISL FIX CONTEXT MENU
+    automaticTracking:any;
+    // ISL TRACKING
+    onTrack(jobInstance:any,objectState:any,frameStart:number,frameEnd:number):void;
+    onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
+    // ISL END
+    onSwitchAutoTrack(status:boolean):void;
+    onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
+    onFetch(jobInstance:any,url:string,params:any):void;
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -132,7 +149,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         this.initialSetup();
         this.updateCanvas();
     }
-
+    private newBox: number = -1; // ISL AUTO LOCK
     public componentDidUpdate(prevProps: Props): void {
         const {
             opacity,
@@ -168,9 +185,26 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onFetchAnnotation,
             automaticBordering,
             // ISL AUTOFIT
-            autoFitObjects, 
+            autoFitObjects,
+            asLastKeyframeObject,
             // ISL END
+            jobInstance,
+            globalAttributes,
+            globalAttributesVisibility,
+            onSetGlobalAttributesVisibility,
+            automaticTracking,
+            onUpdateAnnotations,onSwitchAutoTrack
         } = this.props;
+        // console.log(this.props);
+        // console.log(job);
+        // console.log('annotations',annotations);// contains the current attributes. see next line
+        // console.log(annotations[0].attributes); // the actual value of attributes
+        // console.log('objectState',objectState);
+        if(automaticTracking!== prevProps.automaticTracking){
+            console.log('STATES TO UPDATE',automaticTracking);
+            // this.track();
+
+        }
 
         if (prevProps.showObjectsTextAlways !== showObjectsTextAlways
             || prevProps.automaticBordering !== automaticBordering
@@ -245,11 +279,17 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // ISL AUTOFIT
             if (annotations.length > prevProps.annotations.length && prevProps.frameData === frameData) {
                 this.contextMenuOnDraw();
+                this.newBox = annotations.length - 1;// ISL AUTO LOCK
                 // this.autoFit(annotations[annotations.length - 1].clientID);
             }
             // ISL END
         }
-
+        if (prevProps.frameData.number !== frameData.number
+        ) {
+            console.log('frame changed');
+            // this.track();
+            // this.autoOcclude();
+        }
         if (prevProps.frame !== frameData.number
             && ((resetZoom && workspace !== Workspace.ATTRIBUTE_ANNOTATION) ||
             workspace === Workspace.TAG_ANNOTATION)
@@ -306,6 +346,32 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         }
 
         this.activateOnCanvas();
+
+        if(automaticTracking.tracking){
+            setTimeout(()=>{
+                let index = ((frameData.number - automaticTracking.frameStart)/2) - 1;
+                if(index<automaticTracking.states.length-1){
+                    this.changeFrame(frameData.number+2);
+                }else{
+                    onSwitchAutoTrack(false);
+                }
+                if(frameData.number!== prevProps.frameData.number && automaticTracking.tracking){
+                    const [state] = annotations.filter((el: any) => (el.clientID === automaticTracking.clientID));
+                    // console.log(state);
+                    // console.log('states',automaticTracking.states);
+                    // console.log('index',index);
+                    try{
+                        let temp = automaticTracking.states[index];
+                        // console.log(temp);
+                        state.points = temp;
+                        onUpdateAnnotations([state]);
+                    }catch{
+                        console.log('Indexing error!');
+                    }
+
+                }
+            },100);
+        }
     }
 
     public componentWillUnmount(): void {
@@ -345,18 +411,66 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         // ISL END
         window.removeEventListener('resize', this.fitCanvas);
     }
+    // ISL MANUAL TRACKING update annotations
+    private num_frame_to_track = 50;
+    private track = (clientID:number): void => {
+        const {
+            onUpdateAnnotations,
+            automaticTracking,
+            onTrack,
+            jobInstance,
+            annotations,
+            frameData,
+            onSwitchAutoTrack,
+            onSwitchTrackModalVisibility,
+            onFetch,
+        } = this.props
 
+
+        // if(automaticTracking.tracking == true){
+        //     onSwitchAutoTrack(false);
+        // }else{
+
+        //     onSwitchAutoTrack(true);
+        // }
+        // onFetch(jobInstance,'tasks/1/data?type=frame&quality=compressed&number=30',null);
+        if(automaticTracking.tracking == false){
+            const [state] = annotations.filter((el: any) => (el.clientID === clientID));
+            console.log(state);
+            if (state && state.shapeType === ShapeType.RECTANGLE) {
+            // onTrack(jobInstance,state,frameData.number,(frameData.number+this.num_frame_to_track),state.points);
+            onTrack(jobInstance,state,frameData.number,frameData.number+30);
+            onSwitchTrackModalVisibility(true,jobInstance,frameData.number,state);
+            }
+        }else{
+            onSwitchAutoTrack(false);
+        }
+    }
+    private changeFrame(frame: number): void {
+        const { onChangeFrame,
+            canvasInstance ,
+            annotations,
+            automaticTracking,
+            frameData,
+            onUpdateAnnotations} = this.props;
+
+        if (canvasInstance.isAbleToChangeFrame()) {
+            onChangeFrame(frame);
+        }
+
+    }
+    // ISL END
     // ISL MANUAL TRACKING update annotations
     private trackingDone = (event: any): void => {
         const {
             onSwitchTracking,
             onUpdateAnnotations,
         } = this.props
-
+        console.log('STATES TO UPDATE',event.detail.states);
         onUpdateAnnotations(event.detail.states);
         onSwitchTracking(false, null);
     }
-    // ISL END    
+    // ISL END
 
     // ISL CONTEXT MENU ON DRAW
     private contextMenuOnDraw(): void {
@@ -377,6 +491,38 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
 
     }
     // ISL END
+
+    // ISL AUTO OCCLUDE
+    private autoOcclude = ():void => {
+
+        console.log('auto occlude');
+        const {annotations,
+        onUpdateAnnotations}= this.props;
+
+        // annotations[0].occluded = true;
+        console.log(annotations);
+        for (let state of annotations){
+            for(let state2 of annotations){
+                if(state != state2){
+                    let result = checkOccluded(state,state2,0.025,[960,1080]);
+                    if(result[0].occluded){
+                        state.occluded = result[0].occluded;
+                    }
+                    else{
+                    }
+                    if(result[1].occluded){
+                        state2.occluded = result[1].occluded;
+                    }
+                    else{
+                    }
+                }
+            }
+        }
+        onUpdateAnnotations(annotations);
+    }
+    // ISL END
+
+
     // ISL AUTOFIT
     private onShapedblClicked = (e: any): void => {
         const {
@@ -405,7 +551,19 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         }
     }
     // ISL END
-
+    // ISL INTERPOLATION
+    private asLastKeyframe = (clientID: number): void => {
+        const {
+            objectState,
+            jobInstance,
+            frame,
+            onSetLastKeyframe,
+            annotations,
+        } = this.props;
+        const [state] = annotations.filter((el: any) => (el.clientID === clientID));
+        onSetLastKeyframe(jobInstance, state, frame);
+    }
+    // ISL END
     private onCanvasShapeDrawn = (event: any): void => {
         const {
             jobInstance,
@@ -414,6 +572,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             frame,
             onShapeDrawn,
             onCreateAnnotations,
+            globalAttributes,
         } = this.props;
 
         if (!event.detail.continue) {
@@ -433,7 +592,27 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             .filter((label: any) => label.id === activeLabelID)[0];
         state.occluded = state.occluded || false;
         state.frame = frame;
+        // ISL GLOBAL ATTRIBUTES
+        console.log(state);
+        const nameToIDMap:Record<string, number> = {};
+        for (const attribute of state.label.attributes) {
+            //save the corresponding IDs of each attribute
+            nameToIDMap[attribute.name] = attribute.id;
+        }
+
+        const attr: Record<number, string> = {};
+        // get the global attribute's name and value and apply it to the new rectangle if the attribute exist
+        for (const key in globalAttributes) {
+            if(nameToIDMap[key] !== undefined || ""){//nameToIDMap[key] is undefined if the attribute does not exist
+                if(globalAttributes[key] !== ""){//globalAttributes[key] is "", it means that global attributes are not yet set
+                    attr[nameToIDMap[key]] = globalAttributes[key];
+                }
+            }else{
+                // do nothing for now
+            }
+        }
         const objectState = new cvat.classes.ObjectState(state);
+        objectState.attributes = attr; // set the values to the edited values
         onCreateAnnotations(jobInstance, frame, [objectState]);
     };
 
@@ -489,11 +668,29 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasMouseDown = (e: MouseEvent): void => {
-        const { workspace, activatedStateID, onActivateObject } = this.props;
+        const { workspace,
+            activatedStateID,
+            onActivateObject,
+            // ISL AUTO LOCK
+            annotations,
+            onUpdateAnnotations,
+            // ISL END
+        } = this.props;
 
         if ((e.target as HTMLElement).tagName === 'svg') {
             if (activatedStateID !== null && workspace !== Workspace.ATTRIBUTE_ANNOTATION) {
                 onActivateObject(null);
+                // ISL AUTO LOCK
+                if(this.newBox != -1){
+                    const el = window.document.getElementById(`cvat_canvas_shape_${annotations[annotations.length - 1].clientID}`);
+                    const state = annotations[annotations.length - 1];
+                    console.log(state);
+                    state.lock = true;
+                    onUpdateAnnotations([state]);
+                    this.newBox = -1;
+                }
+                // ISL AUTO LOCK
+
             }
         }
     };
@@ -508,32 +705,46 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         const {
             activatedStateID,
             onUpdateContextMenu,
+            annotations
         } = this.props;
+        var el:any = null;
 
-        if (e.target && !(e.target as HTMLElement).classList.contains('svg_select_points')) {
-            onUpdateContextMenu(activatedStateID !== null, e.clientX, e.clientY,
-                ContextMenuType.CANVAS_SHAPE);
+        var state:any = null;
+        for(var annotation of annotations){
+            console.log(annotation);
+            if(annotation.clientID == activatedStateID){
+                state = annotation;
+                el = window.document.getElementById(`cvat_canvas_shape_${annotation.clientID}`);
+            }
         }
+        if (el && state.shapeType === ShapeType.RECTANGLE) {
+            const rect = el.getBoundingClientRect();
+            onUpdateContextMenu(true, rect.right, rect.top, ContextMenuType.CANVAS_SHAPE);
+        }
+        // if (e.target && !(e.target as HTMLElement).classList.contains('svg_select_points')) {
+        //     onUpdateContextMenu(activatedStateID !== null, e.clientX, e.clientY,
+        //         ContextMenuType.CANVAS_SHAPE);
+        // }
     };
 
     private onCanvasShapeDragged = (e: any): void => {
-        const { 
+        const {
             jobInstance,
-            onUpdateContextMenu, // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE 
+            onUpdateContextMenu, // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
         } = this.props;
         const { id } = e.detail;
         jobInstance.logger.log(LogType.dragObject, { id });
-        onUpdateContextMenu(false, 0, 0); // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
+        onUpdateContextMenu(false, 0, 0,ContextMenuType.CANVAS_SHAPE); // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
     };
 
     private onCanvasShapeResized = (e: any): void => {
-        const { 
+        const {
             jobInstance,
             onUpdateContextMenu, // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
         } = this.props;
         const { id } = e.detail;
         jobInstance.logger.log(LogType.resizeObject, { id });
-        onUpdateContextMenu(false, 0, 0); // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
+        onUpdateContextMenu(false, 0, 0,ContextMenuType.CANVAS_SHAPE); // ISL REMOVE CONTEXT MENU AFTER DRAGGING/RESIZING SHAPE
     };
 
     private onCanvasImageFitted = (): void => {
@@ -547,11 +758,15 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
     };
 
     private onCanvasShapeClicked = (e: any): void => {
+        const { onActivateObject, activatedStateID } = this.props;
         const { clientID } = e.detail.state;
+        onActivateObject(clientID);
         const sidebarItem = window.document
             .getElementById(`cvat-objects-sidebar-state-item-${clientID}`);
         if (sidebarItem) {
-            sidebarItem.scrollIntoView();
+            // ISL CANVAS
+            //sidebarItem.scrollIntoView();
+            // ISL END
         }
     };
 
@@ -574,6 +789,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             workspace,
             onActivateObject,
             tracking,
+            contextMenuVisibility, //ISL FIX CONTEXT MENU
         } = this.props;
 
         if (workspace !== Workspace.STANDARD) {
@@ -594,9 +810,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             }
 
             if (activatedStateID !== result.state.clientID) {
-                if (!tracking) {
-                    onActivateObject(result.state.clientID);
-                }
+                if(!contextMenuVisibility)
+                onActivateObject(result.state.clientID);
             }
         }
     };
@@ -774,7 +989,16 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             contrastLevel,
             saturationLevel,
             canvasBackgroundColor,
+            annotations,
+            onSetGlobalAttributesVisibility
         } = this.props;
+
+        // ISL GLOBAL ATTRIBUTES
+        if(annotations.length == 0){
+            //show the global attribute modal if there are no annotations
+            onSetGlobalAttributesVisibility(true);
+        }
+        // ISL END
 
         // Size
         window.addEventListener('resize', this.fitCanvas);
@@ -843,7 +1067,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         canvasInstance.html().addEventListener('point.contextmenu', this.onCanvasPointContextMenu);
         // ISL MANUAL TRACKING
         canvasInstance.html().addEventListener('canvas.trackingdone', this.trackingDone);
-        // ISL END 
+        // ISL END
     }
 
     public render(): JSX.Element {
@@ -889,7 +1113,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             DECREASE_GRID_OPACITY: keyMap.DECREASE_GRID_OPACITY,
             CHANGE_GRID_COLOR: keyMap.CHANGE_GRID_COLOR,
             AUTOFIT: keyMap.AUTOFIT,
+            INTERPOLATION: keyMap.INTERPOLATION,
             SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
+            AUTO_TRACK: keyMap.AUTO_TRACK,
+            AUTO_OCCLUDE: keyMap.AUTO_OCCLUDE,
         };
 
 
@@ -972,15 +1199,38 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 preventDefault(event);
                 if (activatedStateID){
                     this.autoFit(activatedStateID);
-                } 
+                }
             },
             // ISL END
+            // ISL INTERPOLATION
+            INTERPOLATION: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                if(activatedStateID){
+                    this.asLastKeyframe(activatedStateID);
+                    console.log('keyframe hot key pressed');
+                }
+            },
             SWITCH_AUTOMATIC_BORDERING: (event: KeyboardEvent | undefined) => {
                 if (switchableAutomaticBordering) {
                     preventDefault(event);
                     onSwitchAutomaticBordering(!automaticBordering);
                 }
             },
+            // ISL TRACKING
+            AUTO_TRACK: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                console.log('track track track');
+                if (activatedStateID){
+                    this.track(activatedStateID);
+                }
+            },
+            // ISL END
+            // ISL AUTO OCCLUDE
+            AUTO_OCCLUDE: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                this.autoOcclude();
+            },
+            // ISL END
         };
 
         return (

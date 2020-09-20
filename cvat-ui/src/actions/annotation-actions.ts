@@ -26,6 +26,7 @@ import getCore from 'cvat-core-wrapper';
 import logger, { LogType } from 'cvat-logger';
 import { RectDrawingMethod } from 'cvat-canvas-wrapper';
 import { getCVATStore } from 'cvat-store';
+import { object } from 'prop-types';
 
 interface AnnotationsParameters {
     filters: string[];
@@ -190,11 +191,35 @@ export enum AnnotationActionTypes {
     SAVE_LOGS_SUCCESS = 'SAVE_LOGS_SUCCESS',
     SAVE_LOGS_FAILED = 'SAVE_LOGS_FAILED',
     // ISL MANUAL TRACKING
-    SWITCH_TRACKING = 'SWITCH_TRACKING', 
+    SWITCH_TRACKING = 'SWITCH_TRACKING',
     // ISL END
     // ISL AUTOFIT
     START_AUTO_FIT = 'START_AUTO_FIT',
     STOP_AUTO_FIT = 'STOP_AUTO_FIT',
+    // ISL END
+    // ISL INTERPOLATION
+    START_COPY_LAST_KEYFRAME = 'START_COPY_LAST_KEYFRAME',
+    STOP_COPY_LAST_KEYFRAME = 'STOP_COPY_LAST_KEYFRAME',
+    // ISL GLOBAL ATTRIBUTES
+    EDIT_GLOBAL_ATTRIBUTES = 'EDIT_GLOBAL_ATTRIBUTES',
+    START_EDIT_LABEL = 'START_EDIT_LABEL',
+    STOP_EDIT_LABEL = 'STOP_EDIT_LABEL',
+    SET_ATTRIBUTE_VISIBILITY = 'SET_ATTRIBUTE_VISIBILITY',
+    START_SAVE_ATTRIBUTES = 'START_SAVE_ATTRIBUTES',
+    STOP_SAVE_ATRIBUTES = 'STOP_SAVE_ATRIBUTES',
+    START_FETCH_ATTRIBUTES = 'START_FETCH_ATTRIBUTES',
+    STOP_FETCH_ATTRIBUTES = 'STOP_FETCH_ATTRIBUTES',
+    // ISL END
+    // ISL TRACKING
+    START_TRACK = 'START_TRACK',
+    STOP_TRACK= 'STOP_TRACK',
+    SWITCH_AUTO_TRACK = 'SWITCH_AUTO_TRACK',
+    SWITCH_AUTO_TRACK_MODAL = 'SWITCH_AUTO_TRACK_MODAL',
+    CHANGE_NUM_FRAMES_TO_TRACK = 'CHANGE_NUM_FRAMES_TO_TRACK',
+    GET_FRAME = 'GET_FRAME',
+    SWITCH_CURRENT_DISPLAY = 'SWITCH_CURRENT_DISPLAY', //next track checkpoint
+    PREVIOUS_TRACK = 'PREVIOUS_TRACK',
+    EDIT_LAST_TRACK_STATE = 'EDIT_LAST_TRACK_STATE',
     // ISL END
 }
 
@@ -205,6 +230,113 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
         payload: {
             tracking,
             trackedStateID,
+        },
+    };
+}
+// ISL END
+
+// ISL TRACKING
+export function fetch(jobInstance: any, url:string, params:any): AnyAction {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            jobInstance.annotations.fetch(url,params).then((data: any) => {
+                console.log('data from server: ',data);
+                dispatch({
+                    type: AnnotationActionTypes.GET_FRAME,
+                    payload: {
+                        image: data,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error Occured While Fetching', error);
+        }
+    };
+}
+
+export function changeNumFramesToTrack(num_frames:number): AnyAction {
+    return {
+        type: AnnotationActionTypes.CHANGE_NUM_FRAMES_TO_TRACK,
+        payload: {
+            num_frames: num_frames,
+        },
+    };
+}
+export function switchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_AUTO_TRACK_MODAL,
+        payload: {
+            visibility: visibility,
+            jobInstance:jobInstance,
+            frame_num:frame_num,
+            sourceState:sourceState,
+        },
+    };
+}
+export function switchAutoTrack(status:boolean): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_AUTO_TRACK,
+        payload: {
+            status: status,
+        },
+    };
+}
+
+export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,mode:string = 'OVERRIDE',lastPoints:number[]=[]): AnyAction {
+    // if mode == 'OVERRIDE', all of the previous states to be tracked will be deleted
+    // if mode == 'APPEND', new tracking states will be added on the end of the list
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            let points:number[] = [];
+            if(lastPoints.length > 0){
+                points = lastPoints;
+            }else {
+                points = objectState.points;
+            }
+            jobInstance.annotations.tracking(objectState.clientID,frameStart,frameEnd,points).then((data: any) => {
+                console.log('data received from server: ', data.tracker_coords);
+                dispatch({
+                    type: AnnotationActionTypes.START_TRACK,
+                    payload: {
+                        statesToUpdate:data.tracker_coords,
+                        tracking:false,
+                        from: frameStart,
+                        clientID:objectState.clientID,
+                        mode: mode,
+                    },
+                });
+                dispatch(changeCurrentDisplay(frameEnd));
+            });
+        } catch (error) {
+            console.log('Error occured while tracking.', error);
+
+        }
+    };
+};
+
+export function changeCurrentDisplay(frame_num:number): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_CURRENT_DISPLAY,
+        payload: {
+            current: frame_num,
+        },
+    };
+}
+
+export function previousTrack(): AnyAction {
+    return {
+        type: AnnotationActionTypes.PREVIOUS_TRACK,
+        payload: {
+
+        },
+    };
+}
+export function editLastTrackState(drag:any,resize:any): AnyAction {
+    return {
+        type: AnnotationActionTypes.EDIT_LAST_TRACK_STATE,
+        payload: {
+            drag: drag,
+            resize: resize,
         },
     };
 }
@@ -245,6 +377,167 @@ export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAc
 }
 // ISL END
 
+// ISL INTERPOLATION
+export function asLastKeyframe(jobInstance: any, stateToFit: any, frame: number): AnyAction {
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            const state = stateToFit;
+            const stateA: CombinedState = getStore().getState();
+            const { instance: job } = stateA.annotation.job;
+            const { filters, frame, showAllInterpolationTracks } = receiveAnnotationsParameters();
+            const {prev} = state.keyframes;
+            const states = await job.annotations.get(prev, showAllInterpolationTracks, filters);
+            // console.log(stateA);
+            // console.log(states);
+            // console.log(state);
+            // console.log(states[0]);
+            dispatch({
+                type: AnnotationActionTypes.START_COPY_LAST_KEYFRAME,
+                payload: {
+                    clientID: state.clientID,
+                },
+            });
+
+            console.log(jobInstance);
+            // jobInstance.annotations.asLastKeyframe(frame, state.points).then((data: any) => {
+                stateToFit.points = states[state.clientID - 1].points;
+                dispatch(updateAnnotationsAsync([stateToFit]));
+                dispatch({
+                    type: AnnotationActionTypes.STOP_COPY_LAST_KEYFRAME,
+                    payload: {
+                        clientID: state.clientID,
+                    },
+                });
+            // });
+        } catch (error) {
+            console.log('Error Occured While Copying Last Keyframe', error);
+            const state = stateToFit;
+            dispatch({
+                type: AnnotationActionTypes.STOP_COPY_LAST_KEYFRAME,
+                payload: {
+                    clientID: state.clientID,
+                },
+            });
+        }
+    };
+}
+// ISL END
+
+// ISL GLOBAL ATTRIBUTES
+export function setGlobalAttributesVisibility(visibility:boolean): AnyAction {
+    return {
+        type: AnnotationActionTypes.SET_ATTRIBUTE_VISIBILITY,
+        payload: {
+            visibility:visibility,
+        },
+
+    };
+}
+export function editGlobalAttributes(globalAttributes:any): AnyAction {
+    return {
+        type: AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES,
+        payload: {
+            globalAttributes:globalAttributes,
+        },
+    };
+}
+export function okGlobalAttributes(globalAttributes:any): AnyAction {
+    return {
+        type: AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES,
+        payload: {
+            globalAttributes:globalAttributes,
+            visibility:false,
+        },
+    };
+}
+export function editLabels(jobInstance: any,labels_data:any ,selected:any): AnyAction {
+    // console.log('Editing label for task ',jobInstance.task.id);
+    // console.log('attributes: ', labels_data);
+    // console.log('selected: ', selected);
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch({
+                type: AnnotationActionTypes.START_EDIT_LABEL,
+                payload: {
+                    task_id: jobInstance.task.id,
+                    data:labels_data,
+                    status: true,
+                },
+            });
+            // console.log(jobInstance);
+            jobInstance.annotations.updateLabels(labels_data,selected).then((data: any) => {
+                // console.log('data received from server: ', data);
+                dispatch({
+                    type: AnnotationActionTypes.STOP_EDIT_LABEL,
+                    payload: {
+                        task_id: jobInstance.task.id,
+                        data:labels_data,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error Occured While editing labels', error);
+
+        }
+    };
+};
+export function fetchAttributes(jobInstance: any): AnyAction {
+    // console.log('Editing label for task ',jobInstance.task.id);
+    // console.log('attributes: ', labels_data);
+    // console.log('selected: ', selected);
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch({
+                type: AnnotationActionTypes.START_FETCH_ATTRIBUTES,
+                payload: {
+                    task_id: jobInstance.task.id,
+                },
+            });
+            // console.log(jobInstance);
+            jobInstance.annotations.fetchAttributes().then((data: any) => {
+                // console.log('MARKER data fetched: ', data);
+                dispatch({
+                    type: AnnotationActionTypes.STOP_FETCH_ATTRIBUTES,
+                    payload: {
+                        data:data,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error Occured While editing labels', error);
+
+        }
+    };
+};
+export function saveAttributes(jobInstance: any,attributes:any,selected:any): AnyAction {
+    // console.log('Editing label for task ',jobInstance.task.id);
+    // console.log('attributes: ', labels_data);
+    // console.log('selected: ', selected);
+    return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
+        try {
+            dispatch({
+                type: AnnotationActionTypes.START_SAVE_ATTRIBUTES,
+                payload: {
+                    task_id: jobInstance.task.id,
+                },
+            });
+            // console.log(jobInstance);
+            jobInstance.annotations.saveAttributes(attributes,selected).then((data: any) => {
+                console.log('MARKER data fetched: ', data);
+                dispatch({
+                    type: AnnotationActionTypes.STOP_SAVE_ATRIBUTES,
+                    payload: {
+                        task_id: jobInstance.task.id,
+                    },
+                });
+            });
+        } catch (error) {
+            console.log('Error Occured While editing labels', error);
+
+        }
+    };
+};
+//ISL END
 export function saveLogsAsync():
     ThunkAction<Promise<void>, {}, {}, AnyAction> {
     return async (dispatch: ActionCreator<Dispatch>) => {
@@ -929,15 +1222,19 @@ export function rotateCurrentFrame(rotation: Rotation): AnyAction {
 }
 
 export function dragCanvas(enabled: boolean): AnyAction {
+
     return {
         type: AnnotationActionTypes.DRAG_CANVAS,
         payload: {
             enabled,
         },
     };
+
 }
 
 export function zoomCanvas(enabled: boolean): AnyAction {
+    const { jobInstance } = receiveAnnotationsParameters();
+    console.log('6', jobInstance);
     return {
         type: AnnotationActionTypes.ZOOM_CANVAS,
         payload: {
@@ -1247,6 +1544,7 @@ export function createAnnotationsAsync(sessionInstance: any, frame: number, stat
 
 export function mergeAnnotationsAsync(sessionInstance: any, frame: number, statesToMerge: any[]):
     ThunkAction<Promise<void>, {}, {}, AnyAction> {
+        console.log('MARKER mergeAnnotationsAsync',statesToMerge);
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const { filters, showAllInterpolationTracks } = receiveAnnotationsParameters();

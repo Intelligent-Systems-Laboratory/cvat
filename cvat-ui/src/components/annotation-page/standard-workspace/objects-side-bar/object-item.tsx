@@ -56,6 +56,12 @@ function ItemMenu(
     resetCuboidPerspective: (() => void),
     // ISL AUTOFIT
     autoFit: (() => void),
+    // ISL
+    // ISL INTERPOLATION
+    asLastKeyframe: (() => void),
+    // ISL END
+    // ISL TRACKING
+    track: (() => void),
     // ISL END
 ): JSX.Element {
     return (
@@ -143,9 +149,35 @@ function ItemMenu(
                     <Button
                         type='link'
                         icon='import'
-                        onClick={autoFit}   
+                        onClick={autoFit}
                     >
                         AutoFit
+                    </Button>
+                </Tooltip>
+            </Menu.Item>
+            {/* ISL END */}
+            {/* ISL INTERPOLATION */}
+            {/* <Menu.Item>
+                <Tooltip title={`Copies the dimensions of the box of the last keyframe.`}>
+                    <Button
+                        type='link'
+                        icon='import'
+                        onClick={asLastKeyframe}
+                    >
+                        Copy last keyframe
+                    </Button>
+                </Tooltip>
+            </Menu.Item>
+            {/* ISL END */}
+            {/* ISL TRACKING */}
+            <Menu.Item>
+                <Tooltip title={`Track the current bounding box`}>
+                    <Button
+                        type='link'
+                        icon='import'
+                        onClick={track}
+                    >
+                        Track
                     </Button>
                 </Tooltip>
             </Menu.Item>
@@ -181,6 +213,12 @@ interface ItemTopComponentProps {
     // ISL AUTOFIT
     autoFit(): void;
     // ISL END
+    // ISL INTERPOLATION
+    asLastKeyframe(): void;
+    // ISL END
+    // ISL TRACKING
+    track(): void;
+    // ISL END
 }
 
 function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
@@ -207,10 +245,16 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         switchOrientation,
         toBackground,
         toForeground,
-        
+
         resetCuboidPerspective,
         // ISL AUTOFIT
         autoFit,
+        // ISL END
+        // ISL INTERPOLATION
+        asLastKeyframe,
+        // ISL END
+        // ISL TRACKING
+        track,
         // ISL END
     } = props;
 
@@ -269,6 +313,12 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
                         resetCuboidPerspective,
                         // ISL AUTOFIT
                         autoFit,
+                        // ISL
+                        // ISL INTERPOLATION
+                        asLastKeyframe,
+                        // ISL END
+                        // ISL INTERPOLATION
+                        track,
                         // ISL END
                     )}
                 >
@@ -297,7 +347,7 @@ interface ItemButtonsComponentProps {
     switchKeyFrameShortcut: string;
     nextKeyFrameShortcut: string;
     prevKeyFrameShortcut: string;
-
+    asLastKeyframeShortcut: void;
     navigateFirstKeyframe: null | (() => void);
     navigatePrevKeyframe: null | (() => void);
     navigateNextKeyframe: null | (() => void);
@@ -309,12 +359,18 @@ interface ItemButtonsComponentProps {
     unsetOutside(): void;
     setKeyframe(): void;
     unsetKeyframe(): void;
+    // ISL INTERPOLATION
+    asLastKeyframe(): void;
+    // ISL END
     lock(): void;
     unlock(): void;
     pin(): void;
     unpin(): void;
     hide(): void;
     show(): void;
+    // ISL INTERPOLATION
+    track(): void;
+    // ISL END
 }
 
 function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
@@ -334,7 +390,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
         switchKeyFrameShortcut,
         nextKeyFrameShortcut,
         prevKeyFrameShortcut,
-
+        asLastKeyframeShortcut,
         navigateFirstKeyframe,
         navigatePrevKeyframe,
         navigateNextKeyframe,
@@ -346,6 +402,9 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
         unsetOutside,
         setKeyframe,
         unsetKeyframe,
+        // ISL INTERPOLATION
+        asLastKeyframe,
+        // ISL END
         lock,
         unlock,
         pin,
@@ -430,6 +489,15 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                                     : <Icon type='star' onClick={setKeyframe} />}
                             </Tooltip>
                         </Col>
+                        {/* ISL INTERPOLATION */}
+                        <Col>
+                            <Tooltip title={`Copy last keyframe ${asLastKeyframeShortcut}`}>
+                                {keyframe
+                                    ? <Icon type='environment' onClick={asLastKeyframe} />
+                                    : <Icon type='environment' onClick={asLastKeyframe} />}
+                            </Tooltip>
+                        </Col>
+                        {/* ISL END */}
                         {
                             shapeType !== ShapeType.POINTS && (
                                 <Col>
@@ -785,6 +853,9 @@ interface Props {
     unsetOutside(): void;
     setKeyframe(): void;
     unsetKeyframe(): void;
+    // ISL INTERPOLATION
+    asLastKeyframe(): void;
+    // ISL END
     lock(): void;
     unlock(): void;
     pin(): void;
@@ -798,6 +869,9 @@ interface Props {
     resetCuboidPerspective(): void;
     // ISL AUTOFIT
     autoFit(): void,
+    // ISL END
+    // ISL TRACKING
+    track(): void,
     // ISL END
 }
 
@@ -867,6 +941,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
         unsetOutside,
         setKeyframe,
         unsetKeyframe,
+        // ISL INTERPOLATION
+        asLastKeyframe,
+        // ISL END
         lock,
         unlock,
         pin,
@@ -880,6 +957,9 @@ function ObjectItemComponent(props: Props): JSX.Element {
         resetCuboidPerspective,
         // ISL AUTOFIT
         autoFit,
+        // ISL END
+        // ISL AUTOFIT
+        track,
         // ISL END
     } = props;
 
@@ -940,6 +1020,12 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     // ISL AUTOFIT
                     autoFit={autoFit}
                     // ISL END
+                    // ISL INTERPOLATION
+                    asLastKeyframe={asLastKeyframe}
+                    // ISL END
+                    // ISL TRACKING
+                    track={track}
+                    // ISL END
                 />
                 <ItemButtons
                     shapeType={shapeType}
@@ -967,12 +1053,19 @@ function ObjectItemComponent(props: Props): JSX.Element {
                     unsetOutside={unsetOutside}
                     setKeyframe={setKeyframe}
                     unsetKeyframe={unsetKeyframe}
+                    // ISL INTERPOLATION
+                    asLastKeyframe={asLastKeyframe}
+                    asLastKeyframeShortcut={normalizedKeyMap.INTERPOLATION}
+                    // ISL END
                     lock={lock}
                     unlock={unlock}
                     pin={pin}
                     unpin={unpin}
                     hide={hide}
                     show={show}
+                    // ISL TRACKING
+                    track={track}
+                    // ISL END
                 />
                 {!!attributes.length
                     && (

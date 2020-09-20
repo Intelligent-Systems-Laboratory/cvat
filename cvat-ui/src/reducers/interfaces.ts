@@ -409,6 +409,32 @@ export interface AnnotationState {
     // ISL END
     // ISL AUTOFIT
     autoFitObjects: any[];
+    // ISL
+    // ISL INTERPOLATION
+    asLastKeyframeObjects: any[];
+    // ISL END
+    // ISL GLOBAL ATTRIBUTES
+    globalAttributes: any,
+    globalAttributesVisibility:boolean,
+    isFetchingAttributes: boolean,
+    isSavingAttributes: boolean,
+    globalAttributesDB:any,
+    // ISL END
+    // ISL GA REACT
+    globalAttr:any,
+    // ISL TRACKING
+    automaticTracking: {
+        jobInstance:any,
+        sourceState: any,
+        tracking: boolean,
+        states: any[];
+        frameStart: number,
+        clientID:number,
+        modalVisible:boolean,
+        numberOfFramesToTrack: number,
+        image: any,
+        current: number, // frame to display
+    }
     // ISL END
 }
 

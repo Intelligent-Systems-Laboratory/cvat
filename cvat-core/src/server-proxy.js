@@ -693,8 +693,9 @@
             }
             // ISL END
 
-            // EDITED FOR TRACKING
+            // ISL TRACKING
             async function tracking(id, objectID, frameStart, frameEnd, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
+                console.log('TRACKING from server-proxy');
                 const { backendAPI } = config;
                 const x1 = Math.trunc(points[0])
                 const y1 = Math.trunc(points[1])
@@ -706,9 +707,9 @@
                     response = await Axios.get(`${backendAPI}/tasks/${id}/tracking`, { // EDITED to  add the URL parameters instead
                         proxy: config.proxy,
                         params: {
-                            objectID: objectID,
-                            frameStart: frameStart,
-                            frameEnd: frameEnd,
+                            "object-id": objectID,
+                            "frame-start": frameStart,
+                            "frame-end": frameEnd,
                             x1: x1,
                             y1: y1,
                             x2: x2,
@@ -721,8 +722,105 @@
 
                 return response.data;
             }
-            // EDITED END
+            async function fetch(id,url,params) { // generic fetching
+                const { backendAPI } = config;
+                console.log('fetching ',url);
+                let response = null;
+                try {
+                    response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
 
+                return response.data;
+            }
+            // ISL END
+
+            // ISL GLOBAL ATTRIBUTES
+            async function updateLabels(id, data,selected) {
+                const { backendAPI } = config;
+                let task_details = {},labels = null;
+
+                try {
+                    task_details = await Axios.get(`${backendAPI}/tasks/${id}`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                    });
+                    labels = task_details.data.labels;
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+                let update_details = {...task_details.data,
+                }
+                console.log(update_details.labels);
+                for (let key in data) {
+                    console.log('key', key);
+                    let found = false;
+                    for(let attribute of update_details.labels[0].attributes){
+                        if(key == attribute.name){
+                            console.log('found ',key,'in original labels');
+                            found = true;
+                            attribute.values = data[key];
+                            attribute.default_value = selected[key];
+                        }
+                    }
+                    if(!found){
+                        // if key already exist in the attributes, do nothing
+                        let new_attribute = {
+                            name: key+"",
+                            default_value: selected[key],
+                            mutable: true,
+                            input_type:"select",
+                            values:data[key],
+                        };
+                        update_details.labels[0].attributes.push(new_attribute);
+
+                    }
+                }
+                console.log('update_details', update_details);
+                let update_detailsJSON = JSON.stringify(update_details);
+                let updateLabel = null;
+                try {
+                    updateLabel = await Axios.put(`${backendAPI}/tasks/${id}`,
+                    update_details
+                    );
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+                return updateLabel.data;
+            }
+            async function fetchAttributes(id){
+                const { backendAPI } = config;
+                let request = null;
+                try {
+                    request = await Axios.get(`${backendAPI}/tasks/${id}/getattributes`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                    });
+                } catch (errorData) {
+                    console.log(errorData);
+                    return {};
+                }
+                return request.data;
+            }
+            async function saveAttributes(id,attributes,selected){
+                const { backendAPI } = config;
+                let request = null;
+                let data = {
+                    attributes:attributes,
+                    selected:selected
+                }
+                try {
+                    request = await Axios.post(`${backendAPI}/tasks/${id}/saveattributes`, { // EDITED to  add the URL parameters instead
+                        data
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+                console.log(request.data.data)
+                return request.data.data;
+            }
+            // ISL END
             Object.defineProperties(this, Object.freeze({
                 server: {
                     value: Object.freeze({
@@ -748,6 +846,15 @@
                         deleteTask,
                         exportDataset,
                         autoFit,           /*ISL AUTOFIT*/
+                        /*ISL GLOBAL ATTRIBUTES*/
+                        updateLabels,
+                        fetchAttributes,
+                        saveAttributes,
+                        /*ISL END*/
+                        // ISL TRACKING
+                        tracking,
+                        fetch,
+                        // ISL END
                     }),
                     writable: false,
                 },

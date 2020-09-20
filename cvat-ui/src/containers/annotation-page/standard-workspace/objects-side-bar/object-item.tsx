@@ -27,10 +27,12 @@ import {
     propagateObject as propagateObjectAction,
     pasteShapeAsync,
     autoFit, // ISL AUTOFIT
+    asLastKeyframe, // ISL INTERPOLATION
+    updateCanvasContextMenu, // ISL AUTO LOCK
+    track, // ISL TRACKING
 } from 'actions/annotation-actions';
-
-import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
 import { shift } from 'utils/math';
+import ObjectStateItemComponent from 'components/annotation-page/standard-workspace/objects-side-bar/object-item';
 
 interface OwnProps {
     clientID: number;
@@ -52,6 +54,7 @@ interface StateToProps {
     maxZLayer: number;
     normalizedKeyMap: Record<string, string>;
     canvasInstance: Canvas;
+    contextMenu: any; // ISL AUTO LOCK
 }
 
 interface DispatchToProps {
@@ -66,6 +69,9 @@ interface DispatchToProps {
     changeLabelColor(label: any, color: string): void;
     changeGroupColor(group: number, color: string): void;
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
+    onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void; // ISL INTERPOLATION
+    onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type: any): void; // ISL AUTO LOCK
+    onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void; // ISL TRACKING
 }
 
 function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
@@ -94,6 +100,9 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
                 ready,
                 activeControl,
                 instance: canvasInstance,
+                // ISL AUTO LOCK
+                contextMenu:contextMenu,
+                // ISL END
             },
             colors,
         },
@@ -130,6 +139,7 @@ function mapStateToProps(state: CombinedState, own: OwnProps): StateToProps {
         maxZLayer,
         normalizedKeyMap,
         canvasInstance,
+        contextMenu, // ISL AUTO LOCK
     };
 }
 
@@ -173,10 +183,29 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onAutoFit(jobInstance: any, stateToFit: any, frame: number): void {
             dispatch(autoFit(jobInstance, stateToFit, frame));
         },
+        // ISL
+        // ISL INTERPOLATION
+        onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void {
+            dispatch(asLastKeyframe(jobInstance, stateToFit, frame));
+        },
+        // ISL END
+        // ISL AUTOLOCK
+        onHideContextMenu(visible: boolean,left: number,top: number,pointID: number,type?: any): void{
+            dispatch(updateCanvasContextMenu(
+                visible,
+                left,
+                top,
+                pointID,
+                ));
+        },
+        // ISL END
+        // ISL TRACKING
+        onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void {
+            dispatch(track(jobInstance,clientID,frameStart,frameEnd,points));
+        }
         // ISL END
     };
 }
-
 type Props = StateToProps & DispatchToProps;
 class ObjectItemContainer extends React.PureComponent<Props> {
     private navigateFirstKeyframe = (): void => {
@@ -381,6 +410,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
+
     private collapse = (): void => {
         const {
             collapseOrExpand,
@@ -420,6 +450,7 @@ class ObjectItemContainer extends React.PureComponent<Props> {
         this.commit();
     };
 
+
     private changeAttribute = (id: number, value: string): void => {
         const { objectState, jobInstance } = this.props;
         jobInstance.logger.log(LogType.changeAttribute, {
@@ -444,7 +475,33 @@ class ObjectItemContainer extends React.PureComponent<Props> {
 
         onAutoFit(jobInstance, objectState, frameNumber);
     }
+    // ISL
+
+    // ISL INTERPOLATION
+    private asLastKeyframe = (): void => {
+        const {
+            objectState,
+            jobInstance,
+            frameNumber,
+            onSetLastKeyframe,
+        } = this.props;
+
+        onSetLastKeyframe(jobInstance, objectState, frameNumber);
+    }
     // ISL END
+    // ISL TRACKING
+    private track = (): void => {
+        const {
+            objectState,
+            jobInstance,
+            frameNumber,
+            onTrack,
+        } = this.props;
+        console.log('MARKER');
+        onTrack(jobInstance,objectState,frameNumber,(frameNumber+10),objectState.points);
+    }
+    // ISL END
+
     private switchCuboidOrientation = (): void => {
         function cuboidOrientationIsLeft(points: number[]): boolean {
             return points[12] > points[0];
@@ -505,9 +562,23 @@ class ObjectItemContainer extends React.PureComponent<Props> {
             updateState,
         } = this.props;
 
+        // ISL AUTO LOCK
+        // objectState.lock = true;
         updateState(objectState);
+        // this.hideContextMenu();
+        // ISL END
     }
+    // ISL AUTO LOCK
+    private hideContextMenu(): void {
+        const {
+            onHideContextMenu,
+            contextMenu
 
+        } = this.props;
+        console.log(contextMenu);
+        onHideContextMenu(false,contextMenu.left,contextMenu.top,contextMenu.pointID,contextMenu.type);
+    }
+    // ISL END
     public render(): JSX.Element {
         const {
             objectState,
@@ -593,6 +664,9 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 unsetOutside={this.unsetOutside}
                 setKeyframe={this.setKeyframe}
                 unsetKeyframe={this.unsetKeyframe}
+                // ISL INTERPOLATION
+                asLastKeyframe={this.asLastKeyframe}
+                // ISL END
                 lock={this.lock}
                 unlock={this.unlock}
                 pin={this.pin}
@@ -606,6 +680,9 @@ class ObjectItemContainer extends React.PureComponent<Props> {
                 resetCuboidPerspective={() => this.resetCuboidPerspective()}
                 // ISL AUTOFIT
                 autoFit={this.autoFit}
+                // ISL END
+                // ISL AUTOFIT
+                track={this.track}
                 // ISL END
             />
         );

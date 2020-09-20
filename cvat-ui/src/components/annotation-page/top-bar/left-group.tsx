@@ -2,20 +2,28 @@
 //
 // SPDX-License-Identifier: MIT
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Col } from 'antd/lib/grid';
 import Icon from 'antd/lib/icon';
 import Modal from 'antd/lib/modal';
 import Button from 'antd/lib/button';
 import Timeline from 'antd/lib/timeline';
 import Dropdown from 'antd/lib/dropdown';
-
+// ISL GLOBAL ATTRIBUTES
+import { Label } from './common';
+import Menu from 'antd/lib/menu';
+import Text from 'antd/lib/typography/Text';
+import globalConditionsModal from '../standard-workspace/canvas-wrapper';
+// ISL END
 import AnnotationMenuContainer from 'containers/annotation-page/top-bar/annotation-menu';
 import {
     MainMenuIcon,
     SaveIcon,
     UndoIcon,
     RedoIcon,
+    // ISL GLOBAL ATTRIBUTES
+    ConditionsIcon,
+    // ISL END
 } from 'icons';
 
 interface Props {
@@ -29,6 +37,8 @@ interface Props {
     onSaveAnnotation(): void;
     onUndoClick(): void;
     onRedoClick(): void;
+    onGlobalIconClick(): void; // ISL GLOBAL ATTRIBUTES
+    lastSavePopup(event: any): void; // ISL Save-Popup
 }
 
 function LeftGroup(props: Props): JSX.Element {
@@ -43,8 +53,14 @@ function LeftGroup(props: Props): JSX.Element {
         onSaveAnnotation,
         onUndoClick,
         onRedoClick,
+        onGlobalIconClick, // ISL GLOBAL ATTRIBUTES
+        lastSavePopup, // ISL Save-Popup
     } = props;
-
+    // ISL GLOBAL ATTRIBUTES
+    // const [show, setShow] = useState(false);
+    // const handleClose = () => setShow(false);
+    // const handleShow = () => setShow(true);
+    // ISL END
     return (
         <Col className='cvat-annotation-header-left-group'>
             <Dropdown overlay={<AnnotationMenuContainer />}>
@@ -55,7 +71,7 @@ function LeftGroup(props: Props): JSX.Element {
             </Dropdown>
             <Button
                 title={`Save current changes ${saveShortcut}`}
-                onClick={saving ? undefined : onSaveAnnotation}
+                onClick={lastSavePopup} // ISL Save-Popup
                 type='link'
                 className={saving
                     ? 'cvat-annotation-disabled-header-button'
@@ -103,6 +119,17 @@ function LeftGroup(props: Props): JSX.Element {
                 <Icon component={RedoIcon} />
                 Redo
             </Button>
+            {/* ISL GLOBAL ATTRIBUTES */}
+            <Button
+                title={`View conditions menu`}
+                onClick={onGlobalIconClick}// ISL GLOBAL ATTRIBUTES
+                type='link'
+                className={'cvat-annotation-header-button'}
+            >
+                <Icon component={ConditionsIcon} />
+                Conditions
+            </Button>
+            {/* ISL END */}
         </Col>
     );
 }

@@ -44,6 +44,7 @@ import SVGResetPerspectiveIcon from './assets/reset-perspective.svg';
 import SVGTrackIcon from './assets/track-icon.svg' // ISL MANUAL TRACKING
 import SVGSearchIcon from './assets/search-icon.svg'; // EDITED FOR Help sidebar
 import SVGRotateCCIcon from './assets/rotatecc-icon.svg'; // EDITED FOR Help sidebar
+import SVGConditionsIcon from './assets/conditions-icon.svg'; // ISL GLOBAL ATTRIBUTES
 
 export const CVATLogo = React.memo(
     (): JSX.Element => <SVGCVATLogo />,
@@ -156,6 +157,11 @@ export const CubeIcon = React.memo(
 export const ResetPerspectiveIcon = React.memo(
     (): JSX.Element => <SVGResetPerspectiveIcon />,
 );
+// ISL GLOBAL ATTRIBUTES
+export const ConditionsIcon = React.memo(
+    (): JSX.Element => <SVGConditionsIcon />,
+);
+// ISL END
 // ISL MANUAL TRACKING
 export const TrackIcon = React.memo(
     (): JSX.Element => <SVGTrackIcon />,

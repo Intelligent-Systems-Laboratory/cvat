@@ -31,7 +31,6 @@ function ItemTopComponent(props: ItemTopComponentProps): JSX.Element {
         labels,
         changeLabel,
     } = props;
-
     return (
         <Row type='flex' align='middle'>
             <Col span={12}>

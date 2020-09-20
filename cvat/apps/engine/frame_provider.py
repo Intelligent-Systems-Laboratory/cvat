@@ -12,7 +12,7 @@ from PIL import Image
 from cvat.apps.engine.media_extractors import VideoReader, ZipReader
 from cvat.apps.engine.mime_types import mimetypes
 from cvat.apps.engine.models import DataChoice
-
+import time
 
 class RandomAccessIterator:
     def __init__(self, iterable):
@@ -106,7 +106,7 @@ class FrameProvider:
         buf = BytesIO()
         pil_img.save(buf, format='PNG')
         buf.seek(0)
-        return buf 
+        return buf
 
     def _get_frame(self, frame_number, chunk_path_getter, extracted_chunk, chunk_reader, reader_class):
         _, chunk_number, frame_offset = self._validate_frame_number(frame_number)
@@ -140,7 +140,7 @@ class FrameProvider:
                     yield image
                 else:
                     raise Exception('unsupported output type')
-    
+
     def _convert_frame(self, frame, reader_class, out_type):
         if out_type == self.Type.BUFFER:
             return self._av_frame_to_png_bytes(frame) if reader_class is VideoReader else frame
@@ -179,3 +179,37 @@ class FrameProvider:
     def get_frames(self, quality=Quality.ORIGINAL, out_type=Type.BUFFER):
         for idx in range(self._db_data.size):
             yield self.get_frame(idx, quality=quality, out_type=out_type)
+
+    def current_milli_time(self):
+        return int(round(time.time() * 1000))
+
+    def get_frames_improved(self, frame_start, frame_end,quality=Quality.ORIGINAL,out_type=Type.BUFFER,skip=1):
+        frames = []
+        loader = self._loaders[quality]
+
+        _, chunk_number, frame_offset = self._validate_frame_number(frame_start)
+        chunk_reader = loader.load(chunk_number)
+
+        chunk_number_start = chunk_number
+        print('frame start:',frame_start)
+        print('end: ',frame_end)
+        i=frame_start
+        print('i',i)
+        start_while = self.current_milli_time()
+        print('start while',start_while)
+        while(i<frame_end+1):
+            while(chunk_number == chunk_number_start and i<frame_end+1):
+                frame, frame_name, _ = chunk_reader[frame_offset]
+                start_convert = self.current_milli_time()
+                frame = self._convert_frame(frame, loader.reader_class, out_type)
+                print('convert time',self.current_milli_time()-start_convert)
+                frames.append(frame)
+                i+=skip
+                _, chunk_number, frame_offset = self._validate_frame_number(i)
+                print('i',i)
+            chunk_number_start = chunk_number
+            chunk_reader = loader.load(chunk_number)
+            print('LOAD CHUNK')
+        print('end while',self.current_milli_time()-start_while)
+        print('frames length: ',len(frames))
+        return frames

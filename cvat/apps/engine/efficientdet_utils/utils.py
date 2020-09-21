@@ -148,7 +148,7 @@ def display(preds, imgs, obj_list, imshow=True, imwrite=False):
 
         if imwrite:
             os.makedirs('test/', exist_ok=True)
-            cv2.imwrite(f'test/{uuid.uuid4().hex}.jpg', imgs[i])
+            cv2.imwrite('test/%s.jpg'%(uuid.uuid4().hex), imgs[i])
 
 
 def replace_w_sync_bn(m):
@@ -200,18 +200,18 @@ class CustomDataParallel(nn.DataParallel):
         if splits == 0:
             raise Exception('Batchsize must be greater than num_gpus.')
 
-        return [(inputs[0][splits * device_idx: splits * (device_idx + 1)].to(f'cuda:{device_idx}', non_blocking=True),
-                 inputs[1][splits * device_idx: splits * (device_idx + 1)].to(f'cuda:{device_idx}', non_blocking=True))
+        return [(inputs[0][splits * device_idx: splits * (device_idx + 1)].to('cuda:%d'%(device_idx), non_blocking=True),
+                 inputs[1][splits * device_idx: splits * (device_idx + 1)].to('cuda:%d'%(device_idx), non_blocking=True))
                 for device_idx in range(len(devices))], \
                [kwargs] * len(devices)
 
 
 def get_last_weights(weights_path):
-    weights_path = glob(weights_path + f'/*.pth')
+    weights_path = glob(weights_path + '/*.pth')
     weights_path = sorted(weights_path,
                           key=lambda x: int(x.rsplit('_')[-1].rsplit('.')[0]),
                           reverse=True)[0]
-    print(f'using weights {weights_path}')
+    # print(f'using weights {weights_path}')
     return weights_path
 
 

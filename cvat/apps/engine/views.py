@@ -398,7 +398,20 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             instance.data.delete()
 
     # ISL AUTOSNAP
-    @swagger_auto_schema(method='get', operation_summary='Returns automatically snapped or fitted coordinates of a box')
+    @swagger_auto_schema(method='get', operation_summary='Returns automatically snapped or fitted coordinates of a box',
+        manual_parameters=[
+            openapi.Parameter('frameNumber', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the box is located"),
+            openapi.Parameter('x1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left x-coordinate"),
+            openapi.Parameter('y1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left y-coordinate"),
+            openapi.Parameter('x2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right x-coordinate"),
+            openapi.Parameter('y2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right y-coordinate"),
+            ]
+    )
     @action(detail=True, methods=['GET'])
     def autofit(self, request, pk):
         frame = request.query_params.get('frameNumber', None)
@@ -406,6 +419,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         ytl = int(request.query_params.get('y1', None))
         xbr = int(request.query_params.get('x2', None))
         ybr = int(request.query_params.get('y2', None))
+        data = [0,0,100,100]
 
         # ADD code for getting the image here
         db_task = self.get_object()
@@ -414,19 +428,18 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         img, mime = frame_provider.get_frame(int(frame), data_quality)
         img = Image.open(img)
         orig_img = np.array(img)
-        data = efficientcut(orig_img, [xtl, ytl, xbr, ybr])
-
         try:
-            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
-                snap_points = data
+            data = efficientcut(orig_img, [xtl, ytl, xbr, ybr])
+            # data = [100,100,200,200]
 
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
                 new_coords = {
-                    "points" : snap_points,
+                    "points" : data,
                 }
             return Response(new_coords)
         except Exception as e:
             msg = "Error occured while snapping."
-            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+            return Response(data='%s %s' %(msg , str(e)), status=status.HTTP_400_BAD_REQUEST)
 
     # ISL END
 

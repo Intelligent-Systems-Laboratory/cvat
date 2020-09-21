@@ -683,13 +683,20 @@
                         }
                     });
                 } catch (errorData) {
-                    // throw generateError(errorData);
-                    console.log('Error receiving fitted coordinates, returning 0');
+                    throw generateError(errorData);
+                    // console.log('Error receiving fitted coordinates, returning 0',errorData);
+                    // return {
+                    //     points: [0, 0, 0, 0],
+                    // };
+                }
+                if(response.data){
+                    return response.data;
+                }
+                else{
                     return {
                         points: [0, 0, 0, 0],
-                    };
+                    }
                 }
-                return response.data;
             }
             // ISL END
 

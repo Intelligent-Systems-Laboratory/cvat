@@ -280,7 +280,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             if (annotations.length > prevProps.annotations.length && prevProps.frameData === frameData) {
                 this.contextMenuOnDraw();
                 this.newBox = annotations.length - 1;// ISL AUTO LOCK
-                // this.autoFit(annotations[annotations.length - 1].clientID);
+                this.autoFit(annotations[annotations.length - 1].clientID);
             }
             // ISL END
         }

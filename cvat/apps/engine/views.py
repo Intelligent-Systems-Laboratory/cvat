@@ -65,6 +65,7 @@ from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
 from django_filters.rest_framework import DjangoFilterBackend
 
 import cvat.apps.engine.tracker# EDITED for tracking
+from cvat.apps.engine.efficientcut import efficientcut
 
 import json # ISL GLOBAL ATTRIBUTES
 import time # ISL TESTING
@@ -413,8 +414,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         img, mime = frame_provider.get_frame(int(frame), data_quality)
         img = Image.open(img)
         orig_img = np.array(img)
-        image = orig_img[:, :, ::-1].copy()
-        data, dim = grabcut.run(image, xtl, ytl, xbr, ybr)
+        data = efficientcut(orig_img, [xtl, ytl, xbr, ybr])
 
         try:
             if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
@@ -425,7 +425,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                 }
             return Response(new_coords)
         except Exception as e:
-            msg = "something is wrong"
+            msg = "Error occured while snapping."
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
 
     # ISL END

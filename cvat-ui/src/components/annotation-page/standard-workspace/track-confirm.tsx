@@ -77,10 +77,16 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
                 </div>
                 <div id='track-canvas-container'>
                     <Spin id={'track-loading'}></Spin>
-                    <img src={`${backendAPI}/tasks/1/data?type=frame&amp;quality=compressed&amp;number=${automaticTracking.current}`} width="1365" height="767" id='track-image' style={{display: "none"}}
-                        onLoad={()=>{
-                            console.log(' refreshed');
-                        }}></img>
+
+                        {
+                            automaticTracking.jobInstance != null &&
+                                <img src={`${backendAPI}/tasks/${automaticTracking.jobInstance.task.id}/data?type=frame&amp;quality=compressed&amp;number=${automaticTracking.current}`} width="1365" height="767" id='track-image' style={{display: "none"}}
+                                    onLoad={()=>{
+                                    console.log('refreshed');
+                            }}></img>
+                        }
+
+
                     <canvas id='track-canvas' style={{visibility: "hidden"}}></canvas>
                 </div>
                 <div id='track-bottom-buttons'>

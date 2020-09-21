@@ -243,13 +243,13 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
 
         // console.log('load the image in frame ',automaticTracking.current);
         var outputImg = document.getElementById('track-image') as HTMLImageElement;
-        outputImg.onload = () =>{
-            // console.log("Image 1 ready to append");
+        if(outputImg){
+            outputImg.onload = () =>{
+                // console.log("Image 1 ready to append");
+                this.loadImage(outputImg);
+            };
             this.loadImage(outputImg);
-        };
-        this.loadImage(outputImg);
-
-
+        }
 
     }
     public componentDidUpdate(prevProps: Props): void {

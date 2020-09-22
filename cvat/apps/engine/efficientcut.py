@@ -49,8 +49,9 @@ def efficientcut(frame_img,ROI):
 
     model = EfficientDetBackbone(compound_coef=compound_coef, num_classes=len(obj_list),
                                 ratios=anchor_ratios, scales=anchor_scales)
-    model_path = os.path.join(pathlib.Path().absolute(),'cvat/apps/engine/efficientdet-d0_best.pth')
-    modal_path = os.path.join
+    path = os.path.abspath("./")
+    model_path = os.path.join(path,'cvat/apps/engine/efficientdet-d0_best.pth')
+    print('path',model_path)
     model.load_state_dict(torch.load(model_path, map_location='cpu')) # add path to weights here
     model.requires_grad_(False)
     model.eval()

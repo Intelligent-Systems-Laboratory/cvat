@@ -465,7 +465,7 @@ function ItemButtonsComponent(props: ItemButtonsComponentProps): JSX.Element {
                         <Col>
                             <Tooltip title={`No interpolation ${asLastKeyframeShortcut}`}>
                                 {keyframe
-                                    ? <Icon type='environment' onClick={asLastKeyframe} />
+                                    ? <Icon type='environment' theme='filled' onClick={asLastKeyframe} />
                                     : <Icon type='environment' onClick={asLastKeyframe} />}
                             </Tooltip>
                         </Col>

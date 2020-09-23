@@ -712,7 +712,6 @@
                 let response = null;
                 try {
                     response = await Axios.get(`${backendAPI}/tasks/${id}/tracking`, { // EDITED to  add the URL parameters instead
-                        proxy: config.proxy,
                         params: {
                             "object-id": objectID,
                             "frame-start": frameStart,
@@ -724,6 +723,8 @@
                         }
                     });
                 } catch (errorData) {
+                    console.log('backend',backendAPI);
+                    console.log(errorData);
                     throw generateError(errorData);
                 }
 

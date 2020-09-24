@@ -459,6 +459,14 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         }
 
     }
+
+    private backToTrackStart(): void {
+        const {
+            automaticTracking,
+
+            } = this.props;
+        this.changeFrame(automaticTracking.frameStart);
+    }
     // ISL END
     // ISL MANUAL TRACKING update annotations
     private trackingDone = (event: any): void => {
@@ -1115,7 +1123,10 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             AUTOFIT: keyMap.AUTOFIT,
             INTERPOLATION: keyMap.INTERPOLATION,
             SWITCH_AUTOMATIC_BORDERING: keyMap.SWITCH_AUTOMATIC_BORDERING,
+            // ISL TRACKING
             AUTO_TRACK: keyMap.AUTO_TRACK,
+            AUTO_TRACK_START_FRAME: keyMap.AUTO_TRACK_START_FRAME,
+            // ISL END
             AUTO_OCCLUDE: keyMap.AUTO_OCCLUDE,
         };
 
@@ -1223,6 +1234,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 if (activatedStateID){
                     this.track(activatedStateID);
                 }
+            },
+            AUTO_TRACK_START_FRAME: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                console.log('back to frameStart');
+                this.backToTrackStart();
             },
             // ISL END
             // ISL AUTO OCCLUDE

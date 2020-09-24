@@ -363,12 +363,18 @@ const defaultKeyMap = {
         sequences: ['y'],
         action: 'keydown',
     },
+    AUTO_TRACK_START_FRAME: {
+        name: 'Go back to frame where tracking is run',
+        description: 'Go back to frame where tracking is run',
+        sequences: ['u'],
+        action: 'keydown',
+    },
     // ISL END
     // ISL AUTO OCCLUDE
     AUTO_OCCLUDE: {
         name: 'Automatically assign occlusion property',
         description: 'Run auto occlusion algorithm in the current frame',
-        sequences: ['u'],
+        sequences: ['i'],
         action: 'keydown',
     },
     // ISL END

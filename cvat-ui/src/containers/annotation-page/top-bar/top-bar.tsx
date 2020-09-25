@@ -751,7 +751,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.globalAttributesSelected = {};
         for (let globalAttributes of this.globalAttributesDB) {
             if (frame_num >= globalAttributes['frame_start'] && frame_num <= globalAttributes['frame_end']) {
-                this.globalAttributes = globalAttributes['attributes'];
+                // this.globalAttributes = globalAttributes['attributes']; //checking
                 // console.log('attribute found: ',this.globalAttributes);
             } else {
                 // console.log('attributes not found for', frame_num, 'in', globalAttributes);

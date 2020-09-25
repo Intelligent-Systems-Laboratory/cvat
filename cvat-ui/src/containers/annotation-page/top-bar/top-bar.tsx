@@ -654,7 +654,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.globalAttributesSelectedDB.push(globalAttributesSelectedWithFrameRange);
         // console.log('Attributes DB: ',this.globalAttributesDB);
         // console.log('Selected DB: ',this.globalAttributesSelectedDB);
-        this.dropdownEntries = this.openList;
+        this.dropdownEntries = [...new Set([...this.AllAttributeNames, ...this.openList])];
 
         this.updateGlobalAttributesModal();
 
@@ -670,14 +670,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             document.getElementById('spatialTagOpen').className = "radioclicked";
             document.getElementById('spatialTagEnclosed').className = "radio-toolbar";
 
-            this.dropdownEntries = this.openList;
+            this.dropdownEntries = [...new Set([...this.AllAttributeNames, ...this.openList])];
             this.updateSelectedAttributeValues(0);
             this.updateGlobalAttributesModal;
         }
         else if (this.currentSpatialTag == "enclosed"){
             document.getElementById('spatialTagEnclosed').className = "radioclicked";
             document.getElementById('spatialTagOpen').className = "radio-toolbar";
-            this.dropdownEntries = this.enclosedList;
+            this.dropdownEntries = [...new Set([...this.AllAttributeNames, ...this.enclosedList])];
             this.updateSelectedAttributeValues(0);
             this.updateGlobalAttributesModal;
         }
@@ -751,7 +751,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         this.globalAttributesSelected = {};
         for (let globalAttributes of this.globalAttributesDB) {
             if (frame_num >= globalAttributes['frame_start'] && frame_num <= globalAttributes['frame_end']) {
-                this.globalAttributes = globalAttributes['attributes'];
+                // this.globalAttributes = globalAttributes['attributes']; //checking
                 // console.log('attribute found: ',this.globalAttributes);
             } else {
                 // console.log('attributes not found for', frame_num, 'in', globalAttributes);

@@ -77,18 +77,28 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
                     />
                 </div>
                 <div id='track-canvas-container'>
+                    <div id='track-loading-div'>
                     <Spin id={'track-loading'}></Spin>
-
-                        {
-                            automaticTracking.jobInstance != null &&
-                                <img src={`${backendAPI}/tasks/${automaticTracking.jobInstance.task.id}/data?type=frame&amp;quality=compressed&amp;number=${automaticTracking.current}`} width="1365" height="767" id='track-image' style={{display: "none"}}
-                                    onLoad={()=>{
-                                    console.log('refreshed');
-                            }}></img>
-                        }
-
-
+                    </div>
+                    <div id='track-canvas-div'>
+                    {
+                        automaticTracking.jobInstance != null &&
+                            <img src={`${backendAPI}/tasks/${automaticTracking.jobInstance.task.id}/data?type=frame&amp;quality=compressed&amp;number=${automaticTracking.current}`} width="1365" height="767" id='track-image' style={{display: "none"}}
+                                onLoad={()=>{
+                                console.log('refreshed');
+                                console.log(automaticTracking.current);
+                                var loading = document.getElementById('track-loading');
+                            if (loading){
+                                loading.style.display ="none";
+                            }
+                        }}></img>
+                    }
                     <canvas id='track-canvas' style={{visibility: "hidden"}}></canvas>
+                    </div>
+
+
+
+
                 </div>
                 <div id='track-bottom-buttons'>
                     <div id='track-left-bottom-buttons'>
@@ -137,6 +147,10 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
                         <Button className='btn-bottom' onClick={
                             (event:any) => {
                                 onNext(automaticTracking.current);
+                                var loading = document.getElementById('track-loading');
+                                if (loading){
+                                    loading.style.display ="";
+                                }
                                 console.log('on next');
                             }
                         }> Next </Button>

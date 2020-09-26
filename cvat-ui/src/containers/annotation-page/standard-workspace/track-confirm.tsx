@@ -1,7 +1,8 @@
 // Copyright (C) 2020 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
-
+// ISL TRACKING
+// this file controls the logic and data of the modal that appears when the tracking shortcut 'y' is pressed
 import React from 'react';
 import { connect } from 'react-redux';
 
@@ -114,8 +115,8 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
                 this.canvas.addEventListener('mousedown', (event:any) => {
                     console.log('track canvas mousedown');
                     this.dragStart = {
-                    x: event.pageX - this.canvas.offsetLeft,
-                    y: event.pageY - this.canvas.offsetTop
+                        x: event.pageX - this.canvas.offsetLeft,
+                        y: event.pageY - this.canvas.offsetTop
                     }
 
                     this.drag = true;
@@ -193,7 +194,8 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
         if(outputImg==null){
             outputImg = document.getElementById('track-image') as HTMLImageElement;
         }
-
+        console.log('image width',outputImg.width);
+        console.log('image height',outputImg.height);
 
         // show loading
         var loading = document.getElementById('track-loading');
@@ -202,30 +204,37 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
 
         var index = Math.floor((automaticTracking.current-automaticTracking.frameStart)/2)-1;
         var points = automaticTracking.states[index]; // bounding box of the result of tracking in the current frame
+        console.log('points', points);
         // console.log('index',index);
         // console.log('points',points);
         var width = points[2] - points[0];
         var height = points[3] - points[1];
-        var background:number[] = [points[0]-width,points[1]-height,points[2]+width,points[3]+height]
-        for (let coord of background){
-            if (coord < 0){
-                coord = 0
-            }
-
-        }
+        console.log('width, height',width,height);
+        // for (let coord of background){
+        //     // this is in the case that tracker returns negative values
+        //     if (coord < 0){
+        //         coord = 0
+        //     }
+        // }
 
 
         if(canvas){
-            canvas.height = 3*height;
-            canvas.width = 3*width;
+            canvas.width = 700;
+            canvas.height = (1080/1920)*700;
+
+            // compute the background of the canvas since we cannot display the whole canvas
+
+            var background:number[] = [width/2 + points[0] - (canvas.width/2),(height/2)+points[1] - (canvas.height/2),(width/2) + points[0] + (canvas.width/2), (height/2) + points[1] + (canvas.height/2)]
+            console.log('background',background);
             let ctx = canvas.getContext('2d');
             if(ctx && outputImg){
-                ctx.clearRect(0,0,canvas.width,canvas.height);
-                ctx.drawImage(outputImg,background[0],background[1],3*width,3*height,0,0,canvas.width,canvas.height);
+                ctx.fillStyle='gray';
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.drawImage(outputImg,background[0],background[1],700,(1080/1920)*700,0,0,canvas.width,canvas.height);
                 ctx.beginPath();
                 ctx.lineWidth = 6;
                 ctx.strokeStyle = "red";
-                ctx.rect(width, height, width, height);
+                ctx.rect(canvas.width/2 - width/2, canvas.height/2-height/2, width,height);
                 ctx.stroke();
 
             }
@@ -237,18 +246,18 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
         }
     }
     public draw = ():void => {
-        const {
-            automaticTracking
-        } = this.props;
-
+        var done = false;  // ensures the this.loadImage runs only once
         // console.log('load the image in frame ',automaticTracking.current);
         var outputImg = document.getElementById('track-image') as HTMLImageElement;
         if(outputImg){
             outputImg.onload = () =>{
                 // console.log("Image 1 ready to append");
                 this.loadImage(outputImg);
+                done = true;
             };
-            this.loadImage(outputImg);
+            if(!done){
+                this.loadImage(outputImg);
+            }
         }
 
     }
@@ -300,3 +309,4 @@ export default connect(
     mapStateToProps,
     mapDispatchToProps,
 )(TrackConfirmContainer);
+// ISL END

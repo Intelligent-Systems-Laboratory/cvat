@@ -1,7 +1,8 @@
 // Copyright (C) 2020 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
-
+// ISL TRACKING
+// this file controls the UI of the modal that appears when the tracking shortcut 'y' is pressed
 import React from 'react';
 
 import Modal from 'antd/lib/modal';
@@ -51,7 +52,7 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
             onCancel={cancel}
             title='AutoTrack'
             visible={visible}
-            width = {700}
+            width = {750}
         >
             {/* <div className='cvat-track-confirm'>
                 <Text>Track up to how many frames? 0 for indefinite.</Text>
@@ -146,3 +147,4 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
         </Modal>
     );
 }
+// ISL END

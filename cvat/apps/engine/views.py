@@ -37,7 +37,7 @@ from cvat.apps.authentication import auth
 from cvat.apps.authentication.decorators import login_required
 from cvat.apps.dataset_manager.serializers import DatasetFormatsSerializer
 from cvat.apps.engine.frame_provider import FrameProvider
-from cvat.apps.engine.models import Job, Plugin, StatusChoice, Task
+from cvat.apps.engine.models import Job, Plugin, StatusChoice, Task, Attributes
 from cvat.apps.engine.serializers import (
     AboutSerializer, AnnotationFileSerializer, BasicUserSerializer,
     DataMetaSerializer, DataSerializer, ExceptionSerializer,
@@ -54,7 +54,7 @@ from .log import clogger, slogger
 # ISL AUTOFIT
 import cvat.apps.engine.grabcut as grabcut # autofit algorithm
 from PIL import Image
-import numpy as np 
+import numpy as np
 # ISL END
 import cvat.apps.dataset_manager.task as DatumaroTask
 
@@ -65,11 +65,15 @@ from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
 from django_filters.rest_framework import DjangoFilterBackend
 
 import cvat.apps.engine.tracker# EDITED for tracking
+from cvat.apps.engine.efficientcut import efficientcut
 
+import json # ISL GLOBAL ATTRIBUTES
+import time # ISL TESTING
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
 # We map the required paramater explicitly and add it into query arguments
 # on the server side.
+current_milli_time = lambda: int(round(time.time() * 1000))
 def wrap_swagger(view):
     @login_required
     def _map_format_to_schema(request, scheme=None):
@@ -393,8 +397,21 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             shutil.rmtree(instance.data.get_data_dirname(), ignore_errors=True)
             instance.data.delete()
 
-    # ISL AUTOFIT   
-    @swagger_auto_schema(method='get', operation_summary='Returns automatically snapped or fitted coordinates of a box')
+    # ISL AUTOSNAP
+    @swagger_auto_schema(method='get', operation_summary='Returns automatically snapped or fitted coordinates of a box',
+        manual_parameters=[
+            openapi.Parameter('frameNumber', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the box is located"),
+            openapi.Parameter('x1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left x-coordinate"),
+            openapi.Parameter('y1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left y-coordinate"),
+            openapi.Parameter('x2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right x-coordinate"),
+            openapi.Parameter('y2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right y-coordinate"),
+            ]
+    )
     @action(detail=True, methods=['GET'])
     def autofit(self, request, pk):
         frame = request.query_params.get('frameNumber', None)
@@ -402,6 +419,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         ytl = int(request.query_params.get('y1', None))
         xbr = int(request.query_params.get('x2', None))
         ybr = int(request.query_params.get('y2', None))
+        data = [0,0,100,100]
 
         # ADD code for getting the image here
         db_task = self.get_object()
@@ -410,52 +428,114 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         img, mime = frame_provider.get_frame(int(frame), data_quality)
         img = Image.open(img)
         orig_img = np.array(img)
-        image = orig_img[:, :, ::-1].copy()
-        data, dim = grabcut.run(image, xtl, ytl, xbr, ybr)
-
         try:
-            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                
-                snap_points = data
-                
+            data = efficientcut(orig_img, [xtl, ytl, xbr, ybr])
+            # data = [100,100,200,200]
+
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
                 new_coords = {
-                    "points" : snap_points,
+                    "points" : data,
                 }
             return Response(new_coords)
         except Exception as e:
-            msg = "something is wrong"
-            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
-            
+            msg = "Error occured while snapping."
+            return Response(data='%s %s' %(msg , str(e)), status=status.HTTP_400_BAD_REQUEST)
+
     # ISL END
 
-    # EDITED FOR TRACKING  
-    @swagger_auto_schema(method='get', operation_summary='Returns tracker coordinates')
+    # EDITED FOR TRACKING
+    @swagger_auto_schema(method='get', operation_summary='Returns tracker coordinates',
+        manual_parameters=[
+            openapi.Parameter('object-id', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the objectID of the box"),
+            openapi.Parameter('frame-start', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the tracking will begin"),
+            openapi.Parameter('frame-end', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the tracking will end"),
+            openapi.Parameter('x1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left x-coordinate"),
+            openapi.Parameter('y1', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the top left y-coordinate"),
+            openapi.Parameter('x2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right x-coordinate"),
+            openapi.Parameter('y2', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the bottom right y-coordinate"),
+            ]
+    )
     @action(detail=True, methods=['GET'])
     def tracking(self, request, pk):
-        frameList = []
-        objectID = request.query_params.get('objectID', None)
-        frameStart = int(request.query_params.get('frameStart', None))
-        frameEnd = int(request.query_params.get('frameEnd', None))
-        xtl = int(request.query_params.get('x1', None))
-        ytl = int(request.query_params.get('y1', None))
-        xbr = int(request.query_params.get('x2', None))
-        ybr = int(request.query_params.get('y2', None))
-
-        # ADD code for getting the image here
-        db_task = self.get_object()
-        frame_provider = FrameProvider(db_task.data)
-        data_quality = FrameProvider.Quality.ORIGINAL
-        for x in range(frameStart, frameEnd+1):
-            img, mime = frame_provider.get_frame(x, data_quality)
-            img = Image.open(img)
-            orig_img = np.array(img)
-            image = orig_img[:, :, ::-1].copy()
-            frameList.append(image)
-        data = (xtl, ytl, xbr-xtl, ybr-ytl)
-        results = cvat.apps.engine.tracker.track(frameList, data)
-
-
         try:
-            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):                                
+            useCroppedBG = False
+            startTime = current_milli_time()
+            frameList = []
+            objectID = request.query_params.get('object-id', None)
+            frameStart = int(request.query_params.get('frame-start', None))
+            frameEnd = int(request.query_params.get('frame-end', None))
+            xtl = int(request.query_params.get('x1', None))
+            ytl = int(request.query_params.get('y1', None))
+            xbr = int(request.query_params.get('x2', None))
+            ybr = int(request.query_params.get('y2', None))
+
+            if(useCroppedBG):
+                # ADD code for getting the image here
+                w = xbr - xtl
+                h = ybr - ytl
+                # compute the cropped image relative to original frame
+                # imagine a 5x5 grid in which the bbox is in the center
+                cropped_xtl = max(0,xtl-(2*w))
+                cropped_ytl = max(0,ytl-(2*h))
+                cropped_xbr = min(1919, xbr+(2*w))
+                cropped_ybr = min(1079,ybr+(2*h))
+                # compute new coordinates of the bbox to be tracked
+                new_xtl = (xtl if cropped_xtl==0 else 2*w)
+                new_ytl = (ytl if cropped_ytl==0 else 2*h)
+                new_xbr = new_xtl + w
+                new_ybr = new_ytl + h
+            start_frame_fetch = current_milli_time()
+            db_task = self.get_object()
+            frame_provider = FrameProvider(db_task.data)
+            data_quality = FrameProvider.Quality.COMPRESSED
+
+            skip = 2
+            out_type = FrameProvider.Type.NUMPY_ARRAY
+            if(useCroppedBG):
+                for x in range(frameStart, frameEnd+1):
+                    if((x-frameStart) % 2 == 1):
+                        continue
+                    img, mime = frame_provider.get_frame(x, data_quality)
+                    img = Image.open(img)
+                    orig_img = np.array(img)
+                    image = orig_img[:, :, ::-1].copy()
+                    if(useCroppedBG):
+                        image = image[cropped_ytl:cropped_ybr,cropped_xtl:cropped_xbr,:]
+                    frameList.append(image)
+            else:
+                frameList = frame_provider.get_frames_improved(frameStart,frameEnd,data_quality,out_type,skip)
+
+            print('frameList length: %d' % len(frameList))
+            if(useCroppedBG):
+                data = (new_xtl, new_ytl, new_xbr-new_xtl, new_ybr-new_ytl)
+            else:
+                data = (xtl, ytl, xbr-xtl, ybr-ytl)
+            print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
+            start_csrt = current_milli_time()
+            results = cvat.apps.engine.tracker.track(frameList, data)
+
+            # enable/disable grabcut on the results
+            # for result,frame in zip(results,frameList):
+            #     data, dim = grabcut.run(frame,result[0],result[1],result[2],result[3])
+            #     result = data
+            if(useCroppedBG):
+                for result in results:
+                    result[0] = result[0] + cropped_xtl
+                    result[1] = result[1] + cropped_ytl
+                    result[2] = result[2] + cropped_xtl
+                    result[3] = result[3] + cropped_ytl
+
+            print('Tracking algo time: %d' % (current_milli_time() - start_csrt))
+            print('results', results)
+
+            if(xtl is not None and ytl is not None and xbr is not None and ybr is not None and data is not None):
                 new_coords = {
                     "object" : objectID,
                     "frameStart" : frameStart,
@@ -464,13 +544,58 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     "path" : request.build_absolute_uri(),
                     "tracker_coords" : results,
                 }
+            print('Total execution time: %d' % (current_milli_time()-startTime))
             return Response(new_coords)
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
-            
-    # EDITED END
 
+    # EDITED END
+    # ISL GLOBAL ATTRIBUTES
+    @swagger_auto_schema(method='get', operation_summary='Get saved attributes for a task')
+    @action(detail=True, methods=['GET'])
+    def getattributes(self, request, pk):
+        try:
+            task = Task.objects.get(pk=pk)
+            attribute = Attributes.objects.get(task=task)
+            attributesDB = attribute.value
+            return Response(attributesDB)
+        except Attributes.DoesNotExist:
+            msg = "Requested attributes for task %s does not exist" % pk
+            return Response(data="%s" %(msg), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data="%s \n %s" %(msg, str(e)), status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(method='post', operation_summary='Set saved attributes for a task')
+    @action(detail=True, methods=['POST'])
+    def saveattributes(self, request, pk):
+        print(request.data)
+        try:
+            task = Task.objects.get(pk=pk)
+            attribute,created = Attributes.objects.get_or_create(task=task)
+            attribute.value = json.dumps(request.data)
+            attribute.save()
+            print('MARKER ATTRIBUTE')
+            print(attribute.value)
+            return Response(data=attribute.value,status=200)
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(method='get', operation_summary='Delete saved attributes for a task')
+    @action(detail=True, methods=['GET'])
+    def deletettributes(self, request, pk):
+        print(request.data)
+        try:
+            task = Task.objects.get(pk=pk)
+            attribute = Attributes.objects.filter(task=task).delete()
+            return Response(data="Delete OK",status=200)
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+
+    # ISL END
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',
         responses={'200': JobSerializer(many=True)})
     @action(detail=True, methods=['GET'], serializer_class=JobSerializer)
@@ -547,7 +672,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     data_quality = FrameProvider.Quality.COMPRESSED \
                         if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
                     buf, mime = frame_provider.get_frame(data_id, data_quality)
-
+                    print(mime)
                     return HttpResponse(buf.getvalue(), content_type=mime)
 
                 elif data_type == 'preview':

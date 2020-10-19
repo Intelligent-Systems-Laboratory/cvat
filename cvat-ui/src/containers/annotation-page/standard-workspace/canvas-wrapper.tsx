@@ -29,7 +29,13 @@ import {
     fetchAnnotationsAsync,
     switchTracking, // ISL MANUAL TRACKING
     autoFit, // ISL AUTOFIT
+    asLastKeyframe,
     setGlobalAttributesVisibility,
+    track,
+    changeFrameAsync,
+    switchAutoTrack,
+    switchTrackModalVisibility,
+    fetch
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -102,6 +108,8 @@ interface StateToProps {
     globalAttributes: any;
     globalAttributesVisibility: boolean;
     // ISL END
+    contextMenuVisibility: boolean; // ISL FIX CONTEXT MENU
+    automaticTracking:any;
 }
 
 interface DispatchToProps {
@@ -135,7 +143,15 @@ interface DispatchToProps {
     onSwitchAutomaticBordering(enabled: boolean): void;
     onFetchAnnotation(): void;
     onAutoFit(jobInstance: any, stateToFit: any, frame: number): void; // ISL AUTOFIT
+    onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void;
     onSetGlobalAttributesVisibility(visibility:boolean):void; // ISL GLOBAL ATTRIBUTES
+    // ISL TRACKING
+    onTrack(jobInstance:any,clientID:number,frameStart:number,frameEnd:number,points:number[]):void;
+    onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void;
+    onSwitchAutoTrack(status:boolean):void;
+    onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
+    onFetch(jobInstance:any,url:string,params:any):void;
+    // ISL END
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -144,6 +160,11 @@ function mapStateToProps(state: CombinedState): StateToProps {
             canvas: {
                 activeControl,
                 instance: canvasInstance,
+                // ISL FIX CONTEXT MENU
+                contextMenu:{
+                    visible: contextMenuVisibility,
+                }
+                // ISL END
             },
             drawing: {
                 activeLabelID,
@@ -186,6 +207,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
             globalAttributes,
             globalAttributesVisibility,
             // ISL END
+            automaticTracking:automaticTracking,
         },
         settings: {
             player: {
@@ -271,6 +293,8 @@ function mapStateToProps(state: CombinedState): StateToProps {
         globalAttributes,
         globalAttributesVisibility,
         // ISL END
+        contextMenuVisibility, // ISL CONTEXT MENU
+        automaticTracking,
     };
 }
 
@@ -372,9 +396,32 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(autoFit(jobInstance, stateToFit, frame));
         },
         // ISL END
+                // ISL INTERPOLATION
+                onSetLastKeyframe(jobInstance: any, stateToFit: any, frame: number): void {
+                    dispatch(asLastKeyframe(jobInstance, stateToFit, frame));
+                },
+                // ISL END
         // ISL GLOBAL ATTRIBUTES
         onSetGlobalAttributesVisibility(visibility:boolean): void {
             dispatch(setGlobalAttributesVisibility(visibility));
+        },
+        // ISL END
+        // ISL TRACK
+        onTrack(jobInstance:any,objectState:any,frameStart:number,frameEnd:number):void {
+            dispatch(track(jobInstance,objectState,frameStart,frameEnd));
+        },
+        onChangeFrame(frame: number, fillBuffer?: boolean, frameStep?: number): void {
+            dispatch(changeFrameAsync(frame, fillBuffer, frameStep));
+        },
+        onFetch(jobInstance:any,url:string,params:any):void{
+            dispatch(fetch(jobInstance,url,params));
+        },
+        // ISL END
+        onSwitchAutoTrack(status:boolean):void{
+            dispatch(switchAutoTrack(status));
+        },
+        onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void{
+            dispatch(switchTrackModalVisibility(visibility,jobInstance,frame_num,sourceState));
         },
     };
 }

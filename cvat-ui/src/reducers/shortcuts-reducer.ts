@@ -336,6 +336,14 @@ const defaultKeyMap = {
         action: 'keydown',
     },
     // ISL END
+    // ISL INTERPOLATION
+    INTERPOLATION: {
+        name: 'Interpolation',
+        description: 'Copy the dimensions of the last keyframe',
+        sequences: ['w'],
+        action: 'keydown',
+    },
+    // ISL END
     SWITCH_AUTOMATIC_BORDERING: {
         name: 'Switch automatic bordering',
         description: 'Switch automatic bordering for polygons and polylines during drawing/editing',
@@ -348,6 +356,28 @@ const defaultKeyMap = {
         sequences: ['Enter'],
         action: 'keydown',
     },
+    // ISL TRACKING
+    AUTO_TRACK: {
+        name: 'Track bounding box using automatic tracking algorithms',
+        description: 'Run tracking algorithm in the current frame',
+        sequences: ['y'],
+        action: 'keydown',
+    },
+    AUTO_TRACK_START_FRAME: {
+        name: 'Go back to frame where tracking is run',
+        description: 'Go back to frame where tracking is run',
+        sequences: ['u'],
+        action: 'keydown',
+    },
+    // ISL END
+    // ISL AUTO OCCLUDE
+    AUTO_OCCLUDE: {
+        name: 'Automatically assign occlusion property',
+        description: 'Run auto occlusion algorithm in the current frame',
+        sequences: ['i'],
+        action: 'keydown',
+    },
+    // ISL END
 } as any as Record<string, ExtendedKeyMapOptions>;
 
 

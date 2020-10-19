@@ -397,3 +397,8 @@ class PluginOption(models.Model):
     plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE)
     name = SafeCharField(max_length=32)
     value = SafeCharField(max_length=1024)
+
+class Attributes(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    value = SafeCharField(max_length=4096)
+

@@ -86,6 +86,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private lastShapeClicked: number;
     // ISL END
 
+    // ISL LOCK ICON
+    private lastShapeHighlighted: number;
+
     // ISL MAGNIFYING GLASS
     private magnifyingGlassContainer: SVGSVGElement;
     private magnifyingGlassForeignObject: SVGForeignObjectElement;
@@ -1054,6 +1057,21 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 return
             }
             // ISL END
+            // ISL FIXED ZOOM
+
+            if (!event.shiftKey) return;
+            if (event.deltaY < 0 && this.magnifyingGlassParameters.zoomScale > 30) {
+                this.fixedZoomMultiplier = this.fixedZoomMultiplier * 1.1;
+            } else if (event.deltaY > 0 && this.magnifyingGlassParameters.zoomScale < 180) {
+                this.fixedZoomMultiplier = this.fixedZoomMultiplier / 1.1;
+            }
+
+            this.fixedZoomMultiplier = Math.max(0.3,this.fixedZoomMultiplier);
+            this.fixedZoomMultiplier = Math.min(3.7,this.fixedZoomMultiplier);
+            console.log('mult',this.fixedZoomMultiplier);
+            this.updateZoomArea(event);
+            return
+            // ISL END
 
             const { offset } = this.controller.geometry;
             const point = translateToSVG(this.content, [event.clientX, event.clientY]);
@@ -1066,17 +1084,40 @@ export class CanvasViewImpl implements CanvasView, Listener {
         });
 
         this.content.addEventListener('mousemove', (e): void => {
+            // ISL LOCK ICON
+            // Note: this.lockedBox function, when set to true, draws a solid color box around the highlighte shape
+
+            // This part is intended to 1.) set this.lockedBox = true on mouseover of the locked shape, and
+            // 2.) set this.lockedBox = false on mouseout of the locked shape
+            for (var states in this.drawnStates) {                                  // on mousemove, check all shapes
+                const  clientID  = this.drawnStates[states].clientID;
+                const [state] = this.controller.objects
+                .filter((_state: any): boolean => _state.clientID === clientID);
+                if (state.lock) {                                                   // if a shape is locked
+                    const shape = this.svgShapes[clientID];
+                    (shape as any).on('mouseover', (): void => {                    // listen for mouseover event
+                        console.log('mouseover');
+                        if (this.lastShapeHighlighted !== clientID){
+                            console.log('test');
+                            console.log(clientID);
+                        this.lastShapeHighlighted = clientID;
+                        this.lockedBox(true);                                       // then set lockedBox to true
+                    }
+                        })
+                        (shape as any).on('mouseout', (): void => {                 // also listen for when the mouse leaves the shape
+                            console.log('mouseleave');                              // then set lockedBox to false
+                            this.lastShapeHighlighted = 0;
+                            this.lockedBox(false);
+                        }
+                            )
+                }
+            }
+            // END
+
             self.controller.drag(e.clientX, e.clientY);
 
-            // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
             const { offset } = this.controller.geometry;    // Declare variables for ISL FIXED ZOOM and CROSSHAIR
             const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
-            var zoomCanvas = document.getElementById('zoom-canvas');
-            var zoomCanvasCtx = zoomCanvas.getContext('2d');
-            var zoomX = x - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
-            var zoomY = y - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
-            var zoomImg = this.background;
-            // ISL END
 
             // ISL MAGNIFYING GLASS
             this.magnifyingGlassParameters.cursorX = e.clientX;
@@ -1087,21 +1128,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
             // ISL END
 
-            // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
-            zoomCanvasCtx.clearRect(0,0,this.fixedZoomSize,this.fixedZoomSize); // Clear canvas
-            zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,(this.fixedZoomSize/this.fixedZoomMultiplier), // Show zoomed image
-                (this.fixedZoomSize/this.fixedZoomMultiplier),0,0,this.fixedZoomSize,this.fixedZoomSize);
-            if (this.mode === Mode.DRAW || this.mode === Mode.RESIZE) { // Operate only on DRAW and RESIZE modes
-            zoomCanvasCtx.beginPath();  // Draw crosshair lines
-            zoomCanvasCtx.lineWidth = 2;
-            zoomCanvasCtx.strokeStyle = 'red';
-            zoomCanvasCtx.moveTo(this.fixedZoomSize/2,0);
-            zoomCanvasCtx.lineTo(this.fixedZoomSize/2,this.fixedZoomSize);
-            zoomCanvasCtx.moveTo(0,this.fixedZoomSize/2);
-            zoomCanvasCtx.lineTo(this.fixedZoomSize,this.fixedZoomSize/2);
-            zoomCanvasCtx.stroke();
-            }
-            // ISL END
+            this.updateZoomArea(e);
 
             if (this.mode !== Mode.IDLE) return;
             if (e.ctrlKey || e.shiftKey) return;
@@ -1126,7 +1153,32 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.content.oncontextmenu = (): boolean => false;
         model.subscribe(this);
     }
-
+    public updateZoomArea(e:MouseEvent): void{
+        // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
+        const { offset } = this.controller.geometry;    // Declare variables for ISL FIXED ZOOM and CROSSHAIR
+        const [x, y] = translateToSVG(this.content, [e.clientX, e.clientY]);
+        var zoomCanvas = document.getElementById('zoom-canvas');
+        var zoomCanvasCtx = zoomCanvas.getContext('2d');
+        var zoomX = x - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
+        var zoomY = y - offset - (this.fixedZoomSize/this.fixedZoomMultiplier)/2;
+        var zoomImg = this.background;
+        // ISL END
+        // ISL FIXED ZOOM and ISL FIXED ZOOM - CROSSHAIR
+        zoomCanvasCtx.clearRect(0,0,this.fixedZoomSize,this.fixedZoomSize); // Clear canvas
+        zoomCanvasCtx.drawImage(zoomImg,zoomX,zoomY,(this.fixedZoomSize/this.fixedZoomMultiplier), // Show zoomed image
+            (this.fixedZoomSize/this.fixedZoomMultiplier),0,0,this.fixedZoomSize,this.fixedZoomSize);
+        if (this.mode === Mode.DRAW || this.mode === Mode.RESIZE) { // Operate only on DRAW and RESIZE modes
+        zoomCanvasCtx.beginPath();  // Draw crosshair lines
+        zoomCanvasCtx.lineWidth = 2;
+        zoomCanvasCtx.strokeStyle = 'red';
+        zoomCanvasCtx.moveTo(this.fixedZoomSize/2,0);
+        zoomCanvasCtx.lineTo(this.fixedZoomSize/2,this.fixedZoomSize);
+        zoomCanvasCtx.moveTo(0,this.fixedZoomSize/2);
+        zoomCanvasCtx.lineTo(this.fixedZoomSize,this.fixedZoomSize/2);
+        zoomCanvasCtx.stroke();
+        }
+        // ISL END
+    }
     public notify(model: CanvasModel & Master, reason: UpdateReasons): void {
         this.geometry = this.controller.geometry;
         if (reason === UpdateReasons.CONFIG_UPDATED) {
@@ -1679,6 +1731,26 @@ export class CanvasViewImpl implements CanvasView, Listener {
         };
     }
     // ISL END
+
+    // ISL LOCKED ICON
+    private lockedBox(focusedBox: any): void {
+        if (focusedBox == true) {
+            if (this.lastShapeHighlighted && this.lastShapeClicked != null) {
+                var ctx = this.background.getContext("2d");
+                var pointsBBox = this.drawnStates[this.lastShapeHighlighted].points;
+                ctx.putImageData(this.backgroundNew, 0, 0);
+                ctx.putImageData(this.backgroundOriginal, 0, 0, pointsBBox[0], pointsBBox[1], pointsBBox[2] - pointsBBox[0], pointsBBox[3] - pointsBBox[1]);
+                pointsBBox = null;
+                ctx = null;
+            }
+        }
+        else if (focusedBox == false && this.lastShapeClicked != null) {
+            var ctx = this.background.getContext("2d");
+            ctx.putImageData(this.backgroundOriginal, 0, 0);
+            ctx = null;
+        };
+    }
+    // ISL END
     private redrawBitmap(): void {
         const width = +this.background.style.width.slice(0, -2);
         const height = +this.background.style.height.slice(0, -2);
@@ -1991,15 +2063,29 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     private deactivateShape(): void {
+
         if (this.activeElement.clientID !== null) {
+            console.log('deactivate');
             const { displayAllText } = this.configuration;
             const { clientID } = this.activeElement;
             const drawnState = this.drawnStates[clientID];
             const shape = this.svgShapes[clientID];
-
+            const [state] = this.controller.objects
+            .filter((_state: any): boolean => _state.clientID === clientID);
             shape.removeClass('cvat_canvas_shape_activated');
             shape.removeClass('cvat_canvas_shape_draggable');
-
+            // if (!state.lock) {
+            //     (shape as any).on('mouseout', (): void => {
+            //     // ISL LOCK ICON
+            //     console.log('testoff');
+            //     this.lastShapeClicked = clientID;
+            //     this.lockedBox(false);
+            //     return;
+            //     })
+            // }
+            if(state.lock) {
+                console.log('mouse off state.lcok');
+            }
             if (!drawnState.pinned) {
                 (shape as any).off('dragstart');
                 (shape as any).off('dragend');
@@ -2057,6 +2143,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     }
 
     private activateShape(clientID: number): void {
+        console.log('activate');
         const [state] = this.controller.objects
             .filter((_state: any): boolean => _state.clientID === clientID);
 
@@ -2072,6 +2159,14 @@ export class CanvasViewImpl implements CanvasView, Listener {
         const shape = this.svgShapes[clientID];
 
         if (state.lock) {
+            // (shape as any).on('mouseover', (): void => {
+            // // ISL LOCK ICON
+            // console.log('test');
+            // this.lastShapeClicked = clientID;
+            // this.lockedBox(true);
+            // return;
+            // })
+            console.log('state.lock activate');
             return;
         }
 
@@ -2303,16 +2398,16 @@ export class CanvasViewImpl implements CanvasView, Listener {
         };
 
         // Find the best place for a text
-        let [clientX, clientY]: number[] = [box.x + box.width, box.y];
-        if (clientX + (text.node as any as SVGTextElement)
-            .getBBox().width + consts.TEXT_MARGIN > this.canvas.offsetWidth) {
-            ([clientX, clientY] = [box.x, box.y]);
-        }
+        let [clientX, clientY]: number[] = [box.x, box.y];
+        // if (clientX + (text.node as any as SVGTextElement)
+        //     .getBBox().width> this.canvas.offsetWidth) {
+        //     ([clientX, clientY] = [box.x, box.y]);
+        // }
 
         // Translate back to text SVG
         const [x, y]: number[] = translateToSVG(this.text, [
-            clientX + consts.TEXT_MARGIN,
-            clientY + consts.TEXT_MARGIN,
+            clientX,
+            clientY,
         ]);
 
         // Finally draw a text

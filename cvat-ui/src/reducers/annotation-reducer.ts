@@ -17,6 +17,7 @@ import {
     Workspace,
 } from './interfaces';
 import LabelsListContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/labels-list';
+import { clientID } from 'cvat-core/src/logger-storage';
 
 const defaultState: AnnotationState = {
     activities: {
@@ -87,6 +88,9 @@ const defaultState: AnnotationState = {
     // ISL AUTOFIT
     autoFitObjects: [],
     // ISL END
+    // ISL INTERPOLATION
+    asLastKeyframeObjects: [],
+    // ISL END
     // ISL MANUAL TRACKING
     trackobject: {
         tracking: false,
@@ -111,11 +115,195 @@ const defaultState: AnnotationState = {
         weather:"",
         lighting:"",
     },
-    globalAttributesVisibility: false
+    globalAttributesVisibility: false,
+    isFetchingAttributes: false,
+    isSavingAttributes: false,
+    globalAttributesDB: {},
+    // ISL TRACKING
+    automaticTracking:{
+        tracking: false,
+        frameStart: 0,
+        states: [],
+        clientID:0,
+        modalVisible:false,
+        numberOfFramesToTrack:1,
+        jobInstance:null,
+        sourceState:null,
+        image: null,
+        current: 30,
+
+    },
+    // ISL END
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // ISL TRACKING
+        case AnnotationActionTypes.GET_FRAME: {
+            const { image } = action.payload;
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    image: image,
+                }
+            };
+        }
+        case AnnotationActionTypes.CHANGE_NUM_FRAMES_TO_TRACK: {
+            const { num_frames } = action.payload;
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    numberOfFramesToTrack:num_frames,
+                    modalVisible:false,
+                }
+            };
+        }
+        case AnnotationActionTypes.SWITCH_AUTO_TRACK_MODAL: {
+            const { visibility,
+                    jobInstance,
+                    frame_num,
+                    sourceState } = action.payload;
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    modalVisible:visibility,
+                    jobInstance:jobInstance,
+                    frameStart: frame_num,
+                    sourceState:sourceState,
+                    current: frame_num+30,
+                }
+            };
+        }
+        case AnnotationActionTypes.SWITCH_AUTO_TRACK: {
+            const { status } = action.payload;
+
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    tracking:status,
+                }
+            };
+
+        }
+        case AnnotationActionTypes.SWITCH_CURRENT_DISPLAY: {
+            const { current } = action.payload;
+
+            return {
+                ...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    current:current,
+                }
+            };
+
+        }
+        case AnnotationActionTypes.PREVIOUS_TRACK: {
+            var index = state.automaticTracking.states.length-15;
+            if(index>0){
+                console.log('start index to remove',index);
+                console.log('before:');
+                var result_states:any[] = [];
+                var counter = 0;
+                var length = state.automaticTracking.states.length;
+                for (var temp of state.automaticTracking.states){
+                    if(counter<length-15){
+                        result_states.push(temp);
+                        counter++;
+                    }
+                }
+
+                return {
+                    ...state,
+                    automaticTracking:{
+                        ...state.automaticTracking,
+                        current: state.automaticTracking.current-30,
+                        states: result_states,
+                    }
+                };
+            }else{
+                return {
+                    ...state
+                }
+            }
+
+        }
+        case AnnotationActionTypes.START_TRACK: {
+            const { statesToUpdate,tracking,from,clientID,mode} = action.payload;
+            const result_states: any[] = [];
+            let frame_start = state.automaticTracking.frameStart;
+            if(mode == 'OVERRIDE'){
+                for(let state of statesToUpdate){
+                    result_states.push(state);
+                }
+                frame_start = from;
+            }
+            else if (mode == 'APPEND'){
+                let prev_states = state.automaticTracking.states;
+                for(let state of prev_states){
+                    result_states.push(state);
+                }
+                for(let state of statesToUpdate){
+                    result_states.push(state);
+                }
+
+            }
+            return {
+                ...state,
+                automaticTracking: {
+                    ...state.automaticTracking,
+                    states:result_states,
+                    tracking:tracking,
+                    frameStart: frame_start,
+                    clientID:clientID,
+                }
+            };
+
+        }
+        case AnnotationActionTypes.STOP_TRACK: {
+            return {...state,};
+        }
+        case AnnotationActionTypes.EDIT_LAST_TRACK_STATE: {
+            const {
+                drag,
+                resize,
+            } = action.payload;
+            let result_states = state.automaticTracking.states;
+            let stateToEdit = result_states[result_states.length-1];
+            let width = stateToEdit[2]-stateToEdit[0];
+            let height = stateToEdit[3]-stateToEdit[1];
+            let firstStateIndex = result_states.length-16;
+            if(firstStateIndex<0){
+                firstStateIndex=0;
+            }
+            let firstState = result_states[firstStateIndex];
+            for(var i=firstStateIndex+1;i<result_states.length-1;i++){
+                // TO DO: Write the equations
+                // TO DO: Correct the terms
+                var temp_state = result_states[i];
+                let temp_width = temp_state[2]-temp_state[0];
+                let temp_height = temp_state[3]-temp_state[1];
+                temp_state[0]=temp_state[0]+(temp_width/width)*drag.x;
+                temp_state[1]=temp_state[1]+(temp_height/height)*drag.y;
+                temp_state[2]=temp_state[2]+(temp_width/width)*(drag.x+resize.x);
+                temp_state[3]=temp_state[3]+(temp_height/height)*(drag.y+resize.y);
+            }
+            stateToEdit[0] = stateToEdit[0]+drag.x;
+            stateToEdit[1] = stateToEdit[1]+drag.y;
+            stateToEdit[2] = stateToEdit[2]+drag.x+resize.x;
+            stateToEdit[3] = stateToEdit[3]+drag.y+resize.y;
+            return {...state,
+                automaticTracking:{
+                    ...state.automaticTracking,
+                    states: result_states,
+                }
+
+            };
+        }
+        // ISL END
         // ISL GLOBAL ATTRIBUTES
         case AnnotationActionTypes.START_EDIT_LABEL: {
             const { task_id,
@@ -127,9 +315,32 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         }
         case AnnotationActionTypes.SET_ATTRIBUTE_VISIBILITY: {
             const{visibility} = action.payload;
-            console.log('MARKER ',visibility)
             return {...state,
                 globalAttributesVisibility: visibility,
+            };
+        }
+        case AnnotationActionTypes.START_FETCH_ATTRIBUTES: {
+            return {...state,
+                isFetchingAttributes: true,
+            };
+        }
+        case AnnotationActionTypes.STOP_FETCH_ATTRIBUTES: {
+            const{data} = action.payload;
+            return {...state,
+                isFetchingAttributes: false,
+                globalAttributesDB:JSON.parse(data),
+            };
+        }
+        case AnnotationActionTypes.START_SAVE_ATTRIBUTES: {
+            console.log('MARKER START SAVE');
+            return {...state,
+                isSavingAttributes: true,
+            };
+        }
+        case AnnotationActionTypes.STOP_SAVE_ATRIBUTES: {
+            console.log('MARKER END STOP SAVE');
+            return {...state,
+                isSavingAttributes: false,
             };
         }
         // ISL END
@@ -151,6 +362,27 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             return {
                 ...state,
                 autoFitObjects: newAutoFitObjects,
+            };
+        }
+        // ISL END
+        // ISL INTERPOLATION
+        case AnnotationActionTypes.START_COPY_LAST_KEYFRAME: {
+            const { clientID } = action.payload;
+            const newAsLastKeyframeObjects = [...state.asLastKeyframeObjects];
+            newAsLastKeyframeObjects.push(clientID);
+            return {
+                ...state,
+                asLastKeyframeObjects: newAsLastKeyframeObjects,
+            };
+        }
+        case AnnotationActionTypes.STOP_AUTO_FIT: {
+            const { clientID } = action.payload;
+
+            const newAsLastKeyframeObjects= [...state.asLastKeyframeObjects];
+            newAsLastKeyframeObjects.splice(state.asLastKeyframeObjects.indexOf(clientID), 1);
+            return {
+                ...state,
+                asLastKeyframeObjects: newAsLastKeyframeObjects,
             };
         }
         // ISL END
@@ -1152,7 +1384,13 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             return { ...defaultState };
         }
         case AnnotationActionTypes.EDIT_GLOBAL_ATTRIBUTES:{
-            const {globalAttributes} = action.payload;
+            const {globalAttributes,visibility} = action.payload;
+            if(visibility!=undefined){
+                return {
+                    ...state,
+                globalAttributesVisibility:visibility,
+                };
+            }
             return {
                 ...state,
                 globalAttributes:globalAttributes,

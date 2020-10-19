@@ -683,18 +683,26 @@
                         }
                     });
                 } catch (errorData) {
-                    // throw generateError(errorData);
-                    console.log('Error receiving fitted coordinates, returning 0');
+                    throw generateError(errorData);
+                    // console.log('Error receiving fitted coordinates, returning 0',errorData);
+                    // return {
+                    //     points: [0, 0, 0, 0],
+                    // };
+                }
+                if(response.data){
+                    return response.data;
+                }
+                else{
                     return {
                         points: [0, 0, 0, 0],
-                    };
+                    }
                 }
-                return response.data;
             }
             // ISL END
 
-            // EDITED FOR TRACKING
+            // ISL TRACKING
             async function tracking(id, objectID, frameStart, frameEnd, points) { // EDITED to include frame number, xtl, ytl, xbr, ybr
+                console.log('TRACKING from server-proxy');
                 const { backendAPI } = config;
                 const x1 = Math.trunc(points[0])
                 const y1 = Math.trunc(points[1])
@@ -704,11 +712,10 @@
                 let response = null;
                 try {
                     response = await Axios.get(`${backendAPI}/tasks/${id}/tracking`, { // EDITED to  add the URL parameters instead
-                        proxy: config.proxy,
                         params: {
-                            objectID: objectID,
-                            frameStart: frameStart,
-                            frameEnd: frameEnd,
+                            "object-id": objectID,
+                            "frame-start": frameStart,
+                            "frame-end": frameEnd,
                             x1: x1,
                             y1: y1,
                             x2: x2,
@@ -716,21 +723,32 @@
                         }
                     });
                 } catch (errorData) {
+                    console.log('backend',backendAPI);
+                    console.log(errorData);
                     throw generateError(errorData);
                 }
 
                 return response.data;
             }
-            // EDITED END
+            async function fetch(id,url,params) { // generic fetching
+                const { backendAPI } = config;
+                console.log('fetching ',url);
+                let response = null;
+                try {
+                    response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+
+                return response.data;
+            }
+            // ISL END
+
             // ISL GLOBAL ATTRIBUTES
             async function updateLabels(id, data,selected) {
                 const { backendAPI } = config;
-                console.log('MARKER server-proxy');
-                console.log('updating lables');
-                console.log('id: ', id);
-                console.log('data: ',data);
-                console.log('selected: ',selected);
-                console.log('MARKER END');
                 let task_details = {},labels = null;
 
                 try {
@@ -780,6 +798,36 @@
                 }
                 return updateLabel.data;
             }
+            async function fetchAttributes(id){
+                const { backendAPI } = config;
+                let request = null;
+                try {
+                    request = await Axios.get(`${backendAPI}/tasks/${id}/getattributes`, { // EDITED to  add the URL parameters instead
+                        proxy: config.proxy,
+                    });
+                } catch (errorData) {
+                    console.log(errorData);
+                    return {};
+                }
+                return request.data;
+            }
+            async function saveAttributes(id,attributes,selected){
+                const { backendAPI } = config;
+                let request = null;
+                let data = {
+                    attributes:attributes,
+                    selected:selected
+                }
+                try {
+                    request = await Axios.post(`${backendAPI}/tasks/${id}/saveattributes`, { // EDITED to  add the URL parameters instead
+                        data
+                    });
+                } catch (errorData) {
+                    throw generateError(errorData);
+                }
+                console.log(request.data.data)
+                return request.data.data;
+            }
             // ISL END
             Object.defineProperties(this, Object.freeze({
                 server: {
@@ -806,7 +854,15 @@
                         deleteTask,
                         exportDataset,
                         autoFit,           /*ISL AUTOFIT*/
-                        updateLabels,       /*ISL GLOBAL ATTRIBUTES*/
+                        /*ISL GLOBAL ATTRIBUTES*/
+                        updateLabels,
+                        fetchAttributes,
+                        saveAttributes,
+                        /*ISL END*/
+                        // ISL TRACKING
+                        tracking,
+                        fetch,
+                        // ISL END
                     }),
                     writable: false,
                 },

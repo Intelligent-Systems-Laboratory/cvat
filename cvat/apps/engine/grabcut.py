@@ -35,7 +35,7 @@ def snap_algorithm(*args):
 
     bgdModel = np.zeros((1,65),np.float64)
     fgdModel = np.zeros((1,65),np.float64)
-    
+
 
     #get only part of the image
     x1 = int(x1)
@@ -78,23 +78,23 @@ def snap_algorithm(*args):
 
     #compute new rect based on the coordinates
     rect = (v_ex+WFactor,v_ex+HFactor,W-v_ex,H-v_ex)
-    cv2.grabCut(img,mask,rect,bgdModel,fgdModel,25,cv2.GC_BGD) 
+    cv2.grabCut(img,mask,rect,bgdModel,fgdModel,25,cv2.GC_BGD)
     mask2 = np.where((mask==2)|(mask==0),0,1).astype('uint8')
     img = img*mask2[:,:,np.newaxis]
     img2  = np.where(img!=0,255,img).astype('uint8')
-    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY) 
+    img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
     thresh = cv2.threshold(img2,127,255,cv2.THRESH_BINARY)[1]
     cnts, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     area_list = []
     rec_list = []
 
-    for c in cnts:    
+    for c in cnts:
         (nX, nY, w, h) = cv2.boundingRect(c)
         cnts_area = cv2.contourArea(c)
         rec_list.append(c)
         area_list.append(cnts_area)
-    
+
     nX, nY, w, h = cv2.boundingRect(rec_list[area_list.index(max(area_list))])
 
     if (w*h) >= (0.3*Area):

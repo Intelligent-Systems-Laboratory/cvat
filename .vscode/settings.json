@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/mabe/anaconda3/envs/cvat2/bin/python",
+    "python.pythonPath": "/home/mabe/anaconda3/envs/cvat/bin/python",
     "eslint.enable": true,
     "eslint.validate": [
         "javascript",

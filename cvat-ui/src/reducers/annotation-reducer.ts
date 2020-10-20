@@ -329,9 +329,15 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         }
         case AnnotationActionTypes.STOP_FETCH_ATTRIBUTES: {
             const{data} = action.payload;
+            let parsedData = "";
+            try{
+                parsedData = JSON.parse(data);
+            }catch{
+                console.log('error parsing data from database');
+            }
             return {...state,
                 isFetchingAttributes: false,
-                globalAttributesDB:JSON.parse(data),
+                globalAttributesDB:parsedData,
             };
         }
         case AnnotationActionTypes.START_SAVE_ATTRIBUTES: {

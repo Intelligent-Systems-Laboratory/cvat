@@ -27,12 +27,13 @@ function MergeControl(props: Props): JSX.Element {
 
     const dynamicIconProps = activeControl === ActiveControl.MERGE
         ? {
-            className: 'cvat-active-canvas-control',
+            className: 'cvat-merge-control cvat-active-canvas-control',
             onClick: (): void => {
                 canvasInstance.merge({ enabled: false });
                 mergeObjects(false);
             },
         } : {
+            className: 'cvat-merge-control',
             onClick: (): void => {
                 canvasInstance.cancel();
                 canvasInstance.merge({ enabled: true });
@@ -41,7 +42,7 @@ function MergeControl(props: Props): JSX.Element {
         };
 
     return (
-        <Tooltip title={`Merge shapes/tracks ${switchMergeShortcut}`} placement='right'>
+        <Tooltip title={`Merge shapes/tracks ${switchMergeShortcut}`} placement='right' mouseLeaveDelay={0}>
             <Icon {...dynamicIconProps} component={MergeIcon} />
         </Tooltip>
     );

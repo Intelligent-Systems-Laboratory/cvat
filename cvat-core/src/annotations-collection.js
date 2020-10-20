@@ -402,6 +402,7 @@
                 frame: Math.min.apply(null, Object.keys(keyframes).map((frame) => +frame)),
                 shapes: Object.values(keyframes),
                 group: 0,
+                source: objectStates[0].source,
                 label_id: label.id,
                 attributes: Object.keys(objectStates[0].attributes)
                     .reduce((accumulator, attrID) => {
@@ -763,6 +764,7 @@
                             points: [...state.points],
                             type: state.shapeType,
                             z_order: state.zOrder,
+                            source: state.source,
                         });
                     } else if (state.objectType === 'track') {
                         constructed.tracks.push({
@@ -770,6 +772,7 @@
                                 .filter((attr) => !labelAttributes[attr.spec_id].mutable),
                             frame: state.frame,
                             group: 0,
+                            source: state.source,
                             label_id: state.label.id,
                             shapes: [{
                                 attributes: attributes
@@ -843,6 +846,43 @@
                 state: minimumState,
                 distance: minimumDistance,
             };
+        }
+
+        searchEmpty(frameFrom, frameTo) {
+            const sign = Math.sign(frameTo - frameFrom);
+            const predicate = sign > 0
+                ? (frame) => frame <= frameTo
+                : (frame) => frame >= frameTo;
+            const update = sign > 0
+                ? (frame) => frame + 1
+                : (frame) => frame - 1;
+            for (let frame = frameFrom; predicate(frame); frame = update(frame)) {
+                if (frame in this.shapes && this.shapes[frame].some((shape) => !shape.removed)) {
+                    continue;
+                }
+                if (frame in this.tags && this.tags[frame].some((tag) => !tag.removed)) {
+                    continue;
+                }
+                const filteredTracks = this.tracks.filter((track) => !track.removed);
+                let found = false;
+                for (const track of filteredTracks) {
+                    const keyframes = track.boundedKeyframes(frame);
+                    const { prev, first } = keyframes;
+                    const last = prev === null ? first : prev;
+                    const lastShape = track.shapes[last];
+                    const isKeyfame = frame in track.shapes;
+                    if (first <= frame && (!lastShape.outside || isKeyfame)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found) continue;
+
+                return frame;
+            }
+
+            return null;
         }
 
         search(filters, frameFrom, frameTo) {

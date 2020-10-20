@@ -24,10 +24,10 @@ import {
     undoActionAsync,
     redoActionAsync,
     searchAnnotationsAsync,
+    searchEmptyFrameAsync,
     changeWorkspace as changeWorkspaceAction,
     activateObject,
     switchTracking, // EDITED FOR USER STORY 12/13
-    closeJob as closeJobAction,
     // ISL GLOBAL ATTRIBUTES
     editGlobalAttributes as editGlobalAttributesAction,
     editGlobalAttributes,
@@ -87,7 +87,8 @@ interface DispatchToProps {
     showStatistics(sessionInstance: any): void;
     undo(sessionInstance: any, frameNumber: any): void;
     redo(sessionInstance: any, frameNumber: any): void;
-    searchAnnotations(sessionInstance: any, frameFrom: any, frameTo: any): void;
+    searchAnnotations(sessionInstance: any, frameFrom: number, frameTo: number): void;
+    searchEmptyFrame(sessionInstance: any, frameFrom: number, frameTo: number): void;
     changeWorkspace(workspace: Workspace): void;
     closeJob(): void;
     onEditGlobalAttributes(globalAttributes:any): void;
@@ -186,15 +187,15 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         redo(sessionInstance: any, frameNumber: any): void {
             dispatch(redoActionAsync(sessionInstance, frameNumber));
         },
-        searchAnnotations(sessionInstance: any, frameFrom: any, frameTo: any): void {
+        searchAnnotations(sessionInstance: any, frameFrom: number, frameTo: number): void {
             dispatch(searchAnnotationsAsync(sessionInstance, frameFrom, frameTo));
+        },
+        searchEmptyFrame(sessionInstance: any, frameFrom: number, frameTo: number): void {
+            dispatch(searchEmptyFrameAsync(sessionInstance, frameFrom, frameTo));
         },
         changeWorkspace(workspace: Workspace): void {
             dispatch(activateObject(null, null));
             dispatch(changeWorkspaceAction(workspace));
-        },
-        closeJob(): void {
-            dispatch(closeJobAction());
         },
         onEditGlobalAttributes(globalAttributes: any): void {
             dispatch(editGlobalAttributesAction(globalAttributes));
@@ -214,8 +215,13 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
     };
 }
 
+interface State {
+    prevButtonType: 'regular' | 'filtered' | 'empty';
+    nextButtonType: 'regular' | 'filtered' | 'empty';
+}
+
 type Props = StateToProps & DispatchToProps & RouteComponentProps;
-class AnnotationTopBarContainer extends React.PureComponent<Props> {
+class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
     private inputFrameRef: React.RefObject<InputNumber>;
     private autoSaveInterval: number | undefined;
     private unblock: any;
@@ -226,20 +232,20 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
         props.onFetchAttributes(props.jobInstance);
         this.initiateGlobalAttributesModal(); // ISL GLOBAL ATTRIBUTES
-        console.log(props);
-
+        this.state = {
+            prevButtonType: 'regular',
+            nextButtonType: 'regular',
+        };
     }
 
     public componentDidMount(): void {
-        const {
-            autoSaveInterval,
-            history,
-            jobInstance,
-            onFetchAttributes,
+        const { autoSaveInterval, history, jobInstance } = this.props;
+        
+        //ISL GLOBAL ATTRIBUTES
+        const { onFetchAttributes,
             globalAttributesDB
         } = this.props;
 
-        //ISL GLOBAL ATTRIBUTES
         this.autoSaveInterval = window.setInterval(this.autoSave.bind(this), autoSaveInterval);
         // ISL END
 
@@ -338,11 +344,9 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     }
 
     public componentWillUnmount(): void {
-        const { closeJob } = this.props;
         window.clearInterval(this.autoSaveInterval);
         window.removeEventListener('beforeunload', this.beforeUnloadCallback);
         this.unblock();
-        closeJob();
     }
 
     private undo = (): void => {
@@ -372,10 +376,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     };
 
     private showStatistics = (): void => {
-        const {
-            jobInstance,
-            showStatistics,
-        } = this.props;
+        const { jobInstance, showStatistics } = this.props;
 
         showStatistics(jobInstance);
     };
@@ -432,12 +433,16 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     };
 
     private onPrevFrame = (): void => {
+        const { prevButtonType } = this.state;
         const {
             frameNumber,
             jobInstance,
             playing,
             onSwitchPlay,
+            searchAnnotations,
+            searchEmptyFrame,
         } = this.props;
+        const { startFrame } = jobInstance;
 
         const newFrame = Math
             .max(jobInstance.startFrame, frameNumber - 1);
@@ -445,17 +450,27 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             if (playing) {
                 onSwitchPlay(false);
             }
-            this.changeFrame(newFrame);
+            if (prevButtonType === 'regular') {
+                this.changeFrame(newFrame);
+            } else if (prevButtonType === 'filtered') {
+                searchAnnotations(jobInstance, frameNumber - 1, startFrame);
+            } else {
+                searchEmptyFrame(jobInstance, frameNumber - 1, startFrame);
+            }
         }
     };
 
     private onNextFrame = (): void => {
+        const { nextButtonType } = this.state;
         const {
             frameNumber,
             jobInstance,
             playing,
             onSwitchPlay,
+            searchAnnotations,
+            searchEmptyFrame,
         } = this.props;
+        const { stopFrame } = jobInstance;
 
         const newFrame = Math
             .min(jobInstance.stopFrame, frameNumber + 1);
@@ -463,7 +478,13 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
             if (playing) {
                 onSwitchPlay(false);
             }
-            this.changeFrame(newFrame);
+            if (nextButtonType === 'regular') {
+                this.changeFrame(newFrame);
+            } else if (nextButtonType === 'filtered') {
+                searchAnnotations(jobInstance, frameNumber + 1, stopFrame);
+            } else {
+                searchEmptyFrame(jobInstance, frameNumber + 1, stopFrame);
+            }
         }
     };
 
@@ -503,12 +524,25 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
         }
     };
 
+    private onSetPreviousButtonType = (type: 'regular' | 'filtered' | 'empty'): void => {
+        this.setState({
+            prevButtonType: type,
+        });
+    };
+
+    private onSetNextButtonType = (type: 'regular' | 'filtered' | 'empty'): void => {
+        this.setState({
+            nextButtonType: type,
+        });
+    };
+
     private onSaveAnnotation = (): void => {
         const {
             onSaveAnnotation,
             jobInstance,
             onSaveAttributes, // ISL GLOBAL ATTRIBUTES
         } = this.props;
+
         onSaveAttributes(jobInstance,this.globalAttributesDB,this.globalAttributesSelectedDB);
         onSaveAnnotation(jobInstance);
     };
@@ -522,12 +556,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     };
 
     private onChangePlayerInputValue = (value: number): void => {
-        const {
-            onSwitchPlay,
-            playing,
-            frameNumber,
-        } = this.props;
-
+        const { onSwitchPlay, playing, frameNumber } = this.props;
         if (value !== frameNumber) {
             if (playing) {
                 onSwitchPlay(false);
@@ -538,10 +567,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
 
     private onURLIconClick = (): void => {
         const { frameNumber } = this.props;
-        const {
-            origin,
-            pathname,
-        } = window.location;
+        const { origin, pathname } = window.location;
         const url = `${origin}${pathname}?frame=${frameNumber}`;
         copy(url);
     };
@@ -1494,6 +1520,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
     // ISL END
 
     public render(): JSX.Element {
+        const { nextButtonType, prevButtonType } = this.state;
         const {
             playing,
             saving,
@@ -1621,6 +1648,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     onBackward={this.onBackward}
                     onFirstFrame={this.onFirstFrame}
                     onLastFrame={this.onLastFrame}
+                    setNextButtonType={this.onSetNextButtonType}
+                    setPrevButtonType={this.onSetPreviousButtonType}
                     onSliderChange={this.onChangePlayerSliderValue}
                     onInputChange={this.onChangePlayerInputValue}
                     onURLIconClick={this.onURLIconClick}
@@ -1644,6 +1673,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props> {
                     previousFrameShortcut={normalizedKeyMap.PREV_FRAME}
                     forwardShortcut={normalizedKeyMap.FORWARD_FRAME}
                     backwardShortcut={normalizedKeyMap.BACKWARD_FRAME}
+                    nextButtonType={nextButtonType}
+                    prevButtonType={prevButtonType}
                     focusFrameInputShortcut={normalizedKeyMap.FOCUS_INPUT_FRAME}
                     onUndoClick={this.undo}
                     onRedoClick={this.redo}

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
+import React from 'react';
 import { AnyAction } from 'redux';
 
 import { Canvas, CanvasMode } from 'cvat-canvas-wrapper';
@@ -69,6 +70,7 @@ const defaultState: AnnotationState = {
             statuses: [],
         },
         collapsed: {},
+        collapsedAll: true,
         states: [],
         filters: [],
         filtersHistory: JSON.parse(
@@ -106,6 +108,7 @@ const defaultState: AnnotationState = {
         collecting: false,
         data: null,
     },
+    aiToolsRef: React.createRef(),
     colors: [],
     sidebarCollapsed: false,
     appearanceCollapsed: false,
@@ -651,6 +654,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             } = action.payload;
 
             const updatedCollapsedStates = { ...state.annotations.collapsed };
+            const totalStatesCount = state.annotations.states.length;
             for (const objectState of states) {
                 updatedCollapsedStates[objectState.clientID] = collapsed;
             }
@@ -660,6 +664,8 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 annotations: {
                     ...state.annotations,
                     collapsed: updatedCollapsedStates,
+                    collapsedAll: states.length === totalStatesCount
+                        ? collapsed : state.annotations.collapsedAll,
                 },
             };
         }
@@ -727,6 +733,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                     activeControl,
                 },
                 drawing: {
+                    activeInteractor: undefined,
                     activeLabelID: labelID,
                     activeNumOfPoints: points,
                     activeObjectType: objectType,
@@ -926,31 +933,6 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
 
             return {
                 ...state,
-                annotations: {
-                    ...state.annotations,
-                    states,
-                    history,
-                },
-            };
-        }
-        case AnnotationActionTypes.CHANGE_LABEL_COLOR_SUCCESS: {
-            const {
-                label,
-                states,
-                history,
-            } = action.payload;
-
-            const { instance: job } = state.job;
-            const labels = [...job.task.labels];
-            const index = labels.indexOf(label);
-            labels[index] = label;
-
-            return {
-                ...state,
-                job: {
-                    ...state.job,
-                    labels,
-                },
                 annotations: {
                     ...state.annotations,
                     states,
@@ -1363,8 +1345,30 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 },
             };
         }
+        case AnnotationActionTypes.INTERACT_WITH_CANVAS: {
+            return {
+                ...state,
+                annotations: {
+                    ...state.annotations,
+                    activatedStateID: null,
+                },
+                drawing: {
+                    ...state.drawing,
+                    activeInteractor: action.payload.activeInteractor,
+                    activeLabelID: action.payload.activeLabelID,
+                },
+                canvas: {
+                    ...state.canvas,
+                    activeControl: ActiveControl.AI_TOOLS,
+                },
+            };
+        }
         case AnnotationActionTypes.CHANGE_WORKSPACE: {
             const { workspace } = action.payload;
+            if (state.canvas.activeControl !== ActiveControl.CURSOR) {
+                return state;
+            }
+
             return {
                 ...state,
                 workspace,

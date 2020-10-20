@@ -24,11 +24,11 @@ function CursorControl(props: Props): JSX.Element {
     } = props;
 
     return (
-        <Tooltip title={`Cursor ${cursorShortkey}`} placement='right'>
+        <Tooltip title={`Cursor ${cursorShortkey}`} placement='right' mouseLeaveDelay={0}>
             <Icon
                 component={CursorIcon}
                 className={activeControl === ActiveControl.CURSOR
-                    ? 'cvat-active-canvas-control' : ''}
+                    ? 'cvat-active-canvas-control cvat-cursor-control' : 'cvat-cursor-control'}
                 onClick={
                     activeControl !== ActiveControl.CURSOR
                         ? (): void => canvasInstance.cancel()

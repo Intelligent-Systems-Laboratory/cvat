@@ -1,4 +1,10 @@
 - [User's guide](#users-guide)
+  - [Getting started](#getting-started)
+    - [Authorization](#authorization)
+    - [Administration panel](#administration-panel)
+    - [Creating an annotation task](#creating-an-annotation-task)
+    - [Models](#models)
+    - [Search](#search)
   - [Interface of the annotation tool](#interface-of-the-annotation-tool)
     - [Basic navigation](#basic-navigation)
     - [Types of shapes (basics)](#types-of-shapes-basics)
@@ -18,6 +24,7 @@
   - [Shape mode (advanced)](#shape-mode-advanced)
   - [Track mode (advanced)](#track-mode-advanced)
   - [Attribute annotation mode (advanced)](#attribute-annotation-mode-advanced)
+  - [AI Tools](#ai-tools)
   - [Annotation with rectangle by 4 points](#annotation-with-rectangle-by-4-points)
   - [Annotation with polygons](#annotation-with-polygons)
   - [Annotation with polylines](#annotation-with-polylines)
@@ -26,9 +33,11 @@
     - [Linear interpolation with one point](#linear-interpolation-with-one-point)
   - [Annotation with cuboids](#annotation-with-cuboids)
   - [Annotation with tags](#annotation-with-tags)
+  - [Track mode with polygons](#track-mode-with-polygons)
   - [Automatic annotation](#automatic-annotation)
   - [Shape grouping](#shape-grouping)
   - [Filter](#filter)
+  - [Analytics](#analytics)
   - [Shortcuts](#shortcuts)
 
 # User's guide
@@ -42,6 +51,282 @@ shortcuts for most of critical actions, dashboard with a list of annotation
 tasks, LDAP and basic authorization, etc..._ It was created for and used by
 a professional data annotation team. UX and UI were optimized especially for
 computer vision tasks developed by our team.
+
+## Getting started
+
+### Authorization
+-   First of all, you have to log in to CVAT tool.
+
+    ![](static/documentation/images/image001.jpg)
+
+-   For register a new user press "Create an account"
+
+    ![](static/documentation/images/image002.jpg)
+
+-   You can register a user but by default it will not have rights even to view
+    list of tasks. Thus you should create a superuser. The superuser can use
+    [Django administration panel](http://localhost:8080/admin) to assign correct
+    groups to the user. Please use the command below to create an admin account:
+
+    ``docker exec -it cvat bash -ic '/usr/bin/python3 ~/manage.py createsuperuser'``
+
+-   If you want to create a non-admin account, you can do that using the link below
+    on the login page. Don't forget to modify permissions for the new user in the
+    administration panel. There are several groups (aka roles): admin, user,
+    annotator, observer.
+
+    ![](static/documentation/images/image003.jpg)
+
+### Administration panel
+Go to the [Django administration panel](http://localhost:8080/admin). There you can:
+-   Create / edit / delete users
+-   Control permissions of users and access to the tool.
+
+    ![](static/documentation/images/image115.jpg)
+
+### Creating an annotation task
+
+1.  Create an annotation task pressing ``Create new task`` button on the main page.
+![](static/documentation/images/image004.jpg)
+
+1.  Specify parameters of the task:
+
+    #### Basic configuration
+
+    **Name** The name of the task to be created.
+
+    ![](static/documentation/images/image005.jpg)
+
+    **Labels**. There are two ways of working with labels:
+    -   The ``Constructor`` is a simple way to add and adjust labels. To add a new label click the ``Add label`` button.
+          ![](static/documentation/images/image123.jpg)
+
+        You can set a name of the label in the ``Label name`` field and choose a color for each label.
+
+          ![](static/documentation/images/image124.jpg)
+
+        If necessary you can add an attribute and set its properties by clicking ``Add an attribute``:
+
+          ![](static/documentation/images/image125.jpg)
+
+        The following actions are available here:
+        1. Set the attribute’s name.
+        1. Choose the way to display the attribute:
+           - Select — drop down list of value
+           - Radio — is used when it is necessary to choose just one option out of few suggested.
+           - Checkbox — is used when it is necessary to choose any number of options out of suggested.
+           - Text — is used when an attribute is entered as a text.
+           - Number — is used when an attribute is entered as a number.
+        1. Set values for the attribute. The values could be separated by pressing ``Enter``.
+        The entered value is displayed as a separate element which could be deleted
+        by pressing ``Backspace`` or clicking the close button (x).
+        If the specified way of displaying the attribute is Text or Number,
+        the entered value will be displayed as text by default (e.g. you can specify the text format).
+        1. Checkbox ``Mutable`` determines if an attribute would be changed frame to frame.
+        1. You can delete the attribute by clicking the close button (x).
+
+        Click the ``Continue`` button to add more labels.
+        If you need to cancel adding a label - press the ``Cancel`` button.
+        After all the necessary labels are added click the ``Done`` button.
+        After clicking ``Done`` the added labels would be displayed as separate elements of different colour.
+        You can edit or delete labels by clicking ``Update attributes`` or ``Delete label``.
+
+    -   The ``Raw`` is a way of working with labels for an advanced user.
+    Raw presents label data in _json_ format with an option of editing and copying labels as a text.
+    The ``Done`` button applies the changes and the ``Reset`` button cancels the changes.
+          ![](static/documentation/images/image126.jpg)
+
+    In ``Raw`` and ``Constructor`` mode, you can press the ``Copy`` button to copy the list of labels.
+
+    **Select files**. Press tab ``My computer`` to choose some files for annotation from your PC.
+    If you select tab ``Connected file share`` you can choose files for annotation from your network.
+    If you select `` Remote source`` , you'll see a field where you can enter a list of URLs (one URL per line).
+    If you upload a video data and select ``Use cache`` option, you can along with the video file attach a file with meta information.
+    You can find how to prepare it [here](/utils/prepare_meta_information/README.md).
+
+      ![](static/documentation/images/image127.jpg)
+
+    #### Advanced configuration
+
+      ![](static/documentation/images/image128_use_cache.jpg)
+
+    **Use zip chunks**. Force to use zip chunks as compressed data. Actual for videos only.
+
+    **Use cache**. Defines how to work with data. Select the checkbox to switch to the "on-the-fly data processing",
+    which will reduce the task creation time (by preparing chunks when requests are received)
+    and store data in a cache of limited size with a policy of evicting less popular items.
+    See more [here](/cvat/apps/documentation/data_on_fly.md).
+
+    **Image Quality**. Use this option to specify quality of uploaded images.
+    The option helps to load high resolution datasets faster.
+    Use the value from ``5`` (almost completely compressed images) to ``100`` (not compressed images).
+
+    **Overlap Size**. Use this option to make overlapped segments.
+    The option makes tracks continuous from one segment into another.
+    Use it for interpolation mode. There are several options for using the parameter:
+    - For an interpolation task (video sequence).
+    If you annotate a bounding box on two adjacent segments they will be merged into one bounding box.
+    If overlap equals to zero or annotation is poor on adjacent segments inside a dumped annotation file,
+    you will have several tracks, one for each segment, which corresponds to the object.
+    - For an annotation task (independent images).
+    If an object exists on overlapped segments, the overlap is greater than zero
+    and the annotation is good enough on adjacent segments, it will be automatically merged into one object.
+    If overlap equals to zero or annotation is poor on adjacent segments inside a dumped annotation file,
+    you will have several bounding boxes for the same object.
+    Thus, you annotate an object on the first segment.
+    You annotate the same object on second segment, and if you do it right, you
+    will have one track inside the annotations.
+    If annotations on different segments (on overlapped frames)
+    are very different, you will have two shapes for the same object.
+    This functionality works only for bounding boxes.
+    Polygons, polylines, points don't support automatic merge on overlapped segments
+    even the overlap parameter isn't zero and match between corresponding shapes on adjacent segments is perfect.
+
+    **Segment size**. Use this option to divide a huge dataset into a few smaller segments.
+    For example, one job cannot be annotated by several labelers (it isn't supported).
+    Thus using "segment size" you can create several jobs for the same annotation task.
+    It will help you to parallel data annotation process.
+
+    **Start frame**. Frame from which video in task begins.
+
+    **Stop frame**. Frame on which video in task ends.
+
+    **Frame Step**. Use this option to filter video frames.
+    For example, enter ``25`` to leave every twenty fifth frame in the video or every twenty fifth image.
+
+    **Chunk size**. Defines a number of frames to be packed in a chunk when send from client to server.
+    Server defines automatically if empty.
+
+    Recommended values:
+    - 1080p or less: 36
+    - 2k or less: 8 - 16
+    - 4k or less: 4 - 8
+    - More: 1 - 4
+
+    **Dataset Repository**.  URL link of the repository optionally specifies the path to the repository for storage
+    (``default: annotation / <dump_file_name> .zip``).
+    The .zip and .xml file extension of annotation are supported.
+    Field format: ``URL [PATH]`` example: ``https://github.com/project/repos.git  [1/2/3/4/annotation.xml]``
+
+    Supported URL formats :
+    - ``https://github.com/project/repos[.git]``
+    - ``github.com/project/repos[.git]``
+    - ``git@github.com:project/repos[.git]``
+
+    The task will be highlighted in red after creation if annotation isn't synchronized with the repository.
+
+    **Use LFS**. If the annotation file is large, you can create a repository with
+    [LFS](https://git-lfs.github.com/) support.
+
+    **Issue tracker**. Specify full issue tracker's URL if it's necessary.
+
+    Push ``Submit`` button and it will be added into the list of annotation tasks.
+    Then, the created task will be displayed on a dashboard:
+
+    ![](static/documentation/images/image006_detrac.jpg)
+
+1.  The Dashboard contains elements and each of them relates to a separate task. They are sorted in creation order.
+    Each element contains: task name, preview, progress bar, button ``Open``, and menu ``Actions``.
+    Each button is responsible for a in menu ``Actions`` specific function:
+    - ``Dump Annotation`` and ``Export as a dataset`` — download annotations or
+        annotations and images in a specific format. The following formats are available:
+      - [CVAT for video](/cvat/apps/documentation/xml_format.md#interpolation)
+      is highlighted if a task has the interpolation mode.
+      - [CVAT for images](/cvat/apps/documentation/xml_format.md#annotation)
+      is highlighted if a task has the annotation mode.
+      - [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)
+      - [(VOC) Segmentation mask](http://host.robots.ox.ac.uk/pascal/VOC/) —
+          archive contains class and instance masks for each frame in the png
+          format and a text file with the value of each color.
+      - [YOLO](https://pjreddie.com/darknet/yolo/)
+      - [COCO](http://cocodataset.org/#format-data)
+      - [TFRecord](https://www.tensorflow.org/tutorials/load_data/tf_records)
+      - [MOT](https://motchallenge.net/)
+      - [LabelMe 3.0](http://labelme.csail.mit.edu/Release3.0/)
+      - [Datumaro](https://github.com/opencv/cvat/blob/develop/datumaro/)
+    - ``Upload annotation`` is available in the same formats as in ``Dump annotation``.
+      - [CVAT](/cvat/apps/documentation/xml_format.md) accepts both video and image sub-formats.
+    - ``Automatic Annotation`` — automatic annotation with  OpenVINO toolkit.
+      Presence depends on how you build CVAT instance.
+    - ``Open bug tracker`` — opens a link to Issue tracker.
+    - ``Delete`` — delete task.
+
+    Push ``Open`` button to go to task details.
+
+1.  Task details is a task page which contains a preview, a progress bar
+    and the details of the task (specified when the task was created) and the jobs section.
+
+    ![](static/documentation/images/image131_detrac.jpg)
+
+    - The next actions are available on this page:
+      1. Change the task’s title.
+      1. Open ``Actions`` menu.
+      1. Change issue tracker or open issue tracker if it is specified.
+      1. Change labels.
+      You can add new labels or add attributes for the existing labels in the Raw mode or the        Constructor mode.
+      By clicking ``Copy`` you will copy the labels to the clipboard.
+      1. Assigned to — is used to assign a task to a person. Start typing an assignee’s name and/or
+      choose the right person out of the dropdown list.
+    - ``Jobs`` — is a list of all jobs for a particular task. Here you can find the next data:
+      - Jobs name with a hyperlink to it.
+      - Frames — the frame interval.
+      - A status of the job. The status is specified by the user in the menu inside the job.
+      There are three types of status: annotation, validation or completed.
+      The status of the job is changes the progress bar of the task.
+      - Started on — start date of this job.
+      - Duration — is the amount of time the job is being worked.
+      - Assignee is the user who is working on the job.
+      You can start typing an assignee’s name and/or choose the right person out of the dropdown list.
+      - ``Copy``. By clicking Copy you will copy the job list to the clipboard.
+      The job list contains direct links to jobs.
+
+1.  Follow a link inside ``Jobs`` section to start annotation process.
+    In some cases, you can have several links. It depends on size of your
+    task and ``Overlap Size`` and ``Segment Size`` parameters. To improve
+    UX, only the first chunk of several frames will be loaded and you will be able
+    to annotate first images. Other frames will be loaded in background.
+
+    ![](static/documentation/images/image007_detrac.jpg)
+
+### Models
+
+The Models page contains a list of deep learning (DL) models deployed for semi-automatic and automatic annotation.
+To open the Models page, click the Models button on the navigation bar.
+The list of models is presented in the form of a table. The parameters indicated for each model are the following:
+ - ``Framework`` the model is based on
+ - model ``Name``
+ - model ``Type``:
+    -   ``detector`` - used for automatic annotation (available in [detectors](#detectors) and [automatic annotation](#automatic-annotation))
+    -  ``interactor`` - used for semi-automatic shape annotation (available in [interactors](#interactors))
+    -  ``tracker`` -  used for semi-automatic track annotation (available in [trackers](#trackers))
+    -  ``reid`` -  used to combine individual objects into a track (available in [automatic annotation](#automatic-annotation))
+ - ``Description`` - brief description of the model
+ - ``Labels`` - list of the supported labels (only for the models of the ``detectors`` type)
+
+![](static/documentation/images/image099.jpg)
+
+Read how to install your model [here](installation.md#semi-automatic-and-automatic-annotation).
+
+### Search
+
+There are several options how to use the search.
+
+- Search within all fields (owner, assignee, task name, task status, task mode).
+To execute enter a search string in search field.
+- Search for specific fields. How to perform:
+  - ``owner: admin`` - all tasks created by the user who has the substring "admin" in his name
+  - ``assignee: employee``  - all tasks which are assigned to a user who has the substring "employee" in his name
+  - ``name: mighty`` - all tasks with the substring "mighty" in their names
+  - ``mode: annotation`` or ``mode: interpolation`` - all tasks with images or videos.
+  - ``status: annotation`` or ``status: validation`` or ``status: completed``  - search by status
+  - ``id: 5`` - task with id = 5.
+- Multiple filters. Filters can be combined (except for the identifier) ​​using the keyword `` AND``:
+  - ``mode: interpolation AND owner: admin``
+  - ``mode: annotation and status: annotation``
+
+The search is case insensitive.
+
+![](static/documentation/images/image100_detrac.jpg)
 
 ## Interface of the annotation tool
 
@@ -343,6 +628,7 @@ To open the settings open the user menu in the header and select the settings it
 In tab ``Player`` you can:
 -   Control step of ``C`` and ``V`` shortcuts.
 -   Control speed of ``Space``/``Play`` button.
+-   Select canvas background color. You can choose a background color or enter manually (in RGB or HEX format).
 -   Show ``Grid``, change grid size, choose color and transparency:
 
     ![](static/documentation/images/image068_mapillary_vistas.jpg)
@@ -408,9 +694,6 @@ Button assignment:
   - [MS COCO](http://cocodataset.org/#format-data)
   - [YOLO](https://pjreddie.com/darknet/yolo/)
 - ``Open the task`` — opens a page with details about the task.
-- ``Run ReID merge`` —  automatic merge of shapes or tracks.
-  It is used to combine individual objects - created by automatic annotation in a single track.
-  For more information click [here](cvat/apps/reid/README.md).
 
 #### Save Work
 Saves annotations for the current job. The button has an indication of the saving process.
@@ -437,7 +720,12 @@ Go to the next/previous frame with a predefined step. Shortcuts:
 
   ![](static/documentation/images/image037.jpg)
 
-Go to the next/previous frame (the step is 1 frame). Shortcuts: ``D`` — previous, ``F`` — next.
+The button to go to the next / previous frame has the customization possibility. To customize, right-click on the button and select one of three options:
+1. The default option - go to the next / previous frame (the step is 1 frame).
+2. Go to the next / previous frame that has any objects (in particular filtered). Read the [filter](#filter) section to know the details how to use it.
+3. Go to the next / previous frame without annotation at all. Use this option in cases when you need to find missed frames quickly.
+
+Shortcuts: ``D`` - previous, ``F`` - next.
 
   ![](static/documentation/images/image040.jpg)
 
@@ -470,7 +758,6 @@ _Overview_:
 -  ``Start Frame`` - the number of the first frame in this job.
 -  ``End Frame`` - the number of the last frame in this job.
 -  ``Frames`` - the total number of all frames in the job.
--  ``Z-Order`` - z-order enable indicator.
 
 _Annotations statistics_:
 
@@ -502,12 +789,13 @@ Switching between user interface modes.
 **Shapes block** - contains all the tools for creating shapes.
 |Icon                                         |Description   |Links to section  |
 |--                                           |--            |--                |
+|![](static/documentation/images/image189.jpg)|``AI Tools`` |[AI Tools](#ai-tools)|
 |![](static/documentation/images/image167.jpg)|``Rectangle``|[Shape mode](#shape-mode-basics); [Track mode](#track-mode-basics);<br/> [Drawing by 4 points](#annotation-with-rectangle-by-4-points)|
-|![](static/documentation/images/image168.jpg)|``Polygon``  |[Annotation with polygons](#annotation-with-polygons)  |
+|![](static/documentation/images/image168.jpg)|``Polygon``  |[Annotation with polygons](#annotation-with-polygons); [Track mode with polygons](#track-mode-with-polygons)  |
 |![](static/documentation/images/image169.jpg)|``Polyline`` |[Annotation with polylines](#annotation-with-polylines)|
 |![](static/documentation/images/image170.jpg)|``Points``   |[Annotation with points](#annotation-with-points)      |
 |![](static/documentation/images/image176.jpg)|``Cuboid``   |[Annotation with cuboids](#annotation-with-cuboids)    |
-|![](static/documentation/images/image171.jpg)|``Tag``      |[Annotation with tags](#annotation-with-tag)s            |
+|![](static/documentation/images/image171.jpg)|``Tag``      |[Annotation with tags](#annotation-with-tag)           |
 
 **Edit block** - contains tools for editing tracks and shapes.
 |Icon                                         |Description                                        |Links to section  |
@@ -573,6 +861,10 @@ The action menu contains:
 
 - ``To background`` - moves the object to the background. The keyboard shortcut ``-``,``_``.
 - ``To foreground`` - moves the object to the foreground. The keyboard shortcut ``+``,``=``.
+- ``Change instance color``- choosing a color using the color picker (available only in instance mode).
+
+  ![](static/documentation/images/image153.jpg)
+
 - ``Remove`` - removes the object. The keyboard shortcut ``Del``,``Shift+Del``.
 
 A shape can be locked to prevent its modification or moving by an accident. Shortcut to lock an object: ``L``.
@@ -593,11 +885,6 @@ You can change the way an object is displayed on a frame (show or hide).
 
 ![](static/documentation/images/image052.jpg)
 
-You can change an object's color.
-To do so, click on the color bar of the object and select a color from the palette that appears.
-
-![](static/documentation/images/image153.jpg)
-
 By clicking on the ``Details`` button you can collapse or expand the field with all the attributes of the object.
 
 ![](static/documentation/images/image154.jpg)
@@ -605,9 +892,10 @@ By clicking on the ``Details`` button you can collapse or expand the field with 
 ---
 
 #### Labels
-You can also change the color of any object to random, to do so just hover
-the mouse over the object on the frame and highlight them by clicking on a label you need.
-In this tab, you can lock or hide objects of a certain label.
+In this tab you can lock or hide objects of a certain label.
+To change the color for a specific label,
+you need to go to the task page and select the color by clicking the edit button,
+this way you will change the label color for all jobs in the task.
 
 ![](static/documentation/images/image062.jpg)
 
@@ -645,9 +933,9 @@ Change the opacity of the selected object's fill.
 
 ![](static/documentation/images/image089_detrac.jpg)
 
-**Black Stroke** checkbox
+**Outlines borders** checkbox
 
-Changes the shape border from colored to black.
+You can change a special shape border color by clicking on the ``Eyedropper`` icon.
 
 ![](static/documentation/images/image088_detrac.jpg)
 
@@ -727,6 +1015,55 @@ or shortcuts:
 In order to change the zoom level, go to settings (press ``F3``)
 in the workspace tab and set the value Attribute annotation mode (AAM) zoom margin in px.
 
+## AI Tools
+
+The tool is designed for semi-automatic and automatic annotation using DL models.
+The tool is available only if there is a corresponding model.
+For more details about DL models read the [Models](#models) section.
+
+### Interactors
+
+Interactors are used to create a polygon semi-automatically.
+Supported DL models are not bound to the label and can be used for any objects.
+To create a polygon usually you need to use regular or positive points.
+For some kinds of segmentation negative points are available.
+Positive points are the points related to the object.
+Negative points should be placed outside the boundary of the object.
+In most cases specifying positive points alone is enough to build a polygon.
+
+- Before you start, select the magic wand on the controls sidebar and go to the ``Interactors`` tab.
+  Then select a label for the polygon and a required DL model.
+
+  ![](static/documentation/images/image114.jpg)
+
+- Click ``Interact`` to enter the interaction mode. Now you can place positive and/or negative points.
+  Left click creates a positive point and right click creates a negative point.
+  ``Deep extreme cut`` model requires a minimum of 4 points. After you set 4 positive points,
+  a request will be sent to the server and when the process is complete a polygon will be created.
+  If you are not satisfied with the result, you can set additional points or remove points by left-clicking on it.
+  If you want to postpone the request and create a few more points, hold down ``Ctrl`` and continue,
+  the request will be sent after the key is released.
+
+  ![](static/documentation/images/image188_detrac.jpg)
+
+- To finish interaction, click on the icon on the controls sidebar or press ``N`` on your keyboard.
+
+- When the object is finished, you can edit it like a polygon.
+  You can read about editing polygons in the [Annotation with polygons](#annotation-with-polygons) section.
+
+### Detectors
+
+Detectors are used to automatically annotate one frame. Supported DL models are suitable only for certain labels.
+
+- Before you start, click the magic wand on the controls sidebar and select the Detectors icon tab.
+  You need to match the labels of the DL model (left column) with the labels in your task (right column).
+  Then click ``Annotate``.
+
+  ![](static/documentation/images/image187.jpg)
+
+- This action will automatically annotates one frame.
+  In the [Automatic annotation](#automatic-annotation) section you can read how to make automatic annotation of all frames.
+
 ## Annotation with rectangle by 4 points
 It is an efficient method of bounding box annotation, proposed
 [here](https://arxiv.org/pdf/1708.02750.pdf).
@@ -747,7 +1084,6 @@ Press ``Esc`` to cancel editing.
 
 It is used for semantic / instance segmentation.
 
-If you want to annotate polygons, make sure the ``Z-Order`` flag in ``Create new task`` dialog is enabled.
 The Z-Order flag defines the order of drawing. It is necessary to
 get the right annotation mask without extra work (additional drawing of borders).
 Z-Order can be changed by pressing ``+``/``-`` which set maximum/minimum z-order
@@ -772,7 +1108,7 @@ Before starting, you need to select ``Polygon`` on the controls sidebar and choo
   delete the previous point by right-clicking on it.
 - Press ``N`` again for completing the shape.
 - After creating the polygon, you can move the points or delete them by right-clicking and selecting ``Delete point``
-  or double-clicking with pressed ``Ctrl`` key in the context menu.
+  or clicking with pressed ``Alt`` key in the context menu.
 
 ### Drawing using automatic borders
 
@@ -814,24 +1150,9 @@ Below you can see results with opacity and black stroke:
 If you need to annotate small objects, increase ``Image Quality`` to
 ``95`` in ``Create task`` dialog for your convenience.
 
-### Make AI polygon
-
-Used to create a polygon semi-automatically.
-- Before starting, you have to make sure that the ``Make AI polygon`` is selected.
-
-  ![](static/documentation/images/image114.jpg)
-
-- Click ``Shape`` to enter drawing mode. Now you can start annotating the necessary area.
-  A shape must consist of 4 points minimum. You can set a fixed number of points in the ``Number of points`` field,
-  then drawing will be stopped automatically. You can zoom in/out and move while drawing.
-- Press ``N`` again to finish marking the area. At the end of Auto Segmentation,
-  a shape is created and you can work with it as a polygon.
-
-  ![](static/documentation/images/gif009_detrac.gif)
-
 ### Edit polygon
 
-To edit a polygon you have to double-click with pressed ``Shift``, it will open the polygon editor.
+To edit a polygon you have to click with pressed ``Shift``, it will open the polygon editor.
 - There you can create new points or delete part of a polygon closing the line on another point.
 - After closing the polygon, you can select the part of the polygon that you want to leave.
 - You can press ``Esc`` to cancel editing.
@@ -852,8 +1173,8 @@ you either create points by clicking or by dragging a mouse on the screen while 
 When ``Shift`` isn't pressed, you can zoom in/out (when scrolling the mouse wheel)
 and move (when clicking the mouse wheel and moving the mouse), you can delete
 previous points by right-clicking on it. Press ``N`` again to complete the shape.
-You can delete a point by double-clicking on it with pressed ``Ctrl`` or right-clicking on a point
-and selecting ``Delete point``. Double-click with pressed ``Shift`` will open a polyline editor.
+You can delete a point by clicking on it with pressed ``Ctrl`` or right-clicking on a point
+and selecting ``Delete point``. Click with pressed ``Shift`` will open a polyline editor.
 There you can create new points(by clicking or dragging) or delete part of a polygon closing
 the red line on another point. Press ``Esc`` to cancel editing.
 
@@ -872,8 +1193,8 @@ in the ``Number of points`` field, then drawing will be stopped automatically.
 
 Click ``Shape`` to entering the drawing mode. Now you can start annotation of the necessary area.
 Points are automatically grouped — all points will be considered linked between each start and finish.
-Press ``N`` again to finish marking the area. You can delete a point by double-clicking with pressed ``Ctrl``
-or right-clicking on a point and selecting ``Delete point``. Double-clicking with pressed ``Shift`` will open the points
+Press ``N`` again to finish marking the area. You can delete a point by clicking with pressed ``Ctrl``
+or right-clicking on a point and selecting ``Delete point``. Clicking with pressed ``Shift`` will open the points
 shape editor. There you can add new points into an existing shape. You can zoom in/out (when scrolling the mouse wheel)
 and move (when clicking the mouse wheel and moving the mouse) while drawing. You can drag an object after
 it has been drawn and change the position of individual points after finishing an object.
@@ -975,20 +1296,52 @@ Simply drag the faces to move them independently from the rest of the cuboid.
 
 ![](static/documentation/images/gif020_mapillary_vistas.gif)
 
-You can also use cuboids in track mode, similar to rectangles in track mode ([basics](#track-mode-basics) and [advanced](#track-mode-advanced))
+You can also use cuboids in track mode, similar to rectangles in track mode ([basics](#track-mode-basics) and [advanced](#track-mode-advanced)) or [Track mode with polygons](#track-mode-with-polygons)
 
 ## Annotation with Tags
 
-Used to annotate frames, does not have a shape in the workspace.
-Before you start, you have to make sure that Tag is selected.
+It is used to annotate frames, tags are not displayed in the workspace.
+Before you start, open the drop-down list in the top panel and select ``Tag annotation``.
+
+![](static/documentation/images/image183.jpg)
+
+The objects sidebar will be replaced with a special panel for working with tags.
+Here you can select a label for a tag and add it by clicking on the ``Add tag`` button.
+You can also customize hotkeys for each label.
 
 ![](static/documentation/images/image181.jpg)
 
-Click tag to create. You can work with Tag only on the sidebar.
-You can use the lock function and change label and attribute.
-Other functions such as propagate, make a copy and remove are available in the action menu.
+If you need to use only one label for one frame, then enable the ``Automatically go to the next frame``
+checkbox, then after you add the tag the frame will automatically switch to the next.
 
-![](static/documentation/images/image135.jpg)
+## Track mode with polygons
+
+Polygons in the track mode allow you to mark moving objects more accurately other than using a rectangle
+ ([Tracking mode (basic)](#track-mode-basics); [Tracking mode (advanced)](#track-mode-advanced)).
+1. To create a polygon in the track mode, click the ``Track`` button.
+
+    ![](static/documentation/images/image184.jpg)
+
+1. Create a polygon the same way as in the case of [Annotation with polygons](#annotation-with-polygons).
+ Press ``N`` to complete the polygon.
+
+1. Pay attention to the fact that the created polygon has a starting point and a direction,
+ these elements are important for annotation of the following frames.
+
+1. After going a few frames forward press ``Shift+N``, the old polygon will disappear and you can create a new polygon.
+ The new starting point should match the starting point of the previously created polygon
+ (in this example, the top of the left mirror). The direction must also match (in this example, clockwise).
+  After creating the polygon, press ``N`` and the intermediate frames will be interpolated automatically.
+
+    ![](static/documentation/images/image185_detrac.jpg)
+
+1. If you need to change the starting point, right-click on the desired point and select ``Set starting point``.
+ To change the direction, right-click on the desired point and select switch orientation.
+
+    ![](static/documentation/images/image186_detrac.jpg)
+
+There is no need to redraw the polygon every time using ``Shift+N``,
+ instead you can simply move the points or edit a part of the polygon by pressing ``Shift+Click``.
 
 ## Automatic annotation
 
@@ -1024,12 +1377,14 @@ You can find the list of available models in the ``Models`` section.
 
     ![](static/documentation/images/gif014_detrac.gif)
 
-1.  Separated bounding boxes can be edited by removing false positives, adding unlabeled objects and
-    merging into tracks using ``ReID merge`` function. Click the ``ReID merge`` button in the menu.
-    You can use the default settings (for more information click [here](cvat/apps/reid/README.md)).
-    To launch the merging process click ``Merge``. Each frame of the track will be a key frame.
+1.  You can combine separate bounding boxes into tracks using the ``Person reidentification `` model.
+    To do this, click on the automatic annotation item in the action menu again and select the model
+    of the ``ReID`` type (in this case the ``Person reidentification`` model).
+    You can set the following parameters:
+      - Model ``Threshold`` is a maximum cosine distance between objects’ embeddings.
+      - ``Maximum distance`` defines a maximum radius that an object can diverge between adjacent frames.
 
-    ![](static/documentation/images/image133.jpg)
+      ![](static/documentation/images/image133.jpg)
 
 1.  You can remove false positives and edit tracks using ``Split`` and ``Merge`` functions.
 
@@ -1064,9 +1419,11 @@ Shapes that don't have ``group_id``, will be highlighted in white.
 There are some reasons to use the feature:
 
 1. When you use a filter, objects that don't match the filter will be hidden.
-1. Fast navigation between the frames that have an object of interest. Use
-``Left Arrow`` / ``Right Arrow`` keys for this purpose. If there are no objects matching the filter,
-the will go to arrows the previous/next frames which contains any objects.
+1. The fast navigation between frames which have an object of interest.
+Use the ``Left Arrow`` / ``Right Arrow`` keys for this purpose
+or customize the UI buttons by right-clicking and select "switching by filter".
+If there are no objects which correspond to the filter,
+you will go to the previous / next frame which contains any annotated objects.
 1. The list contains frequently used and recent filters.
 
 To use the function, it is enough to specify a value inside the ``Filter`` text
@@ -1123,6 +1480,22 @@ Combined filters occur with the "or" operator.
 
 ---
 
+## Analytics
+
+If your CVAT instance was created with analytics support, you can press the ``Analytics`` button in the dashboard
+and analytics and journals will be opened in a new tab.
+
+![](static/documentation/images/image113.jpg)
+
+The analytics allows you to see how much time every user spends on each task
+and how much work they did over any time range.
+
+![](static/documentation/images/image097.jpg)
+
+It also has an activity graph which can be modified with a number of users shown and a timeframe.
+
+![](static/documentation/images/image096.jpg)
+
 ## Shortcuts
 
 Many UI elements have shortcut hints. Put your pointer to a required element to see it.
@@ -1150,6 +1523,7 @@ Many UI elements have shortcut hints. Put your pointer to a required element to 
 |                                | _Modes_                                                                         |
 | ``N``                          | Repeat the latest procedure of drawing with the same parameters                 |
 | ``M``                          | Activate or deactivate mode to merging shapes                                   |
+| ``Alt+M``                      | Activate or deactivate mode to spliting shapes                                  |
 | ``G``                          | Activate or deactivate mode to grouping shapes                                  |
 | ``Shift+G``                    | Reset group for selected shapes (in group mode)                                 |
 | ``Esc``                        | Cancel any active canvas mode                                                   |
@@ -1168,8 +1542,8 @@ Many UI elements have shortcut hints. Put your pointer to a required element to 
 |                                | _Operations with objects_                                                       |
 | ``Ctrl``                       | Switch automatic bordering for polygons and polylines during drawing/editing    |
 | Hold ``Ctrl``                  | When the shape is active and fix it                                             |
-| ``Ctrl+Double-Click`` on point | Deleting a point (used when hovering over a point of polygon, polyline, points) |
-| ``Shift+Double-Click`` on point| Editing a shape (used when hovering over a point of polygon, polyline or points)|
+| ``Alt+Click`` on point         | Deleting a point (used when hovering over a point of polygon, polyline, points) |
+| ``Shift+Click`` on point       | Editing a shape (used when hovering over a point of polygon, polyline or points)|
 | ``Right-Click`` on shape       | Display of an object element from objects sidebar                               |
 | ``T+L``                        | Change locked state for all objects in the sidebar                              |
 | ``L``                          | Change locked state for an active object                                        |

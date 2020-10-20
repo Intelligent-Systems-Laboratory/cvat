@@ -12,9 +12,10 @@ interface Props {
     listHeight: number;
     statesHidden: boolean;
     statesLocked: boolean;
-    statesCollapsed: boolean;
+    statesCollapsedAll: boolean;
     statesOrdering: StatesOrdering;
     sortedStatesID: number[];
+    objectStates: any[];
     switchLockAllShortcut: string;
     switchHiddenAllShortcut: string;
     changeStatesOrdering(value: StatesOrdering): void;
@@ -31,9 +32,10 @@ function ObjectListComponent(props: Props): JSX.Element {
         listHeight,
         statesHidden,
         statesLocked,
-        statesCollapsed,
+        statesCollapsedAll,
         statesOrdering,
         sortedStatesID,
+        objectStates,
         switchLockAllShortcut,
         switchHiddenAllShortcut,
         changeStatesOrdering,
@@ -50,7 +52,7 @@ function ObjectListComponent(props: Props): JSX.Element {
             <ObjectListHeader
                 statesHidden={statesHidden}
                 statesLocked={statesLocked}
-                statesCollapsed={statesCollapsed}
+                statesCollapsed={statesCollapsedAll}
                 statesOrdering={statesOrdering}
                 switchLockAllShortcut={switchLockAllShortcut}
                 switchHiddenAllShortcut={switchHiddenAllShortcut}
@@ -63,9 +65,16 @@ function ObjectListComponent(props: Props): JSX.Element {
                 showAllStates={showAllStates}
             />
             <div className='cvat-objects-sidebar-states-list'>
-                { sortedStatesID.map((id: number): JSX.Element => (
-                    <ObjectItemContainer key={id} clientID={id} />
-                ))}
+                {sortedStatesID.map(
+                    (id: number): JSX.Element => (
+                        <ObjectItemContainer
+                            objectStates={objectStates}
+                            key={id}
+                            clientID={id}
+                            initialCollapsed={statesCollapsedAll}
+                        />
+                    ),
+                )}
             </div>
         </div>
     );

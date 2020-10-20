@@ -11,6 +11,7 @@ from django.contrib.auth.models import User, Group
 
 from cvat.apps.engine import models
 from cvat.apps.engine.log import slogger
+from cvat.apps.dataset_manager.formats.utils import get_label_color
 
 
 class AttributeSerializer(serializers.ModelSerializer):
@@ -37,9 +38,11 @@ class AttributeSerializer(serializers.ModelSerializer):
 class LabelSerializer(serializers.ModelSerializer):
     attributes = AttributeSerializer(many=True, source='attributespec_set',
         default=[])
+    color = serializers.CharField(allow_blank=True, required=False)
+
     class Meta:
         model = models.Label
-        fields = ('id', 'name', 'attributes')
+        fields = ('id', 'name', 'color', 'attributes')
 
 class JobCommitSerializer(serializers.ModelSerializer):
     class Meta:
@@ -167,11 +170,13 @@ class DataSerializer(serializers.ModelSerializer):
     client_files = ClientFileSerializer(many=True, default=[])
     server_files = ServerFileSerializer(many=True, default=[])
     remote_files = RemoteFileSerializer(many=True, default=[])
+    use_cache = serializers.BooleanField(default=False)
 
     class Meta:
         model = models.Data
         fields = ('chunk_size', 'size', 'image_quality', 'start_frame', 'stop_frame', 'frame_filter',
-            'compressed_chunk_type', 'original_chunk_type', 'client_files', 'server_files', 'remote_files', 'use_zip_chunks')
+            'compressed_chunk_type', 'original_chunk_type', 'client_files', 'server_files', 'remote_files', 'use_zip_chunks',
+            'use_cache')
 
     # pylint: disable=no-self-use
     def validate_frame_filter(self, value):
@@ -199,6 +204,7 @@ class DataSerializer(serializers.ModelSerializer):
         server_files = validated_data.pop('server_files')
         remote_files = validated_data.pop('remote_files')
         validated_data.pop('use_zip_chunks')
+        validated_data.pop('use_cache')
         db_data = models.Data.objects.create(**validated_data)
 
         data_path = db_data.get_data_dirname()
@@ -238,7 +244,7 @@ class TaskSerializer(WriteOnceMixin, serializers.ModelSerializer):
         model = models.Task
         fields = ('url', 'id', 'name', 'mode', 'owner', 'assignee',
             'bug_tracker', 'created_date', 'updated_date', 'overlap',
-            'segment_size', 'z_order', 'status', 'labels', 'segments',
+            'segment_size', 'status', 'labels', 'segments',
             'project', 'data_chunk_size', 'data_compressed_chunk_type', 'data_original_chunk_type', 'size', 'image_quality', 'data')
         read_only_fields = ('mode', 'created_date', 'updated_date', 'status', 'data_chunk_size',
             'data_compressed_chunk_type', 'data_original_chunk_type', 'size', 'image_quality', 'data')
@@ -249,8 +255,12 @@ class TaskSerializer(WriteOnceMixin, serializers.ModelSerializer):
     def create(self, validated_data):
         labels = validated_data.pop('label_set')
         db_task = models.Task.objects.create(**validated_data)
+        label_names = list()
         for label in labels:
             attributes = label.pop('attributespec_set')
+            if not label.get('color', None):
+                label['color'] = get_label_color(label['name'], label_names)
+            label_names.append(label['name'])
             db_label = models.Label.objects.create(task=db_task, **label)
             for attr in attributes:
                 models.AttributeSpec.objects.create(label=db_label, **attr)
@@ -272,7 +282,6 @@ class TaskSerializer(WriteOnceMixin, serializers.ModelSerializer):
         instance.assignee = validated_data.get('assignee', instance.assignee)
         instance.bug_tracker = validated_data.get('bug_tracker',
             instance.bug_tracker)
-        instance.z_order = validated_data.get('z_order', instance.z_order)
         instance.project = validated_data.get('project', instance.project)
         labels = validated_data.get('label_set', [])
         for label in labels:
@@ -285,6 +294,14 @@ class TaskSerializer(WriteOnceMixin, serializers.ModelSerializer):
             else:
                 slogger.task[instance.id].info("{} label was updated"
                     .format(db_label.name))
+            if not label.get('color', None):
+                label_names = [l.name for l in
+                    instance.label_set.all().exclude(id=db_label.id).order_by('id')
+                ]
+                db_label.color = get_label_color(db_label.name, label_names)
+            else:
+                db_label.color = label.get('color', db_label.color)
+            db_label.save()
             for attr in attributes:
                 (db_attr, created) = models.AttributeSpec.objects.get_or_create(
                     label=db_label, name=attr['name'], defaults=attr)
@@ -304,6 +321,15 @@ class TaskSerializer(WriteOnceMixin, serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+    def validate_labels(self, value):
+        if not value:
+            raise serializers.ValidationError('Label set must not be empty')
+        label_names = [label['name'] for label in value]
+        if len(label_names) != len(set(label_names)):
+            raise serializers.ValidationError('All label names must be unique for the task')
+        return value
+
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -371,6 +397,11 @@ class FrameMetaSerializer(serializers.Serializer):
     height = serializers.IntegerField()
     name = serializers.CharField(max_length=1024)
 
+class PluginsSerializer(serializers.Serializer):
+    GIT_INTEGRATION = serializers.BooleanField()
+    ANALYTICS = serializers.BooleanField()
+    MODELS = serializers.BooleanField()
+
 class DataMetaSerializer(serializers.ModelSerializer):
     frames = FrameMetaSerializer(many=True, allow_null=True)
     image_quality = serializers.IntegerField(min_value=0, max_value=100)
@@ -409,6 +440,7 @@ class AnnotationSerializer(serializers.Serializer):
     frame = serializers.IntegerField(min_value=0)
     label_id = serializers.IntegerField(min_value=0)
     group = serializers.IntegerField(min_value=0, allow_null=True)
+    source = serializers.CharField(default = 'manual')
 
 class LabeledImageSerializer(AnnotationSerializer):
     attributes = AttributeValSerializer(many=True,
@@ -449,12 +481,6 @@ class LabeledDataSerializer(serializers.Serializer):
 class FileInfoSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=1024)
     type = serializers.ChoiceField(choices=["REG", "DIR"])
-
-class PluginSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Plugin
-        fields = ('name', 'description', 'maintainer', 'created_at',
-            'updated_at')
 
 class LogEventSerializer(serializers.Serializer):
     job_id = serializers.IntegerField(required=False)

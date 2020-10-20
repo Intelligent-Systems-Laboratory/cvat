@@ -16,6 +16,7 @@ import {
     BBox,
     Box,
 } from './shared';
+import Crosshair from './crosshair';
 import consts from './consts';
 import {
     DrawData,
@@ -44,10 +45,7 @@ export class DrawHandlerImpl implements DrawHandler {
         x: number;
         y: number;
     };
-    private crosshair: {
-        x: SVG.Line;
-        y: SVG.Line;
-    };
+    private crosshair: Crosshair;
     private drawData: DrawData;
     private geometry: Geometry;
     private autoborderHandler: AutoborderHandler;
@@ -188,22 +186,11 @@ export class DrawHandlerImpl implements DrawHandler {
 
     private addCrosshair(): void {
         const { x, y } = this.cursorPosition;
-        this.crosshair = {
-            x: this.canvas.line(0, y, this.canvas.node.clientWidth, y).attr({
-                'stroke-width': consts.BASE_STROKE_WIDTH / (2 * this.geometry.scale),
-                zOrder: Number.MAX_SAFE_INTEGER,
-            }).addClass('cvat_canvas_crosshair'),
-            y: this.canvas.line(x, 0, x, this.canvas.node.clientHeight).attr({
-                'stroke-width': consts.BASE_STROKE_WIDTH / (2 * this.geometry.scale),
-                zOrder: Number.MAX_SAFE_INTEGER,
-            }).addClass('cvat_canvas_crosshair'),
-        };
+        this.crosshair.show(this.canvas, x, y, this.geometry.scale);
     }
 
     private removeCrosshair(): void {
-        this.crosshair.x.remove();
-        this.crosshair.y.remove();
-        this.crosshair = null;
+        this.crosshair.hide();
     }
 
     private release(): void {
@@ -324,12 +311,16 @@ export class DrawHandlerImpl implements DrawHandler {
 
         const sizeDecrement = (): void => {
             if (--size === 0) {
-                this.drawInstance.draw('done');
+                // we need additional settimeout because we cannot invoke draw('done')
+                // from event listener for drawstart event
+                // because of implementation of svg.js
+                setTimeout((): void => this.drawInstance.draw('done'));
             }
         };
 
         this.drawInstance.on('drawstart', sizeDecrement);
         this.drawInstance.on('drawpoint', sizeDecrement);
+        this.drawInstance.on('drawupdate', (): void => this.transform(this.geometry));
         this.drawInstance.on('undopoint', (): number => size++);
 
         // Add ability to cancel the latest drawn point
@@ -433,7 +424,7 @@ export class DrawHandlerImpl implements DrawHandler {
 
         this.drawPolyshape();
         if (this.autobordersEnabled) {
-            this.autoborderHandler.autoborder(true, this.drawInstance, false);
+            this.autoborderHandler.autoborder(true, this.drawInstance, this.drawData.redraw);
         }
     }
 
@@ -446,7 +437,7 @@ export class DrawHandlerImpl implements DrawHandler {
 
         this.drawPolyshape();
         if (this.autobordersEnabled) {
-            this.autoborderHandler.autoborder(true, this.drawInstance, false);
+            this.autoborderHandler.autoborder(true, this.drawInstance, this.drawData.redraw);
         }
     }
 
@@ -478,7 +469,7 @@ export class DrawHandlerImpl implements DrawHandler {
 
             if (this.canceled) return;
             if ((xbr - xtl) * (ybr - ytl) >= consts.AREA_THRESHOLD) {
-                const d = { x: (xbr - xtl) * 0.1, y: (ybr - ytl)*0.1}
+                const d = { x: (xbr - xtl) * 0.1, y: (ybr - ytl) * 0.1 };
                 this.onDrawDone({
                     shapeType,
                     points: cuboidFrom4Points([xtl, ybr, xbr, ybr, xbr, ytl, xbr + d.x, ytl - d.y]),
@@ -741,7 +732,7 @@ export class DrawHandlerImpl implements DrawHandler {
         this.canceled = false;
         this.drawData = null;
         this.geometry = null;
-        this.crosshair = null;
+        this.crosshair = new Crosshair();
         this.drawInstance = null;
         this.pointsGroup = null;
         this.cursorPosition = {
@@ -756,8 +747,7 @@ export class DrawHandlerImpl implements DrawHandler {
             );
             this.cursorPosition = { x, y };
             if (this.crosshair) {
-                this.crosshair.x.attr({ y1: y, y2: y });
-                this.crosshair.y.attr({ x1: x, x2: x });
+                this.crosshair.move(x, y);
             }
         });
     }
@@ -767,7 +757,11 @@ export class DrawHandlerImpl implements DrawHandler {
             this.autobordersEnabled = configuration.autoborders;
             if (this.drawInstance) {
                 if (this.autobordersEnabled) {
-                    this.autoborderHandler.autoborder(true, this.drawInstance, false);
+                    this.autoborderHandler.autoborder(
+                        true,
+                        this.drawInstance,
+                        this.drawData.redraw,
+                    );
                 } else {
                     this.autoborderHandler.autoborder(false);
                 }
@@ -783,12 +777,7 @@ export class DrawHandlerImpl implements DrawHandler {
         }
 
         if (this.crosshair) {
-            this.crosshair.x.attr({
-                'stroke-width': consts.BASE_STROKE_WIDTH / (2 * geometry.scale),
-            });
-            this.crosshair.y.attr({
-                'stroke-width': consts.BASE_STROKE_WIDTH / (2 * geometry.scale),
-            });
+            this.crosshair.scale(this.geometry.scale);
         }
 
         if (this.pointsGroup) {

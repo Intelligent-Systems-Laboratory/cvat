@@ -28,9 +28,13 @@ import SVGRedoIcon from './assets/redo-icon.svg';
 import SVGFirstIcon from './assets/first-icon.svg';
 import SVGBackJumpIcon from './assets/back-jump-icon.svg';
 import SVGPreviousIcon from './assets/previous-icon.svg';
+import SVGPreviousFilteredIcon from './assets/previous-filtered-icon.svg';
+import SVGPreviousEmptyIcon from './assets/previous-empty-icon.svg';
 import SVGPlayIcon from './assets/play-icon.svg';
 import SVGPauseIcon from './assets/pause-icon.svg';
 import SVGNextIcon from './assets/next-icon.svg';
+import SVGNextFilteredIcon from './assets/next-filtered-icon.svg';
+import SVGNextEmptyIcon from './assets/next-empty-icon.svg';
 import SVGForwardJumpIcon from './assets/forward-jump-icon.svg';
 import SVGLastIcon from './assets/last-icon.svg';
 import SVGInfoIcon from './assets/info-icon.svg';
@@ -45,6 +49,9 @@ import SVGTrackIcon from './assets/track-icon.svg' // ISL MANUAL TRACKING
 import SVGSearchIcon from './assets/search-icon.svg'; // EDITED FOR Help sidebar
 import SVGRotateCCIcon from './assets/rotatecc-icon.svg'; // EDITED FOR Help sidebar
 import SVGConditionsIcon from './assets/conditions-icon.svg'; // ISL GLOBAL ATTRIBUTES
+import SVGColorizeIcon from './assets/colorize-icon.svg';
+import SVGAITools from './assets/ai-tools-icon.svg';
+
 
 export const CVATLogo = React.memo(
     (): JSX.Element => <SVGCVATLogo />,
@@ -118,6 +125,12 @@ export const BackJumpIcon = React.memo(
 export const PreviousIcon = React.memo(
     (): JSX.Element => <SVGPreviousIcon />,
 );
+export const PreviousFilteredIcon = React.memo(
+    (): JSX.Element => <SVGPreviousFilteredIcon />,
+);
+export const PreviousEmptyIcon = React.memo(
+    (): JSX.Element => <SVGPreviousEmptyIcon />,
+);
 export const PauseIcon = React.memo(
     (): JSX.Element => <SVGPauseIcon />,
 );
@@ -126,6 +139,12 @@ export const PlayIcon = React.memo(
 );
 export const NextIcon = React.memo(
     (): JSX.Element => <SVGNextIcon />,
+);
+export const NextFilteredIcon = React.memo(
+    (): JSX.Element => <SVGNextFilteredIcon />,
+);
+export const NextEmptyIcon = React.memo(
+    (): JSX.Element => <SVGNextEmptyIcon />,
 );
 export const ForwardJumpIcon = React.memo(
     (): JSX.Element => <SVGForwardJumpIcon />,
@@ -175,3 +194,9 @@ export const RotateCCIcon = React.memo(
     (): JSX.Element => <SVGRotateCCIcon />,
 );
 // EDITED END
+export const AIToolsIcon = React.memo(
+    (): JSX.Element => <SVGAITools />,
+);
+export const ColorizeIcon = React.memo(
+    (): JSX.Element => <SVGColorizeIcon />,
+);

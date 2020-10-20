@@ -5,6 +5,7 @@
 from copy import copy, deepcopy
 
 import numpy as np
+from itertools import chain
 from scipy.optimize import linear_sum_assignment
 from shapely import geometry
 
@@ -315,7 +316,10 @@ class ShapeManager(ObjectManager):
     def _calc_objects_similarity(obj0, obj1, start_frame, overlap):
         def _calc_polygons_similarity(p0, p1):
             overlap_area = p0.intersection(p1).area
-            return overlap_area / (p0.area + p1.area - overlap_area)
+            if p0.area == 0 or p1.area == 0: # a line with many points
+                return 0
+            else:
+                return overlap_area / (p0.area + p1.area - overlap_area)
 
         has_same_type  = obj0["type"] == obj1["type"]
         has_same_label = obj0.get("label_id") == obj1.get("label_id")
@@ -327,7 +331,7 @@ class ShapeManager(ObjectManager):
                 return _calc_polygons_similarity(p0, p1)
             elif obj0["type"] == ShapeType.POLYGON:
                 p0 = geometry.Polygon(pairwise(obj0["points"]))
-                p1 = geometry.Polygon(pairwise(obj0["points"]))
+                p1 = geometry.Polygon(pairwise(obj1["points"]))
 
                 return _calc_polygons_similarity(p0, p1)
             else:
@@ -442,11 +446,11 @@ class TrackManager(ObjectManager):
 
     @staticmethod
     def get_interpolated_shapes(track, start_frame, end_frame):
-        def copy_shape(source, frame, points = None):
+        def copy_shape(source, frame, points=None):
             copied = deepcopy(source)
-            copied["keyframe"] = True
+            copied["keyframe"] = False
             copied["frame"] = frame
-            if points:
+            if points is not None:
                 copied["points"] = points
             return copied
 
@@ -523,7 +527,7 @@ class TrackManager(ObjectManager):
                 return matching
 
             def match_right_left(left_curve, right_curve, left_right_matching):
-                matched_right_points = left_right_matching.values()
+                matched_right_points = list(chain.from_iterable(left_right_matching.values()))
                 unmatched_right_points = filter(lambda x: x not in matched_right_points, range(len(right_curve)))
                 updated_matching = deepcopy(left_right_matching)
 
@@ -725,7 +729,6 @@ class TrackManager(ObjectManager):
         if track.get("interpolated_shapes"):
             return track["interpolated_shapes"]
 
-        # TODO: should be return an iterator?
         shapes = []
         curr_frame = track["shapes"][0]["frame"]
         prev_shape = {}
@@ -743,9 +746,7 @@ class TrackManager(ObjectManager):
             curr_frame = shape["frame"]
             prev_shape = shape
 
-        # TODO: Need to modify a client and a database (append "outside" shapes for polytracks)
-        if not prev_shape["outside"] and (prev_shape["type"] == ShapeType.RECTANGLE
-               or prev_shape["type"] == ShapeType.POINTS or prev_shape["type"] == ShapeType.CUBOID):
+        if not prev_shape["outside"]:
             shape = copy(prev_shape)
             shape["frame"] = end_frame
             shapes.extend(interpolate(prev_shape, shape))

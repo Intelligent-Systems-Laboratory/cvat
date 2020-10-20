@@ -14,6 +14,7 @@ import CursorControl from './cursor-control';
 import MoveControl from './move-control';
 import FitControl from './fit-control';
 import ResizeControl from './resize-control';
+import ToolsControl from './tools-control';
 import DrawRectangleControl from './draw-rectangle-control';
 import DrawPolygonControl from './draw-polygon-control';
 import DrawPolylineControl from './draw-polyline-control';
@@ -99,7 +100,7 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
             preventDefault(event);
             const drawing = [ActiveControl.DRAW_POINTS, ActiveControl.DRAW_POLYGON,
                 ActiveControl.DRAW_POLYLINE, ActiveControl.DRAW_RECTANGLE,
-                ActiveControl.DRAW_CUBOID].includes(activeControl);
+                ActiveControl.DRAW_CUBOID, ActiveControl.AI_TOOLS].includes(activeControl);
 
             if (!drawing) {
                 canvasInstance.cancel();
@@ -112,6 +113,12 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
                     repeatDrawShape();
                 }
             } else {
+                if (activeControl === ActiveControl.AI_TOOLS) {
+                    // separated API method
+                    canvasInstance.interact({ enabled: false });
+                    return;
+                }
+
                 canvasInstance.draw({ enabled: false });
             }
         },
@@ -203,7 +210,7 @@ export default function ControlsSideBarComponent(props: Props): JSX.Element {
             <ResizeControl canvasInstance={canvasInstance} activeControl={activeControl} />
 
             <hr />
-
+            <ToolsControl />
             <DrawRectangleControl
                 canvasInstance={canvasInstance}
                 isDrawing={activeControl === ActiveControl.DRAW_RECTANGLE}

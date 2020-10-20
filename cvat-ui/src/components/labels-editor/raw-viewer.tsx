@@ -28,6 +28,10 @@ class RawViewer extends React.PureComponent<Props> {
             if (!Array.isArray(parsed)) {
                 callback('Field is expected to be a JSON array');
             }
+            const labelNames = parsed.map((label: Label) => label.name);
+            if (new Set(labelNames).size !== labelNames.length) {
+                callback('Label names must be unique for the task');
+            }
 
             for (const label of parsed) {
                 try {
@@ -44,10 +48,7 @@ class RawViewer extends React.PureComponent<Props> {
     };
 
     private handleSubmit = (e: React.FormEvent): void => {
-        const {
-            form,
-            onSubmit,
-        } = this.props;
+        const { form, onSubmit } = this.props;
 
         e.preventDefault();
         form.validateFields((error, values): void => {
@@ -94,7 +95,7 @@ class RawViewer extends React.PureComponent<Props> {
                 </Form.Item>
                 <Row type='flex' justify='start' align='middle'>
                     <Col>
-                        <Tooltip title='Save labels and return'>
+                        <Tooltip title='Save labels and return' mouseLeaveDelay={0}>
                             <Button
                                 style={{ width: '150px' }}
                                 type='primary'
@@ -105,7 +106,7 @@ class RawViewer extends React.PureComponent<Props> {
                         </Tooltip>
                     </Col>
                     <Col offset={1}>
-                        <Tooltip title='Do not save the label and return'>
+                        <Tooltip title='Do not save the label and return' mouseLeaveDelay={0}>
                             <Button
                                 style={{ width: '150px' }}
                                 type='danger'

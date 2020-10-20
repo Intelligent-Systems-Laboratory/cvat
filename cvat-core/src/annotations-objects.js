@@ -15,6 +15,7 @@
     } = require('./common');
     const {
         colors,
+        Source,
         ObjectShape,
         ObjectType,
         AttributeType,
@@ -183,6 +184,7 @@
             this.removed = false;
             this.lock = false;
             this.color = color;
+            this.source = data.source;
             this.updated = Date.now();
             this.attributes = data.attributes.reduce((attributeAccumulator, attr) => {
                 attributeAccumulator[attr.spec_id] = attr.value;
@@ -492,6 +494,7 @@
                 frame: this.frame,
                 label_id: this.label.id,
                 group: this.group,
+                source: this.source,
             };
         }
 
@@ -520,51 +523,67 @@
                 updated: this.updated,
                 pinned: this.pinned,
                 frame,
+                source: this.source,
             };
         }
 
         _savePoints(points, frame) {
             const undoPoints = this.points;
             const redoPoints = points;
+            const undoSource = this.source;
+            const redoSource = Source.MANUAL;
 
             this.history.do(HistoryActions.CHANGED_POINTS, () => {
                 this.points = undoPoints;
+                this.source = undoSource;
                 this.updated = Date.now();
             }, () => {
                 this.points = redoPoints;
+                this.source = redoSource;
                 this.updated = Date.now();
             }, [this.clientID], frame);
 
+            this.source = Source.MANUAL;
             this.points = points;
         }
 
         _saveOccluded(occluded, frame) {
             const undoOccluded = this.occluded;
             const redoOccluded = occluded;
+            const undoSource = this.source;
+            const redoSource = Source.MANUAL;
 
             this.history.do(HistoryActions.CHANGED_OCCLUDED, () => {
                 this.occluded = undoOccluded;
+                this.source = undoSource;
                 this.updated = Date.now();
             }, () => {
                 this.occluded = redoOccluded;
+                this.source = redoSource;
                 this.updated = Date.now();
             }, [this.clientID], frame);
 
+            this.source = Source.MANUAL;
             this.occluded = occluded;
         }
 
         _saveZOrder(zOrder, frame) {
             const undoZOrder = this.zOrder;
             const redoZOrder = zOrder;
+            const undoSource = this.source;
+            const redoSource = Source.MANUAL;
 
             this.history.do(HistoryActions.CHANGED_ZORDER, () => {
                 this.zOrder = undoZOrder;
+                this.source = undoSource;
                 this.updated = Date.now();
             }, () => {
                 this.zOrder = redoZOrder;
+                this.source = redoSource;
                 this.updated = Date.now();
             }, [this.clientID], frame);
 
+            this.source = Source.MANUAL;
             this.zOrder = zOrder;
         }
 
@@ -659,6 +678,7 @@
                 frame: this.frame,
                 label_id: this.label.id,
                 group: this.group,
+                source: this.source,
                 attributes: Object.keys(this.attributes).reduce((attributeAccumulator, attrId) => {
                     if (!labelAttributes[attrId].mutable) {
                         attributeAccumulator.push({
@@ -726,6 +746,7 @@
                     last,
                 },
                 frame,
+                source: this.source,
             };
         }
 
@@ -911,13 +932,16 @@
             }, [this.clientID], frame);
         }
 
-        _appendShapeActionToHistory(actionType, frame, undoShape, redoShape) {
+        _appendShapeActionToHistory(
+            actionType, frame, undoShape, redoShape, undoSource, redoSource,
+        ) {
             this.history.do(actionType, () => {
                 if (!undoShape) {
                     delete this.shapes[frame];
                 } else {
                     this.shapes[frame] = undoShape;
                 }
+                this.source = undoSource;
                 this.updated = Date.now();
             }, () => {
                 if (!redoShape) {
@@ -925,6 +949,7 @@
                 } else {
                     this.shapes[frame] = redoShape;
                 }
+                this.source = redoSource;
                 this.updated = Date.now();
             }, [this.clientID], frame);
         }
@@ -932,6 +957,8 @@
         _savePoints(points, frame) {
             const current = this.get(frame);
             const wasKeyframe = frame in this.shapes;
+            const undoSource = this.source;
+            const redoSource = Source.MANUAL;
             const undoShape = wasKeyframe ? this.shapes[frame] : undefined;
             const redoShape = wasKeyframe ? { ...this.shapes[frame], points } : {
                 frame,
@@ -943,17 +970,22 @@
             };
 
             this.shapes[frame] = redoShape;
+            this.source = Source.MANUAL;
             this._appendShapeActionToHistory(
                 HistoryActions.CHANGED_POINTS,
                 frame,
                 undoShape,
                 redoShape,
+                undoSource,
+                redoSource,
             );
         }
 
         _saveOutside(frame, outside) {
             const current = this.get(frame);
             const wasKeyframe = frame in this.shapes;
+            const undoSource = this.source;
+            const redoSource = Source.MANUAL;
             const undoShape = wasKeyframe ? this.shapes[frame] : undefined;
             const redoShape = wasKeyframe ? { ...this.shapes[frame], outside } : {
                 frame,
@@ -965,17 +997,22 @@
             };
 
             this.shapes[frame] = redoShape;
+            this.source = Source.MANUAL;
             this._appendShapeActionToHistory(
                 HistoryActions.CHANGED_OUTSIDE,
                 frame,
                 undoShape,
                 redoShape,
+                undoSource,
+                redoSource,
             );
         }
 
         _saveOccluded(occluded, frame) {
             const current = this.get(frame);
             const wasKeyframe = frame in this.shapes;
+            const undoSource = this.source;
+            const redoSource = Source.MANUAL;
             const undoShape = wasKeyframe ? this.shapes[frame] : undefined;
             const redoShape = wasKeyframe ? { ...this.shapes[frame], occluded } : {
                 frame,
@@ -987,17 +1024,22 @@
             };
 
             this.shapes[frame] = redoShape;
+            this.source = Source.MANUAL;
             this._appendShapeActionToHistory(
                 HistoryActions.CHANGED_OCCLUDED,
                 frame,
                 undoShape,
                 redoShape,
+                undoSource,
+                redoSource,
             );
         }
 
         _saveZOrder(zOrder, frame) {
             const current = this.get(frame);
             const wasKeyframe = frame in this.shapes;
+            const undoSource = this.source;
+            const redoSource = Source.MANUAL;
             const undoShape = wasKeyframe ? this.shapes[frame] : undefined;
             const redoShape = wasKeyframe ? { ...this.shapes[frame], zOrder } : {
                 frame,
@@ -1009,11 +1051,14 @@
             };
 
             this.shapes[frame] = redoShape;
+            this.source = Source.MANUAL;
             this._appendShapeActionToHistory(
                 HistoryActions.CHANGED_ZORDER,
                 frame,
                 undoShape,
                 redoShape,
+                undoSource,
+                redoSource,
             );
         }
 
@@ -1026,6 +1071,8 @@
                 return;
             }
 
+            const undoSource = this.source;
+            const redoSource = Source.MANUAL;
             const undoShape = wasKeyframe ? this.shapes[frame] : undefined;
             const redoShape = keyframe ? {
                 frame,
@@ -1034,8 +1081,10 @@
                 outside: current.outside,
                 occluded: current.occluded,
                 attributes: {},
+                source: current.source,
             } : undefined;
 
+            this.source = Source.MANUAL;
             if (redoShape) {
                 this.shapes[frame] = redoShape;
             } else {
@@ -1047,6 +1096,8 @@
                 frame,
                 undoShape,
                 redoShape,
+                undoSource,
+                redoSource,
             );
         }
 
@@ -1164,6 +1215,7 @@
                 frame: this.frame,
                 label_id: this.label.id,
                 group: this.group,
+                source: this.source,
                 attributes: Object.keys(this.attributes).reduce((attributeAccumulator, attrId) => {
                     attributeAccumulator.push({
                         spec_id: attrId,
@@ -1194,6 +1246,7 @@
                 color: this.color,
                 updated: this.updated,
                 frame,
+                source: this.source,
             };
         }
 
@@ -1629,7 +1682,7 @@
             }
 
             function matchRightLeft(leftCurve, rightCurve, leftRightMatching) {
-                const matchedRightPoints = Object.values(leftRightMatching);
+                const matchedRightPoints = Object.values(leftRightMatching).flat();
                 const unmatchedRightPoints = rightCurve.map((_, index) => index)
                     .filter((index) => !matchedRightPoints.includes(index));
                 const updatedMatching = { ...leftRightMatching };

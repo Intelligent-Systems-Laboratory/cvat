@@ -1,17 +1,16 @@
 # Computer Vision Annotation Tool (CVAT)
 
-[![Build Status](https://travis-ci.org/opencv/cvat.svg?branch=develop)](https://travis-ci.org/opencv/cvat)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/840351da141e4eaeac6476fd19ec0a33)](https://app.codacy.com/app/cvat/cvat?utm_source=github.com&utm_medium=referral&utm_content=opencv/cvat&utm_campaign=Badge_Grade_Dashboard)
+[![Build Status](https://travis-ci.org/openvinotoolkit/cvat.svg?branch=develop)](https://travis-ci.org/openvinotoolkit/cvat)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b9899c72f2764df0b5d26390cb872e21)](https://app.codacy.com/gh/openvinotoolkit/cvat?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/cvat&utm_campaign=Badge_Grade_Dashboard)
 [![Gitter chat](https://badges.gitter.im/opencv-cvat/gitter.png)](https://gitter.im/opencv-cvat)
-[![Coverage Status](https://coveralls.io/repos/github/opencv/cvat/badge.svg?branch=)](https://coveralls.io/github/opencv/cvat?branch=develop)
-[![codebeat badge](https://codebeat.co/badges/53cd0d16-fddc-46f8-903c-f43ed9abb6dd)](https://codebeat.co/projects/github-com-opencv-cvat-develop)
+[![Coverage Status](https://coveralls.io/repos/github/openvinotoolkit/cvat/badge.svg?branch=develop)](https://coveralls.io/github/openvinotoolkit/cvat?branch=develop)
 [![DOI](https://zenodo.org/badge/139156354.svg)](https://zenodo.org/badge/latestdoi/139156354)
 
 CVAT is free, online, interactive video and image annotation
 tool for computer vision. It is being used by our team to
 annotate million of objects with different properties. Many UI
-and UX decisions are based on feedbacks from professional data annotation team.
-Try it online [cvat.org](https://cvat.org).
+and UX decisions are based on feedbacks from professional data
+annotation team. Try it online [cvat.org](https://cvat.org).
 
 ![CVAT screenshot](cvat/apps/documentation/static/documentation/images/cvat.jpg)
 
@@ -29,18 +28,21 @@ Try it online [cvat.org](https://cvat.org).
 
 ## Screencasts
 
-- [Introduction](https://youtu.be/L9_IvUIHGwM)
-- [Annotation mode](https://youtu.be/6h7HxGL6Ct4)
-- [Interpolation mode](https://youtu.be/U3MYDhESHo4)
-- [Attribute mode](https://youtu.be/UPNfWl8Egd8)
-- [Segmentation mode](https://youtu.be/Fh8oKuSUIPs)
-- [Tutorial for polygons](https://www.youtube.com/watch?v=XTwfXDh4clI)
-- [Semi-automatic segmentation](https://www.youtube.com/watch?v=vnqXZ-Z-VTQ)
+- [Introduction](https://youtu.be/JERohTFp-NI)
+- [Annotation mode](https://youtu.be/vH_639N67HI)
+- [Interpolation of bounding boxes](https://youtu.be/Hc3oudNuDsY)
+- [Interpolation of polygons](https://youtu.be/K4nis9lk92s)
+- [Tag annotation video](https://youtu.be/62bI4mF-Xfk)
+- [Attribute mode](https://youtu.be/iIkJsOkDzVA)
+- [Segmentation mode](https://youtu.be/9Fe_GzMLo3E)
+- [Tutorial for polygons](https://youtu.be/C7-r9lZbjBw)
+- [Semi-automatic segmentation](https://youtu.be/9HszWP_qsRQ)
 
 ## Supported annotation formats
 
 Format selection is possible after clicking on the Upload annotation
-and Dump annotation buttons. [Datumaro](datumaro/README.md) dataset
+and Dump annotation buttons.
+[Datumaro](https://github.com/openvinotoolkit/datumaro) dataset
 framework allows additional dataset transformations
 via its command line tool and Python library.
 
@@ -48,7 +50,7 @@ via its command line tool and Python library.
 | ------------------------------------------------------------------------------------------ | ------ | ------ |
 | [CVAT for images](cvat/apps/documentation/xml_format.md#annotation)                        | X      | X      |
 | [CVAT for a video](cvat/apps/documentation/xml_format.md#interpolation)                    | X      | X      |
-| [Datumaro](datumaro/README.md)                                                             |        | X      |
+| [Datumaro](https://github.com/openvinotoolkit/datumaro)                                    |        | X      |
 | [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)                                      | X      | X      |
 | Segmentation masks from [PASCAL VOC](http://host.robots.ox.ac.uk/pascal/VOC/)              | X      | X      |
 | [YOLO](https://pjreddie.com/darknet/yolo/)                                                 | X      | X      |
@@ -57,10 +59,18 @@ via its command line tool and Python library.
 | [MOT](https://motchallenge.net/)                                                           | X      | X      |
 | [LabelMe 3.0](http://labelme.csail.mit.edu/Release3.0)                                     | X      | X      |
 
-## Links
-- [Intel AI blog: New Computer Vision Tool Accelerates Annotation of Digital Images and Video](https://www.intel.ai/introducing-cvat)
-- [Intel Software: Computer Vision Annotation Tool: A Universal Approach to Data Annotation](https://software.intel.com/en-us/articles/computer-vision-annotation-tool-a-universal-approach-to-data-annotation)
-- [VentureBeat: Intel open-sources CVAT, a toolkit for data labeling](https://venturebeat.com/2019/03/05/intel-open-sources-cvat-a-toolkit-for-data-labeling/)
+## Deep learning models for automatic labeling
+
+| Name                                                                                                    | Type       | Framework  |
+| ------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
+| [Deep Extreme Cut](/serverless/openvino/dextr/nuclio)                                                   | interactor | OpenVINO   |
+| [Faster RCNN](/serverless/tensorflow/faster_rcnn_inception_v2_coco/nuclio)                              | detector   | TensorFlow |
+| [Mask RCNN](/serverless/openvino/omz/public/mask_rcnn_inception_resnet_v2_atrous_coco/nuclio)           | detector   | OpenVINO   |
+| [YOLO v3](/serverless/openvino/omz/public/yolo-v3-tf/nuclio)                                            | detector   | OpenVINO   |
+| [Text detection v4](/serverless/openvino/omz/intel/text-detection-0004/nuclio)                          | detector   | OpenVINO   |
+| [Semantic segmentation for ADAS](/serverless/openvino/omz/intel/semantic-segmentation-adas-0001/nuclio) | detector   | OpenVINO   |
+| [Mask RCNN](/serverless/tensorflow/matterport/mask_rcnn/nuclio)                                         | detector   | TensorFlow |
+| [Object reidentification](/serverless/openvino/omz/intel/person-reidentification-retail-300/nuclio)     | reid       | OpenVINO   |
 
 ## Online demo: [cvat.org](https://cvat.org)
 
@@ -70,7 +80,6 @@ are visible to users.
 
 Disabled features:
 - [Analytics: management and monitoring of data annotation team](/components/analytics/README.md)
-- [Support for NVIDIA GPUs](/components/cuda/README.md)
 
 Limitations:
 - No more than 10 tasks per user
@@ -104,3 +113,8 @@ If you are not sure or just want to browse other users common questions,
 Other ways to ask questions and get our support:
 * [\#cvat](https://stackoverflow.com/search?q=%23cvat) tag on StackOverflow*
 * [Forum on Intel Developer Zone](https://software.intel.com/en-us/forums/computer-vision)
+
+## Links
+- [Intel AI blog: New Computer Vision Tool Accelerates Annotation of Digital Images and Video](https://www.intel.ai/introducing-cvat)
+- [Intel Software: Computer Vision Annotation Tool: A Universal Approach to Data Annotation](https://software.intel.com/en-us/articles/computer-vision-annotation-tool-a-universal-approach-to-data-annotation)
+- [VentureBeat: Intel open-sources CVAT, a toolkit for data labeling](https://venturebeat.com/2019/03/05/intel-open-sources-cvat-a-toolkit-for-data-labeling/)

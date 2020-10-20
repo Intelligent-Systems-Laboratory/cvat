@@ -2,11 +2,14 @@
   - [Ubuntu 18.04 (x86_64/amd64)](#ubuntu-1804-x86_64amd64)
   - [Windows 10](#windows-10)
   - [Mac OS Mojave](#mac-os-mojave)
-  - [Advanced topics](#advanced-topics)
+  - [Advanced Topics](#advanced-topics)
+    - [Deploying CVAT behind a proxy](#deploying-cvat-behind-a-proxy)
     - [Additional components](#additional-components)
+    - [Semi-automatic and automatic annotation](#semi-automatic-and-automatic-annotation)
     - [Stop all containers](#stop-all-containers)
     - [Advanced settings](#advanced-settings)
     - [Share path](#share-path)
+    - [Email verification](#email-verification)
     - [Serving over HTTPS](#serving-over-https)
       - [Prerequisites](#prerequisites)
       - [Roadmap](#roadmap)
@@ -64,7 +67,7 @@ server. Proxy is an advanced topic and it is not covered by the guide.
     defining and running multi-container docker applications.
 
     ```bash
-    sudo apt-get --no-install-recommends install -y python3-pip
+    sudo apt-get --no-install-recommends install -y python3-pip python3-setuptools
     sudo python3 -m pip install setuptools docker-compose
     ```
 
@@ -100,7 +103,7 @@ server. Proxy is an advanced topic and it is not covered by the guide.
     ```sh
     docker exec -it cvat bash -ic 'python3 ~/manage.py createsuperuser'
     ```
-    Choose login and password for your admin account. For more information
+    Choose a username and a password for your admin account. For more information
     please read [Django documentation](https://docs.djangoproject.com/en/2.2/ref/django-admin/#createsuperuser).
 
 -   Google Chrome is the only browser which is supported by CVAT. You need to
@@ -119,10 +122,16 @@ server. Proxy is an advanced topic and it is not covered by the guide.
     [CVAT user's guide](/cvat/apps/documentation/user_guide.md) for more details.
 
 ## Windows 10
--   Download [Docker for Windows](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe).
-    Double-click `Docker for Windows Installer` to run the installer. More
-    instructions can be found [here](https://docs.docker.com/docker-for-windows/install/). Note:
-    Docker Desktop requires Windows 10 Pro or Enterprise version 14393 to run.
+-   Install WSL2 (Windows subsystem for Linux) refer to [this official guide](https://docs.microsoft.com/windows/wsl/install-win10).
+    WSL2 requires Windows 10, version 2004 or higher. Note: You may not have to install a Linux distribution unless
+     needed.
+
+-   Download and install [Docker Desktop for Windows](https://download.docker.com/win/stable/Docker%20Desktop%20Installer.exe).
+    Double-click `Docker for Windows Installer` to run the installer.
+    More instructions can be found [here](https://docs.docker.com/docker-for-windows/install/).
+    Official guide for docker WSL2 backend can be found
+    [here](https://docs.docker.com/docker-for-windows/wsl/). Note: Check that you are specifically using WSL2 backend
+     for Docker.
 
 -   Download and install
     [Git for Windows](https://github.com/git-for-windows/git/releases/download/v2.21.0.windows.1/Git-2.21.0-64-bit.exe).
@@ -165,7 +174,7 @@ server. Proxy is an advanced topic and it is not covered by the guide.
     ```sh
     winpty docker exec -it cvat bash -ic 'python3 ~/manage.py createsuperuser'
     ```
-    Choose login and password for your admin account. For more information
+    Choose a username and a password for your admin account. For more information
     please read [Django documentation](https://docs.djangoproject.com/en/2.2/ref/django-admin/#createsuperuser).
 
 -   Open the installed Google Chrome browser and go to [localhost:8080](http://localhost:8080).
@@ -230,7 +239,7 @@ server. Proxy is an advanced topic and it is not covered by the guide.
     ```sh
     docker exec -it cvat bash -ic 'python3 ~/manage.py createsuperuser'
     ```
-    Choose login and password for your admin account. For more information
+    Choose a username and a password for your admin account. For more information
     please read [Django documentation](https://docs.djangoproject.com/en/2.2/ref/django-admin/#createsuperuser).
 
 -   Open the installed Google Chrome browser and go to [localhost:8080](http://localhost:8080).
@@ -238,25 +247,67 @@ server. Proxy is an advanced topic and it is not covered by the guide.
     button. Now you should be able to create a new annotation task. Please read the
     [CVAT user's guide](/cvat/apps/documentation/user_guide.md) for more details.
 
-## Advanced topics
+## Advanced Topics
+
+### Deploying CVAT behind a proxy
+If you deploy CVAT behind a proxy and do not plan to use any of [serverless functions](#semi-automatic-and-automatic-annotation)
+for automatic annotation, the exported environment variables
+`http_proxy`, `https_proxy` and `no_proxy` should be enough to build images.
+Otherwise please create or edit the file `~/.docker/config.json` in the home directory of the user
+which starts containers and add JSON such as the following:
+```json
+{
+ "proxies":
+ {
+   "default":
+   {
+     "httpProxy": "http://proxy_server:port",
+     "httpsProxy": "http://proxy_server:port",
+     "noProxy": "*.test.example.com,.example2.com"
+   }
+ }
+}
+```
+These environment variables are set automatically within any container.
+Please see the [Docker documentation](https://docs.docker.com/network/proxy/) for more details.
 
 ### Additional components
 
-- [Auto annotation using DL models in OpenVINO toolkit format](/cvat/apps/auto_annotation/README.md)
 - [Analytics: management and monitoring of data annotation team](/components/analytics/README.md)
-- [TF Object Detection API: auto annotation](/components/tf_annotation/README.md)
-- [Support for NVIDIA GPUs](/components/cuda/README.md)
-- [Semi-automatic segmentation with Deep Extreme Cut](/cvat/apps/dextr_segmentation/README.md)
-- [Auto segmentation: Keras+Tensorflow Mask R-CNN Segmentation](/components/auto_segmentation/README.md)
 
 ```bash
-# Build and run containers with CUDA and OpenVINO support
-# IMPORTANT: need to download OpenVINO package before running the command
-docker-compose -f docker-compose.yml -f components/cuda/docker-compose.cuda.yml -f components/openvino/docker-compose.openvino.yml up -d --build
-
 # Build and run containers with Analytics component support:
 docker-compose -f docker-compose.yml -f components/analytics/docker-compose.analytics.yml up -d --build
 ```
+
+### Semi-automatic and automatic annotation
+
+- You have to install `nuctl` command line tool to build and deploy serverless
+functions. Download [the latest release](https://github.com/nuclio/nuclio/releases).
+- Create `cvat` project inside nuclio dashboard where you will deploy new
+serverless functions and deploy a couple of DL models. Commands below should
+be run only after CVAT has been installed using docker-compose because it
+runs nuclio dashboard which manages all serverless functions.
+
+```bash
+nuctl create project cvat
+```
+
+```bash
+nuctl deploy --project-name cvat \
+    --path serverless/openvino/dextr/nuclio \
+    --volume `pwd`/serverless/openvino/common:/opt/nuclio/common \
+    --platform local
+```
+
+```bash
+nuctl deploy --project-name cvat \
+    --path serverless/openvino/omz/public/yolo-v3-tf/nuclio \
+    --volume `pwd`/serverless/openvino/common:/opt/nuclio/common \
+    --platform local
+```
+
+Note: see [deploy.sh](/serverless/deploy.sh) script for more examples.
 
 ### Stop all containers
 
@@ -275,7 +326,7 @@ specify the `CVAT_HOST` environment variable. The best way to do that is to crea
 all your extra settings here.
 
 ```yml
-version: "2.3"
+version: "3.3"
 
 services:
   cvat_proxy:
@@ -293,7 +344,7 @@ To do that you can mount it to CVAT docker container. Example of
 docker-compose.override.yml for this purpose:
 
 ```yml
-version: "2.3"
+version: "3.3"
 
 services:
   cvat:
@@ -314,6 +365,26 @@ You can change the share device path to your actual share. For user convenience
 we have defined the environment variable $CVAT_SHARE_URL. This variable
 contains a text (url for example) which is shown in the client-share browser.
 
+### Email verification
+
+You can enable email verification for newly registered users.
+Specify these options in the [settings file](../../settings/base.py) to configure Django allauth
+to enable email verification (ACCOUNT_EMAIL_VERIFICATION = 'mandatory').
+Access is denied until the user's email address is verified.
+```python
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+
+# Email backend settings for Django
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+```
+Also you need to configure the Django email backend to send emails.
+This depends on the email server you are using and is not covered in this tutorial, please see
+[Django SMTP backend configuration](https://docs.djangoproject.com/en/3.1/topics/email/#django.core.mail.backends.smtp.EmailBackend)
+for details.
+
 ### Serving over HTTPS
 
 We will add [letsencrypt.org](https://letsencrypt.org/) issued certificate to secure
@@ -323,9 +394,9 @@ our server connection.
 
 We assume that
 
--   you have sudo access on your server machine,
--   you have an IP address to use for remote access, and
--   that the local CVAT installation works on your server.
+- you have sudo access on your server machine,
+- you have an IP address to use for remote access, and
+- that the local CVAT installation works on your server.
 
 If this is not the case, please complete the steps in the installation manual first.
 
@@ -350,9 +421,9 @@ Point you shell in cvat repository directory, usually `cd $HOME/cvat`:
 
 Add the following into your `docker-compose.override.yml`, replacing `my-cvat-server.org` with your own IP address. This file lives in the same directory as `docker-compose.yml`.
 
-Create enough directories for letsencrypt webroot operation and acme folder passthrougth.
+Create the required directories for letsencrypt webroot operation and acme folder passthrough.
 
- and restart containers with a new configuration updated in `docker-compose.override.yml`
+Now restart the containers with new configurations updated in `docker-compose.override.yml`
 
 ```bash
 # on the docker host
@@ -366,7 +437,7 @@ mkdir -p $HOME/cvat/letsencrypt-webroot/.well-known/acme-challenge
 
 ```yaml
 # docker-compose.override.yml
-version: "2.3"
+version: "3.3"
 
 services:
   cvat_proxy:
@@ -521,31 +592,18 @@ server {
     proxy_set_header        Host $http_host;
     proxy_pass_header       Set-Cookie;
 
-    location ~* /api/.*|git/.*|tensorflow/.*|auto_annotation/.*|analytics/.*|static/.*|admin|admin/.*|documentation/.*|dextr/.*|reid/.*  {
+    location ~* /api/.*|git/.*|analytics/.*|static/.*|admin(?:/(.*))?.*|documentation/.*|django-rq(?:/(.*))? {
         proxy_pass              http://cvat:8080;
-    }
-
-    # workaround for match location by arguments
-    location = / {
-        error_page 418 = @annotation_ui;
-
-        if ( $query_string ~ "^id=\d+.*" ) { return 418; }
-        proxy_pass              http://cvat_ui;
     }
 
     location / {
         proxy_pass              http://cvat_ui;
-    }
-
-    # old annotation ui, will be removed in the future.
-    location @annotation_ui {
-        proxy_pass              http://cvat:8080;
     }
 }
 ```
 
 Start cvat_proxy container with https enabled.
 
-```
+```bash
 docker start cvat_proxy
 ```

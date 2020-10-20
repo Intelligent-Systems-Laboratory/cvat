@@ -12,6 +12,7 @@ import CanvasInitialContextMenuComponent from 'components/annotation-page/standa
 
 interface StateToProps {
     activatedStateID: number | null;
+    objectStates: any[];
     visible: boolean;
     top: number;
     left: number;
@@ -22,17 +23,9 @@ interface StateToProps {
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
         annotation: {
-            annotations: {
-                activatedStateID,
-                collapsed,
-            },
+            annotations: { activatedStateID, collapsed, states: objectStates },
             canvas: {
-                contextMenu: {
-                    visible,
-                    top,
-                    left,
-                    type,
-                },
+                contextMenu: { visible, top, left, type },
             },
         },
     } = state;
@@ -40,6 +33,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
     return {
         activatedStateID,
         collapsed: activatedStateID !== null ? collapsed[activatedStateID] : undefined,
+        objectStates,
         visible,
         left,
         top,
@@ -77,8 +71,7 @@ class CanvasContextMenuContainer extends React.PureComponent<Props, State> {
     }
 
     static getDerivedStateFromProps(props: Props, state: State): State | null {
-        if (props.left === state.latestLeft
-            && props.top === state.latestTop) {
+        if (props.left === state.latestLeft && props.top === state.latestTop) {
             return null;
         }
 
@@ -101,9 +94,13 @@ class CanvasContextMenuContainer extends React.PureComponent<Props, State> {
 
         const [element] = window.document.getElementsByClassName('cvat-canvas-context-menu');
         if (collapsed !== prevProps.collapsed && element) {
-            element.addEventListener('transitionend', () => {
-                this.updatePositionIfOutOfScreen();
-            }, { once: true });
+            element.addEventListener(
+                'transitionend',
+                () => {
+                    this.updatePositionIfOutOfScreen();
+                },
+                { once: true },
+            );
         } else if (element) {
             this.updatePositionIfOutOfScreen();
         }
@@ -146,15 +143,9 @@ class CanvasContextMenuContainer extends React.PureComponent<Props, State> {
     };
 
     private updatePositionIfOutOfScreen(): void {
-        const {
-            top,
-            left,
-        } = this.state;
+        const { top, left } = this.state;
 
-        const {
-            innerWidth,
-            innerHeight,
-        } = window;
+        const { innerWidth, innerHeight } = window;
 
         const [element] = window.document.getElementsByClassName('cvat-canvas-context-menu');
         if (element) {
@@ -171,16 +162,8 @@ class CanvasContextMenuContainer extends React.PureComponent<Props, State> {
     }
 
     public render(): JSX.Element {
-        const {
-            left,
-            top,
-        } = this.state;
-
-        const {
-            visible,
-            activatedStateID,
-            type,
-        } = this.props;
+        const { left, top } = this.state;
+        const { visible, activatedStateID, objectStates, type } = this.props;
 
         return (
             <>
@@ -189,6 +172,7 @@ class CanvasContextMenuContainer extends React.PureComponent<Props, State> {
                         left={left}
                         top={top}
                         visible={visible}
+                        objectStates={objectStates}
                         activatedStateID={activatedStateID}
                     />
                 )}
@@ -208,6 +192,4 @@ class CanvasContextMenuContainer extends React.PureComponent<Props, State> {
     }
 }
 
-export default connect(
-    mapStateToProps,
-)(CanvasContextMenuContainer);
+export default connect(mapStateToProps)(CanvasContextMenuContainer);

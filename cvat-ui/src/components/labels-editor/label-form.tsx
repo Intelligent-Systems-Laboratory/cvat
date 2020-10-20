@@ -12,8 +12,12 @@ import Tooltip from 'antd/lib/tooltip';
 import Select from 'antd/lib/select';
 import Form, { FormComponentProps } from 'antd/lib/form/Form';
 import Text from 'antd/lib/typography/Text';
+import Badge from 'antd/lib/badge';
+import ColorPicker from 'components/annotation-page/standard-workspace/objects-side-bar/color-picker';
 
+import { ColorizeIcon } from 'icons';
 import patterns from 'utils/validation-patterns';
+import consts from 'consts';
 import {
     equalArrayHead,
     idGenerator,
@@ -32,6 +36,7 @@ export enum AttributeType {
 
 type Props = FormComponentProps & {
     label: Label | null;
+    labelNames?: string[];
     onSubmit: (label: Label | null) => void;
 };
 
@@ -44,19 +49,15 @@ class LabelForm extends React.PureComponent<Props, {}> {
     }
 
     private handleSubmit = (e: React.FormEvent): void => {
+        const { form, label, onSubmit } = this.props;
+
         e.preventDefault();
-
-        const {
-            form,
-            label,
-            onSubmit,
-        } = this.props;
-
         form.validateFields((error, formValues): void => {
             if (!error) {
                 onSubmit({
                     name: formValues.labelName,
                     id: label ? label.id : idGenerator(),
+                    color: formValues.labelColor,
                     attributes: formValues.keys.map((key: number, index: number): Attribute => {
                         let attrValues = formValues.values[key];
                         if (!Array.isArray(attrValues)) {
@@ -137,7 +138,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
         return (
             <Col span={4}>
                 <Form.Item>
-                    <Tooltip title='An HTML element representing the attribute'>
+                    <Tooltip title='An HTML element representing the attribute' mouseLeaveDelay={0}>
                         { form.getFieldDecorator(`type[${key}]`, {
                             initialValue: type,
                         })(
@@ -187,7 +188,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
         };
 
         return (
-            <Tooltip title='Press enter to add a new value'>
+            <Tooltip title='Press enter to add a new value' mouseLeaveDelay={0}>
                 <Form.Item>
                     { form.getFieldDecorator(`values[${key}]`, {
                         initialValue: existedValues,
@@ -214,7 +215,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
         const { form } = this.props;
 
         return (
-            <Tooltip title='Specify a default value'>
+            <Tooltip title='Specify a default value' mouseLeaveDelay={0}>
                 <Form.Item>
                     { form.getFieldDecorator(`values[${key}]`, {
                         initialValue: value,
@@ -304,7 +305,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
 
         return (
             <Form.Item>
-                <Tooltip title='Can this attribute be changed frame to frame?'>
+                <Tooltip title='Can this attribute be changed frame to frame?' mouseLeaveDelay={0}>
                     { form.getFieldDecorator(`mutable[${key}]`, {
                         initialValue: value,
                         valuePropName: 'checked',
@@ -321,7 +322,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
 
         return (
             <Form.Item>
-                <Tooltip title='Delete the attribute'>
+                <Tooltip title='Delete the attribute' mouseLeaveDelay={0}>
                     <Button
                         type='link'
                         className='cvat-delete-attribute-button'
@@ -338,11 +339,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
     }
 
     private renderAttribute = (key: number, index: number): JSX.Element => {
-        const {
-            label,
-            form,
-        } = this.props;
-
+        const { label, form } = this.props;
         const attr = (label && index < label.attributes.length
             ? label.attributes[index]
             : null);
@@ -381,10 +378,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
     };
 
     private renderLabelNameInput(): JSX.Element {
-        const {
-            label,
-            form,
-        } = this.props;
+        const { label, form, labelNames } = this.props;
         const value = label ? label.name : '';
         const locked = label ? label.id >= 0 : false;
 
@@ -399,6 +393,13 @@ class LabelForm extends React.PureComponent<Props, {}> {
                         }, {
                             pattern: patterns.validateAttributeName.pattern,
                             message: patterns.validateAttributeName.message,
+                        }, {
+                            validator:
+                                async (_rule: any, labelName: string, callback: Function) => {
+                                    if (labelNames && labelNames.includes(labelName)) {
+                                        callback('Label name must be unique for the task');
+                                    }
+                                },
                         }],
                     })(<Input disabled={locked} placeholder='Label name' />)}
                 </Form.Item>
@@ -408,9 +409,13 @@ class LabelForm extends React.PureComponent<Props, {}> {
 
     private renderNewAttributeButton(): JSX.Element {
         return (
-            <Col span={3}>
+            <Col span={6}>
                 <Form.Item>
-                    <Button type='ghost' onClick={this.addAttribute}>
+                    <Button
+                        type='ghost'
+                        onClick={this.addAttribute}
+                        className='cvat-new-attribute-button'
+                    >
                         Add an attribute
                         <Icon type='plus' />
                     </Button>
@@ -422,7 +427,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
     private renderDoneButton(): JSX.Element {
         return (
             <Col>
-                <Tooltip title='Save the label and return'>
+                <Tooltip title='Save the label and return' mouseLeaveDelay={0}>
                     <Button
                         style={{ width: '150px' }}
                         type='primary'
@@ -445,7 +450,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
             label ? <div />
                 : (
                     <Col offset={1}>
-                        <Tooltip title='Save the label and create one more'>
+                        <Tooltip title='Save the label and create one more' mouseLeaveDelay={0}>
                             <Button
                                 style={{ width: '150px' }}
                                 type='primary'
@@ -467,7 +472,7 @@ class LabelForm extends React.PureComponent<Props, {}> {
 
         return (
             <Col offset={1}>
-                <Tooltip title='Do not save the label and return'>
+                <Tooltip title='Do not save the label and return' mouseLeaveDelay={0}>
                     <Button
                         style={{ width: '150px' }}
                         type='danger'
@@ -482,11 +487,39 @@ class LabelForm extends React.PureComponent<Props, {}> {
         );
     }
 
+    private renderChangeColorButton(): JSX.Element {
+        const { label, form } = this.props;
+
+        return (
+            <Col span={3}>
+                <Form.Item>
+                    {
+                        form.getFieldDecorator('labelColor', {
+                            initialValue: (label && label.color) ? label.color : undefined,
+                        })(
+                            <ColorPicker placement='bottom'>
+                                <Tooltip title='Change color of the label'>
+                                    <Button
+                                        type='default'
+                                        className='cvat-change-task-label-color-button'
+                                    >
+                                        <Badge
+                                            className='cvat-change-task-label-color-badge'
+                                            color={form.getFieldValue('labelColor') || consts.NEW_LABEL_COLOR}
+                                            text={(<Icon component={ColorizeIcon} />)}
+                                        />
+                                    </Button>
+                                </Tooltip>
+                            </ColorPicker>,
+                        )
+                    }
+                </Form.Item>
+            </Col>
+        );
+    }
+
     public render(): JSX.Element {
-        const {
-            label,
-            form,
-        } = this.props;
+        const { label, form } = this.props;
 
         form.getFieldDecorator('keys', {
             initialValue: label
@@ -501,6 +534,8 @@ class LabelForm extends React.PureComponent<Props, {}> {
             <Form onSubmit={this.handleSubmit}>
                 <Row type='flex' justify='start' align='middle'>
                     { this.renderLabelNameInput() }
+                    <Col span={1} />
+                    { this.renderChangeColorButton() }
                     <Col span={1} />
                     { this.renderNewAttributeButton() }
                 </Row>

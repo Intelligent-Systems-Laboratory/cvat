@@ -43,6 +43,17 @@ class DataChoice(str, Enum):
     def __str__(self):
         return self.value
 
+class StorageMethodChoice(str, Enum):
+    CACHE = 'cache'
+    FILE_SYSTEM = 'file_system'
+
+    @classmethod
+    def choices(cls):
+        return tuple((x.value, x.name) for x in cls)
+
+    def __str__(self):
+        return self.value
+
 class Data(models.Model):
     chunk_size = models.PositiveIntegerField(null=True)
     size = models.PositiveIntegerField(default=0)
@@ -54,6 +65,7 @@ class Data(models.Model):
         default=DataChoice.IMAGESET)
     original_chunk_type = models.CharField(max_length=32, choices=DataChoice.choices(),
         default=DataChoice.IMAGESET)
+    storage_method = models.CharField(max_length=15, choices=StorageMethodChoice.choices(), default=StorageMethodChoice.FILE_SYSTEM)
 
     class Meta:
         default_permissions = ()
@@ -102,6 +114,12 @@ class Data(models.Model):
     def get_preview_path(self):
         return os.path.join(self.get_data_dirname(), 'preview.jpeg')
 
+    def get_meta_path(self):
+        return os.path.join(self.get_upload_dirname(), 'meta_info.txt')
+
+    def get_dummy_chunk_path(self, chunk_number):
+        return os.path.join(self.get_upload_dirname(), 'dummy_{}.txt'.format(chunk_number))
+
 class Video(models.Model):
     data = models.OneToOneField(Data, on_delete=models.CASCADE, related_name="video", null=True)
     path = models.CharField(max_length=1024, default='')
@@ -149,11 +167,10 @@ class Task(models.Model):
         on_delete=models.SET_NULL, related_name="assignees")
     bug_tracker = models.CharField(max_length=2000, blank=True, default="")
     created_date = models.DateTimeField(auto_now_add=True)
-    updated_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
     overlap = models.PositiveIntegerField(null=True)
     # Zero means that there are no limits (default)
     segment_size = models.PositiveIntegerField(default=0)
-    z_order = models.BooleanField(default=False)
     status = models.CharField(max_length=32, choices=StatusChoice.choices(),
         default=StatusChoice.ANNOTATION)
     data = models.ForeignKey(Data, on_delete=models.CASCADE, null=True, related_name="tasks")
@@ -240,6 +257,7 @@ class Job(models.Model):
 class Label(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     name = SafeCharField(max_length=64)
+    color = models.CharField(default='', max_length=8)
 
     def __str__(self):
         return self.name
@@ -302,12 +320,25 @@ class ShapeType(str, Enum):
     def __str__(self):
         return self.value
 
+class SourceType(str, Enum):
+    AUTO = 'auto'
+    MANUAL = 'manual'
+
+    @classmethod
+    def choices(self):
+        return tuple((x.value, x.name) for x in self)
+
+    def __str__(self):
+        return self.value
+
 class Annotation(models.Model):
     id = models.BigAutoField(primary_key=True)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     label = models.ForeignKey(Label, on_delete=models.CASCADE)
     frame = models.PositiveIntegerField()
     group = models.PositiveIntegerField(null=True)
+    source = models.CharField(max_length=16, choices=SourceType.choices(),
+        default=str(SourceType.MANUAL), null=True)
 
     class Meta:
         abstract = True
@@ -380,25 +411,7 @@ class TrackedShape(Shape):
 
 class TrackedShapeAttributeVal(AttributeVal):
     shape = models.ForeignKey(TrackedShape, on_delete=models.CASCADE)
-
-class Plugin(models.Model):
-    name = models.SlugField(max_length=32, primary_key=True)
-    description = SafeCharField(max_length=8192)
-    maintainer = models.ForeignKey(User, null=True, blank=True,
-        on_delete=models.SET_NULL, related_name="maintainers")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-
-    # Extend default permission model
-    class Meta:
-        default_permissions = ()
-
-class PluginOption(models.Model):
-    plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE)
-    name = SafeCharField(max_length=32)
-    value = SafeCharField(max_length=1024)
-
+    
 class Attributes(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     value = SafeCharField(max_length=4096)
-

@@ -12,6 +12,7 @@ import { TasksState, Task } from './interfaces';
 const defaultState: TasksState = {
     initialized: false,
     fetching: false,
+    updating: false,
     hideEmpty: false,
     count: 0,
     current: [],
@@ -31,6 +32,7 @@ const defaultState: TasksState = {
         loads: {},
         deletes: {},
         creates: {
+            taskId: null,
             status: '',
             error: '',
         },
@@ -238,6 +240,7 @@ export default (state: TasksState = defaultState, action: AnyAction): TasksState
                 activities: {
                     ...state.activities,
                     creates: {
+                        taskId: null,
                         status: '',
                         error: '',
                     },
@@ -259,12 +262,14 @@ export default (state: TasksState = defaultState, action: AnyAction): TasksState
             };
         }
         case TasksActionTypes.CREATE_TASK_SUCCESS: {
+            const { taskId } = action.payload;
             return {
                 ...state,
                 activities: {
                     ...state.activities,
                     creates: {
                         ...state.activities.creates,
+                        taskId,
                         status: 'CREATED',
                     },
                 },
@@ -286,11 +291,13 @@ export default (state: TasksState = defaultState, action: AnyAction): TasksState
         case TasksActionTypes.UPDATE_TASK: {
             return {
                 ...state,
+                updating: true,
             };
         }
         case TasksActionTypes.UPDATE_TASK_SUCCESS: {
             return {
                 ...state,
+                updating: false,
                 current: state.current.map((task): Task => {
                     if (task.instance.id === action.payload.task.id) {
                         return {
@@ -306,6 +313,7 @@ export default (state: TasksState = defaultState, action: AnyAction): TasksState
         case TasksActionTypes.UPDATE_TASK_FAILED: {
             return {
                 ...state,
+                updating: false,
                 current: state.current.map((task): Task => {
                     if (task.instance.id === action.payload.task.id) {
                         return {

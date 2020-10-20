@@ -13,7 +13,7 @@ import datumaro.components.extractor as datumaro
 from cvat.apps.engine.frame_provider import FrameProvider
 from cvat.apps.engine.models import AttributeType, ShapeType
 from datumaro.util import cast
-from datumaro.util.image import Image
+from datumaro.util.image import ByteImage, Image
 
 from .annotation import AnnotationManager, TrackManager
 
@@ -21,13 +21,13 @@ from .annotation import AnnotationManager, TrackManager
 class TaskData:
     Attribute = namedtuple('Attribute', 'name, value')
     LabeledShape = namedtuple(
-        'LabeledShape', 'type, frame, label, points, occluded, attributes, group, z_order')
+        'LabeledShape', 'type, frame, label, points, occluded, attributes, source, group, z_order')
     LabeledShape.__new__.__defaults__ = (0, 0)
     TrackedShape = namedtuple(
-        'TrackedShape', 'type, frame, points, occluded, outside, keyframe, attributes, group, z_order, label, track_id')
-    TrackedShape.__new__.__defaults__ = (0, 0, None, 0)
-    Track = namedtuple('Track', 'label, group, shapes')
-    Tag = namedtuple('Tag', 'frame, label, attributes, group')
+        'TrackedShape', 'type, frame, points, occluded, outside, keyframe, attributes, source, group, z_order, label, track_id')
+    TrackedShape.__new__.__defaults__ = ('manual', 0, 0, None, 0)
+    Track = namedtuple('Track', 'label, group, source, shapes')
+    Tag = namedtuple('Tag', 'frame, label, attributes, source, group')
     Tag.__new__.__defaults__ = (0, )
     Frame = namedtuple(
         'Frame', 'idx, frame, name, width, height, labeled_shapes, tags')
@@ -147,11 +147,11 @@ class TaskData:
                 ("start_frame", str(self._db_task.data.start_frame)),
                 ("stop_frame", str(self._db_task.data.stop_frame)),
                 ("frame_filter", self._db_task.data.frame_filter),
-                ("z_order", str(self._db_task.z_order)),
 
                 ("labels", [
                     ("label", OrderedDict([
                         ("name", db_label.name),
+                        ("color", db_label.color),
                         ("attributes", [
                             ("attribute", OrderedDict([
                                 ("name", db_attr.name),
@@ -217,6 +217,7 @@ class TaskData:
             outside=shape.get("outside", False),
             keyframe=shape.get("keyframe", True),
             track_id=shape["track_id"],
+            source=shape.get("source", "manual"),
             attributes=self._export_attributes(shape["attributes"]),
         )
 
@@ -229,6 +230,7 @@ class TaskData:
             occluded=shape["occluded"],
             z_order=shape.get("z_order", 0),
             group=shape.get("group", 0),
+            source=shape["source"],
             attributes=self._export_attributes(shape["attributes"]),
         )
 
@@ -237,6 +239,7 @@ class TaskData:
             frame=self.abs_frame_id(tag["frame"]),
             label=self._get_label_name(tag["label_id"]),
             group=tag.get("group", 0),
+            source=tag["source"],
             attributes=self._export_attributes(tag["attributes"]),
         )
 
@@ -290,11 +293,13 @@ class TaskData:
                 tracked_shape["attributes"] += track["attributes"]
                 tracked_shape["track_id"] = idx
                 tracked_shape["group"] = track["group"]
+                tracked_shape["source"] = track["source"]
                 tracked_shape["label_id"] = track["label_id"]
 
             yield TaskData.Track(
                 label=self._get_label_name(track["label_id"]),
                 group=track["group"],
+                source=track["source"],
                 shapes=[self._export_tracked_shape(shape)
                     for shape in tracked_shapes],
             )
@@ -350,6 +355,7 @@ class TaskData:
         _shape['attributes'] = [self._import_attribute(label_id, attrib)
             for attrib in _shape['attributes']
             if self._get_attribute_id(label_id, attrib.name)]
+        _shape['points'] = list(map(float, _shape['points']))
         return _shape
 
     def _import_track(self, track):
@@ -368,6 +374,7 @@ class TaskData:
             shape['attributes'] = [self._import_attribute(label_id, attrib)
                 for attrib in shape['attributes']
                 if self._get_mutable_attribute_id(label_id, attrib.name)]
+            shape['points'] = list(map(float, shape['points']))
 
         return _track
 
@@ -442,24 +449,44 @@ class TaskData:
         return None
 
 class CvatTaskDataExtractor(datumaro.SourceExtractor):
-    def __init__(self, task_data, include_images=False):
+    def __init__(self, task_data, include_images=False, include_outside=False):
         super().__init__()
         self._categories = self._load_categories(task_data)
+        self._include_outside = include_outside
 
         dm_items = []
 
+        is_video = task_data.meta['task']['mode'] == 'interpolation'
+        ext = ''
+        if is_video:
+            ext = FrameProvider.VIDEO_FRAME_EXT
         if include_images:
             frame_provider = FrameProvider(task_data.db_task.data)
+            if is_video:
+                # optimization for videos: use numpy arrays instead of bytes
+                # some formats or transforms can require image data
+                def _make_image(i, **kwargs):
+                    loader = lambda _: frame_provider.get_frame(i,
+                        quality=frame_provider.Quality.ORIGINAL,
+                        out_type=frame_provider.Type.NUMPY_ARRAY)[0]
+                    return Image(loader=loader, **kwargs)
+            else:
+                # for images use encoded data to avoid recoding
+                def _make_image(i, **kwargs):
+                    loader = lambda _: frame_provider.get_frame(i,
+                        quality=frame_provider.Quality.ORIGINAL,
+                        out_type=frame_provider.Type.BUFFER)[0].getvalue()
+                    return ByteImage(data=loader, **kwargs)
 
         for frame_data in task_data.group_by_frame(include_empty=True):
-            loader = None
+            image_args = {
+                'path': frame_data.name + ext,
+                'size': (frame_data.height, frame_data.width),
+            }
             if include_images:
-                loader = lambda p, i=frame_data.idx: frame_provider.get_frame(i,
-                    quality=frame_provider.Quality.ORIGINAL,
-                    out_type=frame_provider.Type.NUMPY_ARRAY)[0]
-            dm_image = Image(path=frame_data.name, loader=loader,
-                size=(frame_data.height, frame_data.width)
-            )
+                dm_image = _make_image(frame_data.idx, **image_args)
+            else:
+                dm_image = Image(**image_args)
             dm_anno = self._read_cvat_anno(frame_data, task_data)
             dm_item = datumaro.DatasetItem(id=osp.splitext(frame_data.name)[0],
                 annotations=dm_anno, image=dm_image,
@@ -523,7 +550,7 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
             return dm_attr
 
         for tag_obj in cvat_frame_anno.tags:
-            anno_group = tag_obj.group
+            anno_group = tag_obj.group or 0
             anno_label = map_label(tag_obj.label)
             anno_attr = convert_attrs(tag_obj.label, tag_obj.attributes)
 
@@ -532,7 +559,7 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
             item_anno.append(anno)
 
         for shape_obj in cvat_frame_anno.labeled_shapes:
-            anno_group = shape_obj.group
+            anno_group = shape_obj.group or 0
             anno_label = map_label(shape_obj.label)
             anno_attr = convert_attrs(shape_obj.label, shape_obj.attributes)
             anno_attr['occluded'] = shape_obj.occluded
@@ -540,6 +567,9 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
             if hasattr(shape_obj, 'track_id'):
                 anno_attr['track_id'] = shape_obj.track_id
                 anno_attr['keyframe'] = shape_obj.keyframe
+
+                if not self._include_outside and shape_obj.outside:
+                    continue
 
             anno_points = shape_obj.points
             if shape_obj.type == ShapeType.POINTS:
@@ -644,6 +674,7 @@ def import_dm_annotations(dm_dataset, task_data):
                     occluded=ann.attributes.get('occluded') == True,
                     z_order=ann.z_order,
                     group=group_map.get(ann.group, 0),
+                    source='manual',
                     attributes=[task_data.Attribute(name=n, value=str(v))
                         for n, v in ann.attributes.items()],
                 ))
@@ -652,6 +683,7 @@ def import_dm_annotations(dm_dataset, task_data):
                     frame=frame_number,
                     label=label_cat.items[ann.label].name,
                     group=group_map.get(ann.group, 0),
+                    source='manual',
                     attributes=[task_data.Attribute(name=n, value=str(v))
                         for n, v in ann.attributes.items()],
                 ))

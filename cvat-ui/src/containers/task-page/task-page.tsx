@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT
 
-import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
@@ -20,6 +19,7 @@ type Props = RouteComponentProps<{id: string}>;
 interface StateToProps {
     task: Task | null | undefined;
     fetching: boolean;
+    updating: boolean;
     deleteActivity: boolean | null;
     installedGit: boolean;
 }
@@ -31,7 +31,7 @@ interface DispatchToProps {
 function mapStateToProps(state: CombinedState, own: Props): StateToProps {
     const { list } = state.plugins;
     const { tasks } = state;
-    const { gettingQuery } = tasks;
+    const { gettingQuery, fetching, updating } = tasks;
     const { deletes } = tasks.activities;
 
     const id = +own.match.params.id;
@@ -50,7 +50,8 @@ function mapStateToProps(state: CombinedState, own: Props): StateToProps {
     return {
         task,
         deleteActivity,
-        fetching: state.tasks.fetching,
+        fetching,
+        updating,
         installedGit: list.GIT_INTEGRATION,
     };
 }
@@ -74,13 +75,7 @@ function mapDispatchToProps(dispatch: any, own: Props): DispatchToProps {
     };
 }
 
-function TaskPageContainer(props: StateToProps & DispatchToProps): JSX.Element {
-    return (
-        <TaskPageComponent {...props} />
-    );
-}
-
 export default withRouter(connect(
     mapStateToProps,
     mapDispatchToProps,
-)(TaskPageContainer));
+)(TaskPageComponent));

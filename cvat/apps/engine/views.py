@@ -7,17 +7,17 @@ import os.path as osp
 import shutil
 import traceback
 from datetime import datetime
+from distutils.util import strtobool
 from tempfile import mkstemp
 
 import django_rq
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import render
+from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.views.generic import RedirectView
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -34,17 +34,16 @@ from sendfile import sendfile
 import cvat.apps.dataset_manager as dm
 import cvat.apps.dataset_manager.views # pylint: disable=unused-import
 from cvat.apps.authentication import auth
-from cvat.apps.authentication.decorators import login_required
 from cvat.apps.dataset_manager.serializers import DatasetFormatsSerializer
 from cvat.apps.engine.frame_provider import FrameProvider
-from cvat.apps.engine.models import Job, Plugin, StatusChoice, Task, Attributes
+from cvat.apps.engine.models import Job, StatusChoice, Task, StorageMethodChoice
 from cvat.apps.engine.serializers import (
     AboutSerializer, AnnotationFileSerializer, BasicUserSerializer,
     DataMetaSerializer, DataSerializer, ExceptionSerializer,
     FileInfoSerializer, JobSerializer, LabeledDataSerializer,
-    LogEventSerializer, PluginSerializer, ProjectSerializer,
-    RqStatusSerializer, TaskSerializer, UserSerializer)
-from cvat.settings.base import CSS_3RDPARTY, JS_3RDPARTY
+    LogEventSerializer, ProjectSerializer, RqStatusSerializer,
+    TaskSerializer, UserSerializer, PluginsSerializer,
+)
 from cvat.apps.engine.utils import av_scan_paths
 
 from . import models, task
@@ -56,16 +55,9 @@ import cvat.apps.engine.grabcut as grabcut # autofit algorithm
 from PIL import Image
 import numpy as np
 # ISL END
-import cvat.apps.dataset_manager.task as DatumaroTask
 
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from django.utils.decorators import method_decorator
-from drf_yasg.inspectors import NotHandled, CoreAPICompatInspector
-from django_filters.rest_framework import DjangoFilterBackend
-
-import cvat.apps.engine.tracker# EDITED for tracking
-from cvat.apps.engine.efficientcut import efficientcut
+import cvat.apps.engine.tracker # ISL TRACKING
+from cvat.apps.engine.efficientcut import efficientcut #ISL EFFICIENTCUT
 
 import json # ISL GLOBAL ATTRIBUTES
 import time # ISL TESTING
@@ -74,38 +66,6 @@ import time # ISL TESTING
 # We map the required paramater explicitly and add it into query arguments
 # on the server side.
 current_milli_time = lambda: int(round(time.time() * 1000))
-def wrap_swagger(view):
-    @login_required
-    def _map_format_to_schema(request, scheme=None):
-        if 'format' in request.GET:
-            request.GET = request.GET.copy()
-            format_alias = settings.REST_FRAMEWORK['URL_FORMAT_OVERRIDE']
-            request.GET[format_alias] = request.GET['format']
-
-        return view(request, format=scheme)
-
-    return _map_format_to_schema
-
-# Server REST API
-@login_required
-def dispatch_request(request):
-    """An entry point to dispatch legacy requests"""
-    if 'dashboard' in request.path or (request.path == '/' and 'id' not in request.GET):
-        return RedirectView.as_view(
-            url=settings.UI_URL,
-            permanent=True,
-            query_string=True
-        )(request)
-    elif request.method == 'GET' and 'id' in request.GET and request.path == '/':
-        return render(request, 'engine/annotation.html', {
-            'css_3rdparty': CSS_3RDPARTY.get('engine', []),
-            'js_3rdparty': JS_3RDPARTY.get('engine', []),
-            'status_list': [str(i) for i in StatusChoice],
-            'ui_url': settings.UI_URL
-        })
-    else:
-        return HttpResponseNotFound()
-
 
 class ServerViewSet(viewsets.ViewSet):
     serializer_class = None
@@ -227,6 +187,23 @@ class ServerViewSet(viewsets.ViewSet):
     def annotation_formats(request):
         data = dm.views.get_all_formats()
         return Response(DatasetFormatsSerializer(data).data)
+
+    @staticmethod
+    @swagger_auto_schema(method='get', operation_summary='Method provides allowed plugins.',
+        responses={'200': PluginsSerializer()})
+    @action(detail=False, methods=['GET'], url_path='plugins', serializer_class=PluginsSerializer)
+    def plugins(request):
+        response = {
+            'GIT_INTEGRATION': apps.is_installed('cvat.apps.dataset_repo'),
+            'ANALYTICS':       False,
+            'MODELS':          False,
+        }
+        if strtobool(os.environ.get("CVAT_ANALYTICS", '0')):
+            response['ANALYTICS'] = True
+        if strtobool(os.environ.get("CVAT_SERVERLESS", '0')):
+            response['MODELS'] = True
+        return Response(response)
+
 
 class ProjectFilter(filters.FilterSet):
     name = filters.CharFilter(field_name="name", lookup_expr="icontains")
@@ -557,10 +534,11 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     def getattributes(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
-            attribute = Attributes.objects.get(task=task)
+            attribute = models.Attributes.objects.get(task=task)
             attributesDB = attribute.value
             return Response(attributesDB)
-        except Attributes.DoesNotExist:
+        except models.Attributes.DoesNotExist:
+            print('No saved global attributes found')
             msg = "Requested attributes for task %s does not exist" % pk
             return Response(data="%s" %(msg), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -573,7 +551,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         print(request.data)
         try:
             task = Task.objects.get(pk=pk)
-            attribute,created = Attributes.objects.get_or_create(task=task)
+            attribute,created = models.Attributes.objects.get_or_create(task=task)
             attribute.value = json.dumps(request.data)
             attribute.save()
             print('MARKER ATTRIBUTE')
@@ -589,7 +567,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         print(request.data)
         try:
             task = Task.objects.get(pk=pk)
-            attribute = Attributes.objects.filter(task=task).delete()
+            attribute = models.Attributes.objects.filter(task=task).delete()
             return Response(data="Delete OK",status=200)
         except Exception as e:
             msg = "something is wrong"
@@ -607,7 +585,9 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @swagger_auto_schema(method='post', operation_summary='Method permanently attaches images or video to a task')
+    @swagger_auto_schema(method='post', operation_summary='Method permanently attaches images or video to a task',
+        request_body=DataSerializer,
+    )
     @swagger_auto_schema(method='get', operation_summary='Method returns data for a specific task',
         manual_parameters=[
             openapi.Parameter('type', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_STRING,
@@ -631,6 +611,11 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             db_task.save()
             data = {k:v for k, v in serializer.data.items()}
             data['use_zip_chunks'] = serializer.validated_data['use_zip_chunks']
+            data['use_cache'] = serializer.validated_data['use_cache']
+            if data['use_cache']:
+                db_task.data.storage_method = StorageMethodChoice.CACHE
+                db_task.data.save(update_fields=['storage_method'])
+
             # if the value of stop_frame is 0, then inside the function we cannot know
             # the value specified by the user or it's default value from the database
             if 'stop_frame' not in serializer.validated_data:
@@ -655,16 +640,23 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
 
             try:
                 db_task = self.get_object()
+                db_data = db_task.data
                 frame_provider = FrameProvider(db_task.data)
 
                 if data_type == 'chunk':
                     data_id = int(data_id)
+
                     data_quality = FrameProvider.Quality.COMPRESSED \
                         if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
-                    path = os.path.realpath(frame_provider.get_chunk(data_id, data_quality))
+
+                    #TODO: av.FFmpegError processing
+                    if settings.USE_CACHE and db_data.storage_method == StorageMethodChoice.CACHE:
+                        buff, mime_type = frame_provider.get_chunk(data_id, data_quality)
+                        return HttpResponse(buff.getvalue(), content_type=mime_type)
 
                     # Follow symbol links if the chunk is a link on a real image otherwise
                     # mimetype detection inside sendfile will work incorrectly.
+                    path = os.path.realpath(frame_provider.get_chunk(data_id, data_quality))
                     return sendfile(request, path)
 
                 elif data_type == 'frame':
@@ -939,7 +931,7 @@ class JobViewSet(viewsets.GenericViewSet,
     operation_summary='Method deletes a specific user from the server'))
 class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
     mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
-    queryset = User.objects.all().order_by('id')
+    queryset = User.objects.prefetch_related('groups').all().order_by('id')
     http_method_names = ['get', 'post', 'head', 'patch', 'delete']
 
     def get_serializer_class(self):
@@ -974,33 +966,6 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
         serializer_class = self.get_serializer_class()
         serializer = serializer_class(request.user, context={ "request": request })
         return Response(serializer.data)
-
-class PluginViewSet(viewsets.ModelViewSet):
-    queryset = Plugin.objects.all()
-    serializer_class = PluginSerializer
-
-    # @action(detail=True, methods=['GET', 'PATCH', 'PUT'], serializer_class=None)
-    # def config(self, request, name):
-    #     pass
-
-    # @action(detail=True, methods=['GET', 'POST'], serializer_class=None)
-    # def data(self, request, name):
-    #     pass
-
-    # @action(detail=True, methods=['GET', 'DELETE', 'PATCH', 'PUT'],
-    #     serializer_class=None, url_path='data/(?P<id>\d+)')
-    # def data_detail(self, request, name, id):
-    #     pass
-
-
-    @action(detail=True, methods=['GET', 'POST'], serializer_class=RqStatusSerializer)
-    def requests(self, request, name):
-        pass
-
-    @action(detail=True, methods=['GET', 'DELETE'],
-        serializer_class=RqStatusSerializer, url_path='requests/(?P<id>\d+)')
-    def request_detail(self, request, name, rq_id):
-        pass
 
 def rq_handler(job, exc_type, exc_value, tb):
     job.exc_info = "".join(

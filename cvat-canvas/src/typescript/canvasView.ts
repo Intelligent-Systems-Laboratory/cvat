@@ -16,6 +16,7 @@ import { MergeHandler, MergeHandlerImpl } from './mergeHandler';
 import { SplitHandler, SplitHandlerImpl } from './splitHandler';
 import { GroupHandler, GroupHandlerImpl } from './groupHandler';
 import { ZoomHandler, ZoomHandlerImpl } from './zoomHandler';
+import { InteractionHandler, InteractionHandlerImpl } from './interactionHandler';
 import { AutoborderHandler, AutoborderHandlerImpl } from './autoborderHandler';
 import consts from './consts';
 import {
@@ -42,6 +43,8 @@ import {
     Mode,
     Size,
     Configuration,
+    InteractionResult,
+    InteractionData,
 } from './canvasModel';
 
 import { Job, Task } from '../../../cvat-core/src/session';
@@ -74,6 +77,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private groupHandler: GroupHandler;
     private zoomHandler: ZoomHandler;
     private autoborderHandler: AutoborderHandler;
+    private interactionHandler: InteractionHandler;
     private activeElement: ActiveElement;
     private configuration: Configuration;
     private serviceFlags: {
@@ -133,7 +137,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
         if (value) {
             if (shape) {
                 (state.shapeType === 'points' ? shape.remember('_selectHandler').nested : shape)
-                    .style('display', 'none');
+                    .addClass('cvat_canvas_hidden');
             }
 
             if (text) {
@@ -146,7 +150,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 if (!state.outside && !state.hidden) {
                     if (shape) {
                         (state.shapeType === 'points' ? shape.remember('_selectHandler').nested : shape)
-                            .style('display', '');
+                            .removeClass('cvat_canvas_hidden');
                     }
 
                     if (text) {
@@ -158,6 +162,41 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     }
                 }
             }
+        }
+    }
+
+    private onInteraction(
+        shapes: InteractionResult[] | null,
+        shapesUpdated: boolean = true,
+        isDone: boolean = false,
+    ): void {
+        const { zLayer } = this.controller;
+        if (Array.isArray(shapes)) {
+            const event: CustomEvent = new CustomEvent('canvas.interacted', {
+                bubbles: false,
+                cancelable: true,
+                detail: {
+                    shapesUpdated,
+                    isDone,
+                    shapes,
+                    zOrder: zLayer || 0,
+                },
+            });
+
+            this.canvas.dispatchEvent(event);
+        }
+
+        if (shapes === null || isDone) {
+            const event: CustomEvent = new CustomEvent('canvas.canceled', {
+                bubbles: false,
+                cancelable: true,
+            });
+
+            this.canvas.dispatchEvent(event);
+            this.mode = Mode.IDLE;
+            this.controller.interact({
+                enabled: false,
+            });
         }
     }
 
@@ -407,6 +446,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
         this.drawHandler.transform(this.geometry);
         this.editHandler.transform(this.geometry);
         this.zoomHandler.transform(this.geometry);
+        this.autoborderHandler.transform(this.geometry);
+        this.interactionHandler.transform(this.geometry);
     }
 
     private transformCanvas(): void {
@@ -476,7 +517,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
         // Transform handlers
         this.drawHandler.transform(this.geometry);
         this.editHandler.transform(this.geometry);
+        this.zoomHandler.transform(this.geometry);
         this.autoborderHandler.transform(this.geometry);
+        this.interactionHandler.transform(this.geometry);
     }
 
     private resizeCanvas(): void {
@@ -713,7 +756,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     ));
 
                 if (['polygon', 'polyline', 'points'].includes(state.shapeType)) {
-                    if (e.ctrlKey) {
+                    if (e.altKey) {
                         const { points } = state;
                         self.onEditDone(
                             state,
@@ -1014,10 +1057,14 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.adoptedContent,
             this.geometry,
         );
+        this.interactionHandler = new InteractionHandlerImpl(
+            this.onInteraction.bind(this),
+            this.adoptedContent,
+            this.geometry,
+        );
 
         // Setup event handlers
         this.content.addEventListener('dblclick', (e: MouseEvent): void => {
-            if (e.ctrlKey || e.shiftKey) return;
             self.controller.fit();
             e.preventDefault();
         });
@@ -1131,7 +1178,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.updateZoomArea(e);
 
             if (this.mode !== Mode.IDLE) return;
-            if (e.ctrlKey || e.shiftKey) return;
+            if (e.ctrlKey || e.altKey) return;
 
             // ISL MANUAL TRACKING
             this.trackingElement.mousecoords = [x - offset, y - offset];
@@ -1267,7 +1314,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
         } else if (reason === UpdateReasons.IMAGE_MOVED) {
             this.moveCanvas();
-        } else if ([UpdateReasons.OBJECTS_UPDATED, UpdateReasons.SET_Z_LAYER].includes(reason)) {
+        } else if ([UpdateReasons.OBJECTS_UPDATED].includes(reason)) {
             if (this.mode === Mode.GROUP) {
                 this.groupHandler.resetSelectedObjects();
             }
@@ -1352,6 +1399,18 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     this.drawHandler.draw(data, this.geometry);
                 }
             }
+        } else if (reason === UpdateReasons.INTERACT) {
+            const data: InteractionData = this.controller.interactionData;
+            if (data.enabled && this.mode === Mode.IDLE) {
+                this.canvas.style.cursor = 'crosshair';
+                this.mode = Mode.INTERACT;
+                this.interactionHandler.interact(data);
+            } else {
+                this.canvas.style.cursor = '';
+                if (this.mode !== Mode.IDLE) {
+                    this.interactionHandler.interact(data);
+                }
+            }
         } else if (reason === UpdateReasons.MERGE) {
             const data: MergeData = this.controller.mergeData;
             if (data.enabled) {
@@ -1398,6 +1457,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
         } else if (reason === UpdateReasons.CANCEL) {
             if (this.mode === Mode.DRAW) {
                 this.drawHandler.cancel();
+            } else if (this.mode === Mode.INTERACT) {
+                this.interactionHandler.cancel();
             } else if (this.mode === Mode.MERGE) {
                 this.mergeHandler.cancel();
             } else if (this.mode === Mode.SPLIT) {
@@ -1424,8 +1485,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
         if (model.imageBitmap
             && [UpdateReasons.IMAGE_CHANGED,
-            UpdateReasons.OBJECTS_UPDATED,
-            UpdateReasons.SET_Z_LAYER,
+                UpdateReasons.OBJECTS_UPDATED,
             ].includes(reason)
         ) {
             this.redrawBitmap();
@@ -1856,13 +1916,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
             if (drawnState.hidden !== state.hidden || drawnState.outside !== state.outside) {
                 if (isInvisible) {
                     (state.shapeType === 'points' ? shape.remember('_selectHandler').nested : shape)
-                        .style('display', 'none');
+                        .addClass('cvat_canvas_hidden');
                     if (text) {
                         text.addClass('cvat_canvas_hidden');
                     }
                 } else {
                     (state.shapeType === 'points' ? shape.remember('_selectHandler').nested : shape)
-                        .style('display', '');
+                        .removeClass('cvat_canvas_hidden');
                     if (text) {
                         text.removeClass('cvat_canvas_hidden');
                         this.updateTextPosition(
@@ -2029,6 +2089,11 @@ export class CanvasViewImpl implements CanvasView, Listener {
         ).map((state: SVGElement): [SVGElement, number] => (
             [state, +state.getAttribute('data-z-order')]
         ));
+
+        const crosshair = Array.from(this.content.getElementsByClassName('cvat_canvas_crosshair'));
+        crosshair.forEach((line: SVGLineElement): void => this.content.append(line));
+        const interaction = Array.from(this.content.getElementsByClassName('cvat_interaction_point'));
+        interaction.forEach((circle: SVGCircleElement): void => this.content.append(circle));
 
         const needSort = states.some((pair): boolean => pair[1] !== states[0][1]);
         if (!states.length || !needSort) {
@@ -2419,14 +2484,19 @@ export class CanvasViewImpl implements CanvasView, Listener {
 
     private addText(state: any): SVG.Text {
         const { undefinedAttrValue } = this.configuration;
-        const { label, clientID, attributes } = state;
+        const {
+            label,
+            clientID,
+            attributes,
+            source,
+        } = state;
         const attrNames = label.attributes.reduce((acc: any, val: any): void => {
             acc[val.id] = val.name;
             return acc;
         }, {});
 
         return this.adoptedText.text((block): void => {
-            block.tspan(`${label.name} ${clientID}`).style('text-transform', 'uppercase');
+            block.tspan(`${label.name} ${clientID} (${source})`).style('text-transform', 'uppercase');
             for (const attrID of Object.keys(attributes)) {
                 const value = attributes[attrID] === undefinedAttrValue
                     ? '' : attributes[attrID];

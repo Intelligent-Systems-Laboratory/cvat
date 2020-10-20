@@ -14,7 +14,6 @@ import Text from 'antd/lib/typography/Text';
 import { RectDrawingMethod, CuboidDrawingMethod } from 'cvat-canvas-wrapper';
 import { ShapeType } from 'reducers/interfaces';
 import { clamp } from 'utils/math';
-import DEXTRPlugin from './dextr-plugin';
 
 interface Props {
     shapeType: ShapeType;
@@ -91,7 +90,6 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
                     </Select>
                 </Col>
             </Row>
-            { shapeType === ShapeType.POLYGON && <DEXTRPlugin /> }
             {
                 shapeType === ShapeType.RECTANGLE && (
                     <>
@@ -186,14 +184,14 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
             }
             <Row type='flex' justify='space-around'>
                 <Col span={12}>
-                    <Tooltip title={`Press ${repeatShapeShortcut} to draw again`}>
+                    <Tooltip title={`Press ${repeatShapeShortcut} to draw again`} mouseLeaveDelay={0}>
                         <Button onClick={onDrawShape}>
                             Shape
                         </Button>
                     </Tooltip>
                 </Col>
                 <Col span={12}>
-                    <Tooltip title={`Press ${repeatShapeShortcut} to draw again`}>
+                    <Tooltip title={`Press ${repeatShapeShortcut} to draw again`} mouseLeaveDelay={0}>
                         <Button onClick={onDrawTrack}>
                             Track
                         </Button>

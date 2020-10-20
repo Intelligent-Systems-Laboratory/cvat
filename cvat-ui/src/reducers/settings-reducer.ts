@@ -18,10 +18,11 @@ import {
 
 const defaultState: SettingsState = {
     shapes: {
-        colorBy: ColorBy.INSTANCE,
+        colorBy: ColorBy.LABEL,
         opacity: 3,
         selectedOpacity: 0,   // ISL BACKGROUND FILTER changed from 30
-        blackBorders: false,
+        outlined: false,
+        outlineColor: '#000000',
         showBitmap: false,
         showProjections: false,
     },
@@ -124,12 +125,13 @@ export default (state = defaultState, action: AnyAction): SettingsState => {
                 },
             };
         }
-        case SettingsActionTypes.CHANGE_SHAPES_BLACK_BORDERS: {
+        case SettingsActionTypes.CHANGE_SHAPES_OUTLINED_BORDERS: {
             return {
                 ...state,
                 shapes: {
                     ...state.shapes,
-                    blackBorders: action.payload.blackBorders,
+                    outlined: action.payload.outlined,
+                    outlineColor: action.payload.color,
                 },
             };
         }

@@ -11,7 +11,12 @@
     const PluginRegistry = require('./plugins');
     const loggerStorage = require('./logger-storage');
     const serverProxy = require('./server-proxy');
-    const { getFrame, getRanges, getPreview } = require('./frames');
+    const {
+        getFrame,
+        getRanges,
+        getPreview,
+        clear: clearFrames,
+    } = require('./frames');
     const { ArgumentError } = require('./exceptions');
     const { TaskStatus } = require('./enums');
     const { Label } = require('./labels');
@@ -112,6 +117,13 @@
                         return result;
                     },
 
+                    async searchEmpty(frameFrom, frameTo) {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.annotations.searchEmpty,
+                                frameFrom, frameTo);
+                        return result;
+                    },
+
                     async select(objectStates, x, y) {
                         const result = await PluginRegistry
                             .apiWrapper.call(this,
@@ -204,6 +216,11 @@
                     async redo(count = 1) {
                         const result = await PluginRegistry
                             .apiWrapper.call(this, prototype.actions.redo, count);
+                        return result;
+                    },
+                    async freeze(frozen) {
+                        const result = await PluginRegistry
+                            .apiWrapper.call(this, prototype.actions.freeze, frozen);
                         return result;
                     },
                     async clear() {
@@ -370,6 +387,18 @@
                 * @method search
                 * @memberof Session.annotations
                 * @param {ObjectFilter} [filter = []] filter
+                * @param {integer} from lower bound of a search
+                * @param {integer} to upper bound of a search
+                * @returns {integer|null} a frame that contains objects according to the filter
+                * @throws {module:API.cvat.exceptions.PluginError}
+                * @throws {module:API.cvat.exceptions.ArgumentError}
+                * @instance
+                * @async
+            */
+            /**
+                * Find the nearest empty frame without any annotations
+                * @method searchEmpty
+                * @memberof Session.annotations
                 * @param {integer} from lower bound of a search
                 * @param {integer} to upper bound of a search
                 * @returns {integer|null} a frame that contains objects according to the filter
@@ -582,6 +611,14 @@
                 * @async
             */
             /**
+                * Freeze history (do not save new actions)
+                * @method freeze
+                * @memberof Session.actions
+                * @throws {module:API.cvat.exceptions.PluginError}
+                * @instance
+                * @async
+            */
+            /**
                 * Remove all actions from history
                 * @method clear
                 * @memberof Session.actions
@@ -769,6 +806,7 @@
                 group: Object.getPrototypeOf(this).annotations.group.bind(this),
                 clear: Object.getPrototypeOf(this).annotations.clear.bind(this),
                 search: Object.getPrototypeOf(this).annotations.search.bind(this),
+                searchEmpty: Object.getPrototypeOf(this).annotations.searchEmpty.bind(this),
                 upload: Object.getPrototypeOf(this).annotations.upload.bind(this),
                 select: Object.getPrototypeOf(this).annotations.select.bind(this),
                 import: Object.getPrototypeOf(this).annotations.import.bind(this),
@@ -793,6 +831,7 @@
             this.actions = {
                 undo: Object.getPrototypeOf(this).actions.undo.bind(this),
                 redo: Object.getPrototypeOf(this).actions.redo.bind(this),
+                freeze: Object.getPrototypeOf(this).actions.freeze.bind(this),
                 clear: Object.getPrototypeOf(this).actions.clear.bind(this),
                 get: Object.getPrototypeOf(this).actions.get.bind(this),
             };
@@ -831,18 +870,17 @@
         * @extends Session
     */
     class Task extends Session {
-        /**
-            * In a fact you need use the constructor only if you want to create a task
-            * @param {object} initialData - Object which is used for initalization
-            * <br> It can contain keys:
-            * <br> <li style="margin-left: 10px;"> name
-            * <br> <li style="margin-left: 10px;"> assignee
-            * <br> <li style="margin-left: 10px;"> bug_tracker
-            * <br> <li style="margin-left: 10px;"> z_order
-            * <br> <li style="margin-left: 10px;"> labels
-            * <br> <li style="margin-left: 10px;"> segment_size
-            * <br> <li style="margin-left: 10px;"> overlap
-        */
+    /**
+        * In a fact you need use the constructor only if you want to create a task
+        * @param {object} initialData - Object which is used for initalization
+        * <br> It can contain keys:
+        * <br> <li style="margin-left: 10px;"> name
+        * <br> <li style="margin-left: 10px;"> assignee
+        * <br> <li style="margin-left: 10px;"> bug_tracker
+        * <br> <li style="margin-left: 10px;"> labels
+        * <br> <li style="margin-left: 10px;"> segment_size
+        * <br> <li style="margin-left: 10px;"> overlap
+    */
         constructor(initialData) {
             super();
             const data = {
@@ -858,7 +896,6 @@
                 bug_tracker: undefined,
                 overlap: undefined,
                 segment_size: undefined,
-                z_order: undefined,
                 image_quality: undefined,
                 start_frame: undefined,
                 stop_frame: undefined,
@@ -867,6 +904,7 @@
                 data_compressed_chunk_type: undefined,
                 data_original_chunk_type: undefined,
                 use_zip_chunks: undefined,
+                use_cache: undefined,
             };
 
             for (const property in data) {
@@ -1069,24 +1107,6 @@
                     },
                 },
                 /**
-                    * @name zOrder
-                    * @type {boolean}
-                    * @memberof module:API.cvat.classes.Task
-                    * @instance
-                    * @throws {module:API.cvat.exceptions.ArgumentError}
-                */
-                zOrder: {
-                    get: () => data.z_order,
-                    set: (zOrder) => {
-                        if (typeof (zOrder) !== 'boolean') {
-                            throw new ArgumentError(
-                                'Value must be a boolean',
-                            );
-                        }
-                        data.z_order = zOrder;
-                    },
-                },
-                /**
                     * @name imageQuality
                     * @type {integer}
                     * @memberof module:API.cvat.classes.Task
@@ -1120,6 +1140,24 @@
                             );
                         }
                         data.use_zip_chunks = useZipChunks;
+                    },
+                },
+                /**
+                    * @name useCache
+                    * @type {boolean}
+                    * @memberof module:API.cvat.classes.Task
+                    * @instance
+                    * @throws {module:API.cvat.exceptions.ArgumentError}
+                */
+                useCache: {
+                    get: () => data.use_cache,
+                    set: (useCache) => {
+                        if (typeof (useCache) !== 'boolean') {
+                            throw new ArgumentError(
+                                'Value must be a boolean',
+                            );
+                        }
+                        data.use_cache = useCache;
                     },
                 },
                 /**
@@ -1333,6 +1371,7 @@
                 group: Object.getPrototypeOf(this).annotations.group.bind(this),
                 clear: Object.getPrototypeOf(this).annotations.clear.bind(this),
                 search: Object.getPrototypeOf(this).annotations.search.bind(this),
+                searchEmpty: Object.getPrototypeOf(this).annotations.searchEmpty.bind(this),
                 upload: Object.getPrototypeOf(this).annotations.upload.bind(this),
                 select: Object.getPrototypeOf(this).annotations.select.bind(this),
                 import: Object.getPrototypeOf(this).annotations.import.bind(this),
@@ -1359,6 +1398,7 @@
             this.actions = {
                 undo: Object.getPrototypeOf(this).actions.undo.bind(this),
                 redo: Object.getPrototypeOf(this).actions.redo.bind(this),
+                freeze: Object.getPrototypeOf(this).actions.freeze.bind(this),
                 clear: Object.getPrototypeOf(this).actions.clear.bind(this),
                 get: Object.getPrototypeOf(this).actions.get.bind(this),
             };
@@ -1437,6 +1477,7 @@
         saveAnnotations,
         hasUnsavedChanges,
         searchAnnotations,
+        searchEmptyFrame,
         mergeAnnotations,
         splitAnnotations,
         groupAnnotations,
@@ -1450,6 +1491,7 @@
         exportDataset,
         undoActions,
         redoActions,
+        freezeHistory,
         clearActions,
         getActions,
         closeSession,
@@ -1624,6 +1666,29 @@
         return result;
     };
 
+    Job.prototype.annotations.searchEmpty.implementation = function (frameFrom, frameTo) {
+        if (!Number.isInteger(frameFrom) || !Number.isInteger(frameTo)) {
+            throw new ArgumentError(
+                'The start and end frames both must be an integer',
+            );
+        }
+
+        if (frameFrom < this.startFrame || frameFrom > this.stopFrame) {
+            throw new ArgumentError(
+                'The start frame is out of the job',
+            );
+        }
+
+        if (frameTo < this.startFrame || frameTo > this.stopFrame) {
+            throw new ArgumentError(
+                'The stop frame is out of the job',
+            );
+        }
+
+        const result = searchEmptyFrame(this, frameFrom, frameTo);
+        return result;
+    };
+
     Job.prototype.annotations.save.implementation = async function (onUpdate) {
         const result = await saveAnnotations(this, onUpdate);
         return result;
@@ -1704,6 +1769,11 @@
         return result;
     };
 
+    Job.prototype.actions.freeze.implementation = function (frozen) {
+        const result = freezeHistory(this, frozen);
+        return result;
+    };
+
     Job.prototype.actions.clear.implementation = function () {
         const result = clearActions(this);
         return result;
@@ -1720,6 +1790,7 @@
     };
 
     Task.prototype.close.implementation = function closeTask() {
+        clearFrames(this.id);
         for (const job of this.jobs) {
             closeSession(job);
         }
@@ -1736,7 +1807,6 @@
                 assignee: this.assignee ? this.assignee.id : null,
                 name: this.name,
                 bug_tracker: this.bugTracker,
-                z_order: this.zOrder,
                 labels: [...this.labels.map((el) => el.toJSON())],
             };
 
@@ -1747,7 +1817,6 @@
         const taskSpec = {
             name: this.name,
             labels: this.labels.map((el) => el.toJSON()),
-            z_order: Boolean(this.zOrder),
         };
 
         if (typeof (this.bugTracker) !== 'undefined') {
@@ -1766,6 +1835,7 @@
             remote_files: this.remoteFiles,
             image_quality: this.imageQuality,
             use_zip_chunks: this.useZipChunks,
+            use_cache: this.useCache,
         };
 
         if (typeof (this.startFrame) !== 'undefined') {
@@ -1887,6 +1957,29 @@
         return result;
     };
 
+    Task.prototype.annotations.searchEmpty.implementation = function (frameFrom, frameTo) {
+        if (!Number.isInteger(frameFrom) || !Number.isInteger(frameTo)) {
+            throw new ArgumentError(
+                'The start and end frames both must be an integer',
+            );
+        }
+
+        if (frameFrom < 0 || frameFrom >= this.size) {
+            throw new ArgumentError(
+                'The start frame is out of the task',
+            );
+        }
+
+        if (frameTo < 0 || frameTo >= this.size) {
+            throw new ArgumentError(
+                'The stop frame is out of the task',
+            );
+        }
+
+        const result = searchEmptyFrame(this, frameFrom, frameTo);
+        return result;
+    };
+
     Task.prototype.annotations.save.implementation = async function (onUpdate) {
         const result = await saveAnnotations(this, onUpdate);
         return result;
@@ -1964,6 +2057,11 @@
 
     Task.prototype.actions.redo.implementation = function (count) {
         const result = redoActions(this, count);
+        return result;
+    };
+
+    Task.prototype.actions.freeze.implementation = function (frozen) {
+        const result = freezeHistory(this, frozen);
         return result;
     };
 

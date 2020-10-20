@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "cypress:run:chrome": "cypress run --env coverage=false --headless --browser chrome",
+    "cypress:run:firefox": "cypress run --env coverage=false --headless --browser firefox"
+  },
+  "devDependencies": {
+    "@cypress/code-coverage": "^3.8.1",
+    "cypress": "^5.0.0",
+    "cypress-file-upload": "^4.1.1"
+  },
+  "dependencies": {
+    "archiver": "^5.0.0",
+    "jimp": "^0.14.0"
+  }
+}

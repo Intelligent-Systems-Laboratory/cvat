@@ -216,25 +216,40 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
         //         coord = 0
         //     }
         // }
+        // fix
+        const canvasMaxWidth = 1000;
+        const canvasMaxHeight = 550;
 
-
+        var bboxMaxPercent = 0.8;
+        var scaleFactor = 1;
+        if (height >= canvasMaxHeight*bboxMaxPercent){
+            console.log('exceeded max height');
+            while(height/bboxMaxPercent>canvasMaxHeight/scaleFactor){
+                scaleFactor-=0.01;
+            }
+        }
         if(canvas){
-            canvas.width = 700;
-            canvas.height = (1080/1920)*700;
-
+            canvas.width = canvasMaxWidth;
+            canvas.height = canvasMaxHeight;
+            // canvas.height = Math.max((1080/1920)*700+height-200,(1080/1920)*700);
+            // canvas.height = 550;
+            console.log('canvas width, height',canvas.width,canvas.height);
             // compute the background of the canvas since we cannot display the whole canvas
-
-            var background:number[] = [width/2 + points[0] - (canvas.width/2),(height/2)+points[1] - (canvas.height/2),(width/2) + points[0] + (canvas.width/2), (height/2) + points[1] + (canvas.height/2)]
+            var bgWidth = canvas.width/scaleFactor;
+            var bgHeight = canvas.height/scaleFactor;
+            var background:number[] = [points[0]+width/2-bgWidth/2,points[1]+height/2-bgHeight/2,bgWidth,bgHeight]
             console.log('background',background);
             let ctx = canvas.getContext('2d');
             if(ctx && outputImg){
                 ctx.fillStyle='gray';
                 ctx.fillRect(0,0,canvas.width,canvas.height);
-                ctx.drawImage(outputImg,background[0],background[1],700,(1080/1920)*700,0,0,canvas.width,canvas.height);
+                ctx.drawImage(outputImg,background[0],background[1],background[2],background[3],0,0,canvas.width,canvas.height);
                 ctx.beginPath();
                 ctx.lineWidth = 6;
                 ctx.strokeStyle = "red";
-                ctx.rect(canvas.width/2 - width/2, canvas.height/2-height/2, width,height);
+                var pX = points[0]-background[0];
+                var pY = points[1]-background[1];
+                ctx.rect(pX*scaleFactor,pY*scaleFactor, width*scaleFactor,height*scaleFactor);
                 ctx.stroke();
 
             }

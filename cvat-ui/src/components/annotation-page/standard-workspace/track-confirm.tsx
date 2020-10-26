@@ -52,7 +52,7 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
             onCancel={cancel}
             title='AutoTrack'
             visible={visible}
-            width = {750}
+            width = {1050}
         >
             {/* <div className='cvat-track-confirm'>
                 <Text>Track up to how many frames? 0 for indefinite.</Text>

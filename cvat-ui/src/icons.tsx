@@ -51,6 +51,7 @@ import SVGRotateCCIcon from './assets/rotatecc-icon.svg'; // EDITED FOR Help sid
 import SVGConditionsIcon from './assets/conditions-icon.svg'; // ISL GLOBAL ATTRIBUTES
 import SVGColorizeIcon from './assets/colorize-icon.svg';
 import SVGAITools from './assets/ai-tools-icon.svg';
+import SVGSettingsIcon from './assets/settings-icon.svg';
 
 
 export const CVATLogo = React.memo(
@@ -199,4 +200,7 @@ export const AIToolsIcon = React.memo(
 );
 export const ColorizeIcon = React.memo(
     (): JSX.Element => <SVGColorizeIcon />,
+);
+export const SettingsIcon = React.memo(
+    (): JSX.Element => <SVGSettingsIcon />,
 );

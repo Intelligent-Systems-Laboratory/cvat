@@ -9,16 +9,17 @@ import Select from 'antd/lib/select';
 import Button from 'antd/lib/button';
 
 import { Workspace } from 'reducers/interfaces';
-import { InfoIcon, FullscreenIcon } from 'icons';
+import { InfoIcon, FullscreenIcon ,SettingsIcon} from 'icons';
 
 interface Props {
     workspace: Workspace;
     showStatistics(): void;
     changeWorkspace(workspace: Workspace): void;
+    jobInstance:any;
 }
 
 function RightGroup(props: Props): JSX.Element {
-    const { showStatistics, changeWorkspace, workspace } = props;
+    const { showStatistics, changeWorkspace, workspace,jobInstance} = props;
 
     return (
         <Col className='cvat-annotation-header-right-group'>
@@ -55,6 +56,18 @@ function RightGroup(props: Props): JSX.Element {
                     ))}
                 </Select>
             </div>
+            <Button
+                type='link'
+                className='cvat-annotation-header-button'
+                onClick={(): void => {
+                    console.log('Advance options');
+                    console.log({jobInstance});
+
+            }}
+            >
+                <Icon component={SettingsIcon} />
+                Added Features
+            </Button>
         </Col>
     );
 }

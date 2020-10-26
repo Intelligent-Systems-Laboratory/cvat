@@ -90,12 +90,13 @@ interface DispatchToProps {
     searchAnnotations(sessionInstance: any, frameFrom: number, frameTo: number): void;
     searchEmptyFrame(sessionInstance: any, frameFrom: number, frameTo: number): void;
     changeWorkspace(workspace: Workspace): void;
-    closeJob(): void;
+    // ISL GLOBAL ATTRIBUTES
     onEditGlobalAttributes(globalAttributes:any): void;
     onEditLabels(jobInstance:any,attributes:any,selected:any):void;
     onFetchAttributes(jobInstance:any):void;
     onSaveAttributes(jobInstance:any,attributes:any, selected:any): void;
     onSetGlobalAttributesVisibility(visibility:boolean):void;
+    // ISL END
 }
 function mapStateToProps(state: CombinedState): StateToProps {
     const {
@@ -614,7 +615,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
     private firstTime: boolean = true;
     private requireReload: boolean = false;
     private addAttribute: boolean = false;
-    private dropDownAttributes = {};
+    private dropDownAttributes:any = {};
     private fetchedAttributesFromServer:boolean = false;
     private globalAttributesModal = Modal.confirm({
         title: <Text className='cvat-title'>Global Attributes</Text>,
@@ -650,7 +651,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         // console.log(this.AllAttributes);
     }
     private initDropDown = (): void =>{
-        this.dropDownAttributes ={
+        this.dropDownAttributes = {
             vehicles:[
                 {
                     name: 'type',
@@ -779,17 +780,20 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         this.globalAttributesSelected = {};
         let globalAttributesWithFrameRange: any = {};
         let globalAttributesSelectedWithFrameRange: any = {};
+
+        this.initDropDown();
+
         // Assign global attributes
-        console.log("init",jobInstance.task.labels[0]);
-        for (var i = 0; i < 1; i++) {
+        // console.log("init",jobInstance.task.labels[0]);
+        for (var i = 0; i < jobInstance.task.labels[0].attributes.length; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
             if (jobInstance.task.labels[0].attributes[i].inputType == "select") {
                 this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
                 this.globalAttributesSelected[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].defaultValue;
             }
         }
-        console.log(this.globalAttributes);
-        console.log(this.globalAttributesSelected);
+        // console.log(this.globalAttributes);
+        // console.log(this.globalAttributesSelected);
         this.frame_start = 0;
         this.frame_end = jobInstance.stopFrame;
         globalAttributesWithFrameRange = {
@@ -812,13 +816,14 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
 
         // console.log('Initiate global attributes modal complete');
     }
+
     private spatial:string = "open";
     private useCase:string = 'counting';
     private subject:string = 'vehicles';
     private changeSpatialTag = (tag_str: string): void => {
         this.currentSpatialTag = tag_str;
-        console.log('tag=',this.currentSpatialTag);
-        console.log (this.AllAttributes);
+        // console.log('tag=',this.currentSpatialTag);
+        // console.log (this.AllAttributes);
         //spatialprops
         if (this.currentSpatialTag == "open") {
             document.getElementById('spatialTagOpen').className = "radioclicked";
@@ -1026,20 +1031,24 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             visible: false
         });
 
-        console.log('cancel');
+        // console.log('cancel');
     }
     private handleSelectAttribute = (attribute: any, index: any, event:any): void => {
-        console.log('attribute',attribute);
-        console.log(index);
-        //var x = document.getElementById('SelectAttribute'+attribute);
-        console.log(event.label);
-        console.log(this.globalAttributes);
-        console.log(this.AllAttributes);
-        console.log(this.AllAttributeNames);
-        console.log(this.dropdownEntries);
+        this.updateDropDown();
+
+        // console.log('attribute',attribute);
+        // console.log(index);
+        // //var x = document.getElementById('SelectAttribute'+attribute);
+        // console.log('event.label',event.label);
+        // console.log(this.globalAttributes);
+        // console.log('AllAttributes',this.AllAttributes);
+        // console.log('AllAttributeNames',this.AllAttributeNames);
+        // console.log('dropdownEntries',this.dropdownEntries);
+
+
         if(index == -1){
             //index == -1 means Other is selected
-            console.log('Other selected');
+            // console.log('Other selected');
             let result = prompt("Input new attribute (maximum of 5 only)");
             if (result != null) {
                 this.globalAttributes[result] = [];
@@ -1049,39 +1058,53 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         }else{
 
             var ObjectOrder = Object.keys(this.globalAttributes);
-            console.log(ObjectOrder, 'FRESH');
-            console.log(ObjectOrder.indexOf(attribute));
+            // console.log(ObjectOrder, 'FRESH');
+            // console.log(ObjectOrder.indexOf(attribute));
 
             if (ObjectOrder.indexOf(attribute)>-1){ // check if attribute does not exist in the current global attribute list
                 ObjectOrder[ObjectOrder.indexOf(attribute)] = event.label;
             }
-            else { // if it exist
+            else { // if it exists
                 ObjectOrder.push(event.label);
             }
             ObjectOrder =  Array.from(new Set(ObjectOrder));
-            console.log(ObjectOrder, 'NEW');
+            // console.log(ObjectOrder, 'NEW');
             if (event.label!==attribute && this.AllAttributes[event.label]){
+                // if the selected attribute in dropdown already exists in global attributes
                 this.globalAttributes[event.label] = this.AllAttributes[event.label];
                 delete this.globalAttributes[attribute];
+            }else{
+                this.addAttribute = false;
             }
             if (event.label!==attribute && !this.AllAttributes[event.label]){
+                // if the selected attribute in dropdown does NOT EXIST in global attributes
                 delete this.globalAttributes[attribute];
                 this.globalAttributes[event.label] = [];
+                for(const key in this.dropDownAttributes){
+                    // search for the choices of the attribute from this.dropDownAttributes
+                    // console.log('key',key);
+
+                    for(const attribute of this.dropDownAttributes[key]){
+                        console.log(attribute.name);
+                        if(attribute.name == event.label){
+                            console.log('FOUND',attribute.value);
+                            this.globalAttributes[event.label] = attribute.value;
+                        }
+                    }
+
+                }
             }
             else{
                 this.globalAttributes[event.label] = [];
             }
-            // this.addAttribute = false;
-            console.log(this.globalAttributes);
+
             this.globalAttributes = this.preferredOrder(this.globalAttributes,Array.from(new Set(ObjectOrder)));
-            console.log(this.globalAttributes);
+
         }
 
 
         this.updateSelectedAttributeValues(0);
         this.updateGlobalAttributesModal();
-        console.log(this.globalAttributes);
-
     }
 
     private updateSelectedAttributeValues = (value: any): void => {
@@ -1089,7 +1112,6 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             if (this.AllAttributes[key]) {
                 this.globalAttributes[key] = this.AllAttributes[key];
                 if(this.currentSpatialTag=='open'){
-                    console.log
                     if(this.globalAttributes.hasOwnProperty('Lighting')){
                         this.globalAttributes['Lighting'] = ['Daylight', 'Night', 'Sunrise/Sunset', 'Dawn/Dusk', 'Noon/Midday'];
                     }
@@ -1262,7 +1284,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                     x
                             </button>
                 <Row>
-                    <Text className='cvat-title'>{key}</Text>
+                    <Text className='cvat-title' key={key}>{key}</Text>
                     <div>
                 <Tooltip title='Change attribute'>
                 {/* <Select
@@ -1341,7 +1363,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                         placeholder='Select an attribute'
                         onChange={(value: SelectValue) =>
                             {
-                                console.log(value);
+                                // console.log(value);
                                 this.handleSelectAttribute('-new',this.dropdownEntries.indexOf(value.key),value as String);
                             }
                         }
@@ -1349,12 +1371,16 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                         id = {'SelectAttribute'+"key"}
                         style={{ width: 200 }}
                     >
-                        {this.dropdownEntries.map((label: any,index:number): JSX.Element => (
-                            <Select.Option key={index} value={`${label}`}>
+                        {this.dropdownEntries.map((label: any,index:number): JSX.Element|undefined => {
+                            if(!this.globalAttributes[label]){
+                                return (
+                                    <Select.Option key={index} value={`${label}`}>
 
-                                {label}
-                            </Select.Option>
-                        ))
+                                        {label}
+                                    </Select.Option>
+                                )
+                            }
+                        })
                         }
                         <Select.Option key={'Other'} value={'Other'}>
                             Other
@@ -1398,7 +1424,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
 
         if (value) {
             if (value == '+') {
-                console.log('+ pressed');
+                // console.log('+ pressed');
                 let origLength = 0;
                 let currentLength = this.globalAttributes[key].length;
                 // check if the added choices exceeds the limit (currently, the limit is 5)
@@ -1458,7 +1484,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         } else{
             this.onSaveAnnotation();
         }
-                console.log('calling save2' );
+                // console.log('calling save2' );
             }
     // ISL END
 
@@ -1504,7 +1530,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         } = this.props;
         onSetGlobalAttributesVisibility(true);
         this.showGlobalAttributesModal();
-        console.log('Open Modal');
+        // console.log('Open Modal');
     }
 
     private onEditGlobalAttributes = (): void => {

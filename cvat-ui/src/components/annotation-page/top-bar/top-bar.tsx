@@ -58,6 +58,7 @@ interface Props {
     onGlobalIconClick():void;
     onEditGlobalAttributes(): void;
     lastSavePopup(event: any ): void; // ISL Save-Popup
+    jobInstance:any; // mabe
 }
 
 export default function AnnotationTopBarComponent(props: Props): JSX.Element {
@@ -103,6 +104,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         onRedoClick,
         onGlobalIconClick,
         lastSavePopup, // ISL Save-Popup
+        jobInstance, // mabe
     } = props;
 
     return (
@@ -159,6 +161,7 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                 workspace={workspace}
                 changeWorkspace={changeWorkspace}
                 showStatistics={showStatistics}
+                jobInstance={jobInstance}
             />
             <GlobalModalContainer />
         </Row>

@@ -240,7 +240,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
 
     public componentDidMount(): void {
         const { autoSaveInterval, history, jobInstance } = this.props;
-        
+
         //ISL GLOBAL ATTRIBUTES
         const { onFetchAttributes,
             globalAttributesDB
@@ -284,7 +284,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         if (frameNumber != prevProps.frameNumber) {
             // If the frame changes, get the attributes for that frame.
             this.fetchAttributeForCurrentFrame(frameNumber);
-
+            console.log('fetchAttributeForCurrentFrame');
         }
 
         if(globalAttributesDB != prevProps.globalAttributesDB){
@@ -780,13 +780,16 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         let globalAttributesWithFrameRange: any = {};
         let globalAttributesSelectedWithFrameRange: any = {};
         // Assign global attributes
+        console.log("init",jobInstance.task.labels[0]);
         for (var i = 0; i < 1; i++) {
             // Initiate global attributes for the modal. e.g. name = 'weather', values = ['clear', 'foggy', ...]
-            // if (jobInstance.task.labels[0].attributes[i].inputType !== "") {
-            //     this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
-            //     this.globalAttributesSelected[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].defaultValue;
-            // }
+            if (jobInstance.task.labels[0].attributes[i].inputType == "select") {
+                this.globalAttributes[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].values.slice();
+                this.globalAttributesSelected[jobInstance.task.labels[0].attributes[i].name] = jobInstance.task.labels[0].attributes[i].defaultValue;
+            }
         }
+        console.log(this.globalAttributes);
+        console.log(this.globalAttributesSelected);
         this.frame_start = 0;
         this.frame_end = jobInstance.stopFrame;
         globalAttributesWithFrameRange = {
@@ -903,8 +906,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
 
     private fetchAttributeForCurrentFrame = (frame_num: number): void => {
         // console.log('fetch global attributes for ', frame_num);
-        this.globalAttributes = {};
-        this.globalAttributesSelected = {};
+        // this.globalAttributes = {};
+        // this.globalAttributesSelected = {};
         for (let globalAttributes of this.globalAttributesDB) {
             if (frame_num >= globalAttributes['frame_start'] && frame_num <= globalAttributes['frame_end']) {
                 // this.globalAttributes = globalAttributes['attributes']; //checking
@@ -935,7 +938,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
 
         // let data = JSON.stringify(jobInstance.task.labels);
         // console.log(data);
-
+        // console.log('handleOk',this.globalAttributes);
         let attributesLength = Object.keys(this.globalAttributes).length;
         let currentLength = Object.keys(this.globalAttributesSelected).length;
         let hasEmptyValues = false;
@@ -988,7 +991,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                 console.log('Valid range:',valid_range);
                 console.log('hasEmptyValues:',hasEmptyValues);
 
-            if (attributesLength != currentLength || (hasEmptyValues || currentLength == 0)) {
+            if (attributesLength > currentLength || (hasEmptyValues || currentLength == 0)) {
                 notification.error({
                     message: 'Could not change global attributes',
                     description: 'Some attributes are not selected.',
@@ -1026,7 +1029,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
         console.log('cancel');
     }
     private handleSelectAttribute = (attribute: any, index: any, event:any): void => {
-        console.log(attribute);
+        console.log('attribute',attribute);
         console.log(index);
         //var x = document.getElementById('SelectAttribute'+attribute);
         console.log(event.label);
@@ -1049,10 +1052,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             console.log(ObjectOrder, 'FRESH');
             console.log(ObjectOrder.indexOf(attribute));
 
-            if (ObjectOrder.indexOf(attribute)>-1){
+            if (ObjectOrder.indexOf(attribute)>-1){ // check if attribute does not exist in the current global attribute list
                 ObjectOrder[ObjectOrder.indexOf(attribute)] = event.label;
             }
-            else {
+            else { // if it exist
                 ObjectOrder.push(event.label);
             }
             ObjectOrder =  Array.from(new Set(ObjectOrder));
@@ -1071,7 +1074,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             // this.addAttribute = false;
             console.log(this.globalAttributes);
             this.globalAttributes = this.preferredOrder(this.globalAttributes,Array.from(new Set(ObjectOrder)));
-        console.log(this.globalAttributes);
+            console.log(this.globalAttributes);
         }
 
 
@@ -1262,10 +1265,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                     <Text className='cvat-title'>{key}</Text>
                     <div>
                 <Tooltip title='Change attribute'>
-                <Select
+                {/* <Select
                         placeholder={key}
                         onChange={(value: SelectValue) => (
-                            this.handleSelectAttribute(key,this.dropdownEntries.indexOf(value.key),value as String)
+                            this.handleSelectAttribute(key,this.dropdownEntries.indexOf(value.key),value as String);
                             )}
                         labelInValue
                         id = {'SelectAttribute'+key}
@@ -1280,7 +1283,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                         ))
 
                         }
-                    </Select>
+                    </Select> */}
                 </Tooltip>
             </div>
                 </Row>
@@ -1339,7 +1342,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                         onChange={(value: SelectValue) =>
                             {
                                 console.log(value);
-                                this.handleSelectAttribute('-new',this.dropdownEntries.indexOf(value.key),value as String)
+                                this.handleSelectAttribute('-new',this.dropdownEntries.indexOf(value.key),value as String);
                             }
                         }
                         labelInValue
@@ -1500,22 +1503,15 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             onSetGlobalAttributesVisibility,
         } = this.props;
         onSetGlobalAttributesVisibility(true);
-        // const {frameNumber} = this.props;
-        // this.fetchAttributeForCurrentFrame(frameNumber);
-        // console.log('Frame ', frameNumber);
-        // console.log('attributes: ', this.globalAttributes);
-        // console.log('selected: ', this.globalAttributesSelected);
-        // this.updateGlobalAttributesModal();
-
-        // this.showGlobalAttributesModal();
-
-        // this.waitPageToCompleteLoading();
+        this.showGlobalAttributesModal();
+        console.log('Open Modal');
     }
 
     private onEditGlobalAttributes = (): void => {
         const { onEditGlobalAttributes } = this.props;
         // console.log(this.globalAttributesSelected);
         onEditGlobalAttributes(this.globalAttributesSelected);
+
     }
     // ISL END
 
@@ -1680,7 +1676,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                     onRedoClick={this.redo}
                     lastSavePopup={this.lastSavePopup} // ISL Save-Popup
                     onEditGlobalAttributes={this.onEditGlobalAttributes} // ISL GLOBAL ATTRIBUTES
-                    onGlobalIconClick={this.onGlobalIconClick}
+                    onGlobalIconClick={this.onGlobalIconClick} // ISL GLOBAL ATTRIBUTES
+                    jobInstance={jobInstance} // mabe
 
                 />
             </>

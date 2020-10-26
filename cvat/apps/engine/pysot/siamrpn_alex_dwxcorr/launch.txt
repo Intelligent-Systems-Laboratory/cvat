@@ -1,0 +1,4 @@
+python tools/demo.py \
+    --config experiments/siamrpn_alex_dwxcorr/config.yaml \
+    --snapshot experiments/siamrpn_alex_dwxcorr/model.pth \
+    --video_name videos/ch005_20190813_1500_000.mp4

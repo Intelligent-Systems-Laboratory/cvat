@@ -61,6 +61,15 @@ from cvat.apps.engine.efficientcut import efficientcut #ISL EFFICIENTCUT
 
 import json # ISL GLOBAL ATTRIBUTES
 import time # ISL TESTING
+
+# mabe start
+from configparser import ConfigParser
+config = ConfigParser()
+path = os.path.abspath("./")
+config_path = os.path.join(path,'cvat/apps/engine/config.ini')
+config.read(config_path)
+# mabe end
+
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
 # We map the required paramater explicitly and add it into query arguments
@@ -397,6 +406,14 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         xbr = int(request.query_params.get('x2', None))
         ybr = int(request.query_params.get('y2', None))
         data = [0,0,100,100]
+        print(config.sections())
+        if(not config.getboolean('main','autofit')):
+            # autofit is disable
+            print('AUTOFIT IS DISABLED')
+            new_coords = {
+                    "points" : [xtl, ytl, xbr, ybr],
+                }
+            return Response(new_coords)
 
         # ADD code for getting the image here
         db_task = self.get_object()
@@ -496,8 +513,9 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                 data = (xtl, ytl, xbr-xtl, ybr-ytl)
             print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
             start_csrt = current_milli_time()
-            results = cvat.apps.engine.tracker.track(frameList, data)
-
+            print(data)
+            results = cvat.apps.engine.tracker.track_pysot(frameList, data)
+            print('results length',len(results))
             # enable/disable grabcut on the results
             # for result,frame in zip(results,frameList):
             #     data, dim = grabcut.run(frame,result[0],result[1],result[2],result[3])

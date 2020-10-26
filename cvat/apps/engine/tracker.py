@@ -1,6 +1,22 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 # import the necessary packages
 import imutils
 import cv2
+
+import os
+import argparse
+
+# import cv2
+import torch
+import numpy as np
+from glob import glob
+
+from cvat.apps.engine.pysot.core.config import cfg
+from cvat.apps.engine.pysot.models.model_builder import ModelBuilder
+from cvat.apps.engine.pysot.tracker.tracker_builder import build_tracker
 
 def track(frameList, initBB):
     start = 0
@@ -23,7 +39,58 @@ def track(frameList, initBB):
             if success:
                 (x, y, w, h) = [int(v) for v in box]
                 coords.append([x, y, x + w, y + h])
-        
+
         start = start + 1
-    
+
+    return coords
+
+
+def track_pysot(frameList, initBB):
+
+    path = os.path.abspath("./")
+    config_path = os.path.join(path,'cvat/apps/engine/pysot/siamrpn_alex_dwxcorr/config.yaml')
+    model_path = os.path.join(path,'cvat/apps/engine/pysot/siamrpn_alex_dwxcorr/model.pth')
+    coords = []
+    # load config
+    cfg.merge_from_file(config_path)
+    cfg.CUDA = torch.cuda.is_available() and cfg.CUDA
+    device = torch.device('cuda')
+
+    # create model
+    model = ModelBuilder()
+
+    # load model
+    model.load_state_dict(torch.load(model_path,
+        map_location=lambda storage, loc: storage.cpu()))
+    model.eval().to(device)
+
+    # build tracker
+    tracker = build_tracker(model)
+
+    first_frame = True
+
+    for frame in frameList:
+        if first_frame:
+            tracker.init(frame, initBB)
+            first_frame = False
+        else:
+            outputs = tracker.track(frame)
+            if 'polygon' in outputs:
+                polygon = np.array(outputs['polygon']).astype(np.int32)
+                # print(polygon)
+                # cv2.polylines(frame, [polygon.reshape((-1, 1, 2))],
+                #               True, (0, 255, 0), 3)
+                mask = ((outputs['mask'] > cfg.TRACK.MASK_THERSHOLD) * 255)
+                mask = mask.astype(np.uint8)
+                mask = np.stack([mask, mask*255, mask]).transpose(1, 2, 0)
+                frame = cv2.addWeighted(frame, 0.77, mask, 0.23, -1)
+            else:
+                bbox = list(map(int, outputs['bbox']))
+                coords.append([bbox[0],bbox[1],bbox[0]+bbox[2],bbox[1]+bbox[3]])
+                # print(bbox)
+                # cv2.rectangle(frame, (bbox[0], bbox[1]),
+                #               (bbox[0]+bbox[2], bbox[1]+bbox[3]),
+                #               (0, 255, 0), 3)
+            # cv2.imshow(video_name, frame)
+            # cv2.waitKey(40)
     return coords

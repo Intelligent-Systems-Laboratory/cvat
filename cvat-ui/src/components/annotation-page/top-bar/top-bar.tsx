@@ -14,6 +14,7 @@ import RightGroup from './right-group';
 import PlayerNavigation from './player-navigation';
 import PlayerButtons from './player-buttons';
 import GlobalModalContainer from 'containers/annotation-page/top-bar/global-attributes-modal';
+import TogglesModalContainer from 'containers/annotation-page/top-bar/toggles-modal';
 
 interface Props {
     playing: boolean;
@@ -59,6 +60,10 @@ interface Props {
     onEditGlobalAttributes(): void;
     lastSavePopup(event: any ): void; // ISL Save-Popup
     jobInstance:any; // mabe
+    // ISL FEATURES TOGGLE
+    featuresToggle: any;
+    showFeaturesToggle(visibility:boolean):void;
+    // ISL END
 }
 
 export default function AnnotationTopBarComponent(props: Props): JSX.Element {
@@ -105,6 +110,10 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         onGlobalIconClick,
         lastSavePopup, // ISL Save-Popup
         jobInstance, // mabe
+        // ISL FEATURES TOGGLE
+        featuresToggle,
+        showFeaturesToggle,
+        // ISL END
     } = props;
 
     return (
@@ -162,8 +171,11 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                 changeWorkspace={changeWorkspace}
                 showStatistics={showStatistics}
                 jobInstance={jobInstance}
+                featuresToggle={featuresToggle}
+                showFeaturesToggle={showFeaturesToggle}
             />
             <GlobalModalContainer />
+            <TogglesModalContainer />
         </Row>
     );
 }

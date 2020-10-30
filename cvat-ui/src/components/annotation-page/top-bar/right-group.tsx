@@ -10,17 +10,31 @@ import Button from 'antd/lib/button';
 
 import { Workspace } from 'reducers/interfaces';
 import { InfoIcon, FullscreenIcon ,SettingsIcon} from 'icons';
+import TogglesModal from './toggles-modal';
+import { switchToggleFeatureModal } from 'actions/annotation-actions';
 
 interface Props {
     workspace: Workspace;
     showStatistics(): void;
     changeWorkspace(workspace: Workspace): void;
     jobInstance:any;
+    featuresToggle:any;
+    showFeaturesToggle(visibility:boolean):void;
 }
 
 function RightGroup(props: Props): JSX.Element {
-    const { showStatistics, changeWorkspace, workspace,jobInstance} = props;
+    const { showStatistics, changeWorkspace, workspace,jobInstance,
+        // ISL FEATURES TOGGLE
+        featuresToggle,
+        showFeaturesToggle,
+        // ISL END
+    } = props;
+    // ISL FEATURES TOGGLE
+    function onCancel():void{
+        showFeaturesToggle(false);
+    }
 
+    // ISL END
     return (
         <Col className='cvat-annotation-header-right-group'>
             <Button
@@ -62,6 +76,7 @@ function RightGroup(props: Props): JSX.Element {
                 onClick={(): void => {
                     console.log('Advance options');
                     console.log({jobInstance});
+                    showFeaturesToggle(true);
 
             }}
             >
@@ -69,6 +84,7 @@ function RightGroup(props: Props): JSX.Element {
                 Added Features
             </Button>
         </Col>
+
     );
 }
 

@@ -441,6 +441,14 @@ export interface AnnotationState {
         current: number, // frame to display
     }
     // ISL END
+    // ISL FEATURES TOGGLES
+    featuresToggle:{
+        visible: boolean,
+        autofitState:boolean,
+        globalattributesState: boolean,
+    }
+    // ISL END
+
     aiToolsRef: MutableRefObject<any>;
 }
 

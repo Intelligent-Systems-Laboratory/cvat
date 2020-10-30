@@ -223,8 +223,20 @@ export enum AnnotationActionTypes {
     // ISL END
     INTERACT_WITH_CANVAS = 'INTERACT_WITH_CANVAS',
     SET_AI_TOOLS_REF = 'SET_AI_TOOLS_REF',
+    // ISL FEATURES TOGGLE
+    SWITCH_TOGGLE_FEATURES_MODAL = 'TOGGLE_FEATURES_MODAL',
+    // ISL END
 }
-
+// ISL FEATURES TOGGLE
+export function switchToggleFeatureModal(visible: boolean,): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_TOGGLE_FEATURES_MODAL,
+        payload: {
+            visible,
+        },
+    };
+}
+// ISL END
 // ISL MANUAL TRACKING
 export function switchTracking(tracking: boolean, trackedStateID: number | null): AnyAction {
     return {
@@ -541,7 +553,7 @@ export function saveAttributes(jobInstance: any,attributes:any,selected:any): An
 };
 //ISL END
 
-    
+
 
 export function saveLogsAsync(): ThunkAction {
     return async (dispatch: ActionCreator<Dispatch>) => {

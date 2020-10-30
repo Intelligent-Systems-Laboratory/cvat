@@ -137,10 +137,29 @@ const defaultState: AnnotationState = {
 
     },
     // ISL END
+    // ISL FEATURE TOGGLE
+    featuresToggle:{
+        visible: false,
+        autofitState:false,
+        globalattributesState: true,
+    }
+    // ISL END
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // ISL FEATURES MODAL
+        case AnnotationActionTypes.SWITCH_TOGGLE_FEATURES_MODAL: {
+            const { visible } = action.payload;
+            return {
+                ...state,
+                featuresToggle:{
+                    ...state.featuresToggle,
+                    visible:visible,
+                }
+            };
+        }
+        // ISL END
         // ISL TRACKING
         case AnnotationActionTypes.GET_FRAME: {
             const { image } = action.payload;

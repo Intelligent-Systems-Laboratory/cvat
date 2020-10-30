@@ -35,6 +35,7 @@ import {
     fetchAttributes,
     saveAttributes,
     setGlobalAttributesVisibility,
+    switchToggleFeatureModal,
     // ISL END
 } from 'actions/annotation-actions';
 import { Canvas } from 'cvat-canvas-wrapper';
@@ -78,6 +79,7 @@ interface StateToProps {
     keyMap: Record<string, ExtendedKeyMapOptions>;
     normalizedKeyMap: Record<string, string>;
     canvasInstance: Canvas;
+    featuresToggle:any; // ISL FEATURES TOGGLE
 }
 
 interface DispatchToProps {
@@ -96,6 +98,9 @@ interface DispatchToProps {
     onFetchAttributes(jobInstance:any):void;
     onSaveAttributes(jobInstance:any,attributes:any, selected:any): void;
     onSetGlobalAttributesVisibility(visibility:boolean):void;
+    // ISL END
+    // ISL FEATURES TOGGLE
+    showFeaturesToggle(visibility:boolean):void;
     // ISL END
 }
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -126,6 +131,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
             workspace,
             globalAttributesVisibility,
             globalAttributesDB,
+            featuresToggle:featuresToggle,
         },
         settings: {
             player: {
@@ -164,6 +170,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         canvasInstance,
         globalAttributesVisibility,
         globalAttributesDB,
+        featuresToggle,
     };
 }
 
@@ -212,6 +219,9 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         onSetGlobalAttributesVisibility(visibility:boolean): void{
             dispatch(setGlobalAttributesVisibility(visibility));
+        },
+        showFeaturesToggle(visibility:boolean): void{
+            dispatch(switchToggleFeatureModal(visibility));
         },
     };
 }
@@ -1564,6 +1574,8 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             keyMap,
             normalizedKeyMap,
             canvasInstance,
+            featuresToggle,
+            showFeaturesToggle,
         } = this.props;
 
         const preventDefault = (event: KeyboardEvent | undefined): void => {
@@ -1704,6 +1716,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
                     onEditGlobalAttributes={this.onEditGlobalAttributes} // ISL GLOBAL ATTRIBUTES
                     onGlobalIconClick={this.onGlobalIconClick} // ISL GLOBAL ATTRIBUTES
                     jobInstance={jobInstance} // mabe
+                    // ISL FEATURES TOGGLE
+                    featuresToggle={featuresToggle}
+                    showFeaturesToggle={showFeaturesToggle}
+                    // ISL END
 
                 />
             </>

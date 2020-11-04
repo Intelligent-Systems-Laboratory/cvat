@@ -35,6 +35,8 @@ import {
     fetchAttributes,
     saveAttributes,
     setGlobalAttributesVisibility,
+    // ISL END
+    // ISL FEATURES TOGGLE
     switchToggleFeatureModal,
     // ISL END
 } from 'actions/annotation-actions';
@@ -79,7 +81,9 @@ interface StateToProps {
     keyMap: Record<string, ExtendedKeyMapOptions>;
     normalizedKeyMap: Record<string, string>;
     canvasInstance: Canvas;
-    featuresToggle:any; // ISL FEATURES TOGGLE
+    // ISL FEATURES TOGGLE
+    featuresToggle:any;
+    // ISL END
 }
 
 interface DispatchToProps {
@@ -289,6 +293,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             autoSaveInterval,
             globalAttributesVisibility,
             globalAttributesDB,
+            featuresToggle,
         } = this.props;
 
         // ISL GLOBAL ATTRIBUTES
@@ -345,9 +350,10 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             }
         }
         // ISL GLOBAL ATTRIBUTES
-        if (this.firstTime && globalAttributesVisibility){
+        if (this.firstTime && globalAttributesVisibility && featuresToggle.globalattributesState){
             // Detect if there are previous annotations. Open the global attributes modal accordingly.
-            // console.log('FIRST TIME DETECTED');
+            console.log('FIRST TIME DETECTED');
+            console.log(featuresToggle.globalattributesState);
             this.showGlobalAttributesModal();
             this.waitPageToCompleteLoading();
         }

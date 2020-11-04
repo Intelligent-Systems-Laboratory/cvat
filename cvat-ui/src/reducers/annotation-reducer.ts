@@ -141,7 +141,7 @@ const defaultState: AnnotationState = {
     featuresToggle:{
         visible: false,
         autofitState:false,
-        globalattributesState: true,
+        globalattributesState: false,
     }
     // ISL END
 };
@@ -149,6 +149,18 @@ const defaultState: AnnotationState = {
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
         // ISL FEATURES MODAL
+
+        case AnnotationActionTypes.TOGGLE_AUTOFIT: {
+            const { autofit,globalattributes } = action.payload;
+            return {
+                ...state,
+                featuresToggle:{
+                    ...state.featuresToggle,
+                    autofitState:autofit,
+                    globalattributesState:globalattributes,
+                }
+            };
+        }
         case AnnotationActionTypes.SWITCH_TOGGLE_FEATURES_MODAL: {
             const { visible } = action.payload;
             return {

@@ -496,3 +496,7 @@ class LogEventSerializer(serializers.Serializer):
 
 class AnnotationFileSerializer(serializers.Serializer):
     annotation_file = serializers.FileField()
+
+class ISLConfigSerializer(serializers.Serializer):
+    autofit = serializers.BooleanField()
+    globalattributes = serializers.BooleanField()

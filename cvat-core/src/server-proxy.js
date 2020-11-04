@@ -795,9 +795,16 @@
                 console.log('fetching ',url);
                 let response = null;
                 try {
-                    response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
-                        proxy: config.proxy,
-                    });
+                    if(params != null){
+                        response = await Axios.post(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
+                            params: params,
+                        });
+                    }else{
+                        response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
+
+                        });
+                    }
+
                 } catch (errorData) {
                     throw generateError(errorData);
                 }
@@ -990,7 +997,7 @@
                     throw generateError(errorData);
                 }
             }
-            
+
             Object.defineProperties(this, Object.freeze({
                 server: {
                     value: Object.freeze({

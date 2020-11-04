@@ -43,6 +43,7 @@ from cvat.apps.engine.serializers import (
     FileInfoSerializer, JobSerializer, LabeledDataSerializer,
     LogEventSerializer, ProjectSerializer, RqStatusSerializer,
     TaskSerializer, UserSerializer, PluginsSerializer,
+    ISLConfigSerializer # ISL FEATURES TOGGLE
 )
 from cvat.apps.engine.utils import av_scan_paths
 
@@ -406,7 +407,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         xbr = int(request.query_params.get('x2', None))
         ybr = int(request.query_params.get('y2', None))
         data = [0,0,100,100]
-        print(config.sections())
+        config.read(config_path)
         if(not config.getboolean('main','autofit')):
             # autofit is disable
             print('AUTOFIT IS DISABLED')
@@ -591,6 +592,59 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
 
+    # ISL END
+    # ISL TOGGLE FEATURES
+    @swagger_auto_schema(method='get', operation_summary='Method return ISL Features Configuration'
+    )
+    @swagger_auto_schema(method='post', operation_summary='Method allows to edit ISL Features Configuration'
+    )
+    @action(detail=True, methods=['GET', 'post'],
+        serializer_class=ISLConfigSerializer)
+    def ISLconfig(self, request, pk):
+        config = ConfigParser()
+        config.read(config_path)
+        if request.method == 'POST':
+            print('request.data',request.data)
+            data = request.data['params']
+            try:
+                try:
+                    if(data['autofit'] is not None):
+                        print('received autofit',data['autofit'])
+                        print(type(data['autofit']))
+                        print(type(str(data['autofit'])))
+                        config['main']['autofit'] = str(data['autofit'])
+                except:
+                    print('no data for autofit')
+                try:
+                    if(data['globalattributes'] is not None):
+                        print('received globalattributes',data['globalattributes'])
+                        config['main']['globalattributes'] = str(data['globalattributes'])
+                except:
+                    print('no data for global attributes')
+                with open(config_path, 'w') as configfile:
+                    config.write(configfile)
+                # config.write(config_path)
+                print('config update successful')
+                data = {}
+                for attr,value in config['main'].items():
+                    print(attr,value)
+                    data[attr]=value
+                serializer = ISLConfigSerializer(data=data)
+                serializer.is_valid()
+                return Response(serializer.data)
+            except Exception as e:
+                msg = "Invalid values"
+                return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            data = {}
+            for attr,value in config['main'].items():
+                print(attr,value)
+                data[attr]=value
+            serializer = ISLConfigSerializer(data=data)
+            print(data)
+            print(serializer.is_valid())
+            print('serialized',serializer.data)
+            return Response(serializer.data)
     # ISL END
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',
         responses={'200': JobSerializer(many=True)})

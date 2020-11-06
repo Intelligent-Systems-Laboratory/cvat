@@ -13,6 +13,7 @@ import PropagateConfirmContainer from 'containers/annotation-page/standard-works
 import CanvasContextMenuContainer from 'containers/annotation-page/standard-workspace/canvas-context-menu';
 import ObjectSideBarComponent from 'components/annotation-page/standard-workspace/objects-side-bar/objects-side-bar';
 import CanvasPointContextMenuComponent from 'components/annotation-page/standard-workspace/canvas-point-context-menu';
+import TrackAllConfirmContainer from 'containers/annotation-page/standard-workspace/trackall-confirm';
 
 
 export default function StandardWorkspaceComponent(): JSX.Element {
@@ -22,7 +23,8 @@ export default function StandardWorkspaceComponent(): JSX.Element {
             <CanvasWrapperContainer />
             <ObjectSideBarComponent />
             <PropagateConfirmContainer />
-            <TrackConfirmContainer />
+            <TrackConfirmContainer /> {/* ISL TRACKING */}
+            <TrackAllConfirmContainer/> {/* mabe track all bbs */}
             <CanvasContextMenuContainer />
             <CanvasPointContextMenuComponent />
         </Layout>

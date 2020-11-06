@@ -24,6 +24,7 @@ import { Canvas } from 'cvat-canvas-wrapper';
 import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
 import {checkOccluded} from './auto-occlude';
+import { switchTrackAll } from 'actions/annotation-actions';
 const cvat = getCore();
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
@@ -126,6 +127,11 @@ interface Props {
     // mabe predict bbs
     predictions: number[][];
     // mabe
+    // mabe track all bbs
+    onSwitchTrackAllModal(visibility:boolean):void;
+    onSwitchTrackAll(status:boolean):void;
+    trackAll:any;
+    // mabe end
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -197,7 +203,14 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             onSetGlobalAttributesVisibility,
             automaticTracking,
             onUpdateAnnotations,onSwitchAutoTrack,
+            // mabe predict bbs
             predictions,
+            // mabe end
+            // mabe track all bbs
+            trackAll,
+            onSwitchTrackAll
+            // mabe end
+
         } = this.props;
         // console.log(this.props);
         // console.log(job);
@@ -354,6 +367,43 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             for(var prediction of predictions){
                 this.createNewBox(prediction);
             }
+        }
+        // mabe track all bbs
+        if(trackAll.trackingStatus){
+            console.log('track all status changed ');
+            console.log(trackAll);
+            setTimeout(()=>{
+
+                var statesToUpdate: any[] =[];
+
+                let index = ((frameData.number - trackAll.frameStart)/2) - 1;
+                if(index<trackAll.results[0].length-1){
+                    this.changeFrame(frameData.number+2);
+                }else{
+                    onSwitchTrackAll(false);
+                }
+                trackAll.results.forEach((states: string | any[]) => {
+
+                    if(frameData.number!== prevProps.frameData.number && trackAll.trackingStatus){
+                        const [state] = annotations.filter((el: any) => (el.clientID === trackAll.sourceStates[trackAll.results.indexOf(states)]));
+                        // console.log(state);
+                        // console.log('states',automaticTracking.states);
+                        // console.log('index',index);
+                        try{
+                            let temp = states[index];
+                            // console.log(temp);
+                            state.points = temp;
+                            statesToUpdate.push(state);
+
+                        }catch{
+                            console.log('Indexing error!');
+                        }
+
+                    }
+                });
+
+                onUpdateAnnotations(statesToUpdate);
+            },100);
         }
         if(automaticTracking.tracking){
             setTimeout(()=>{
@@ -597,7 +647,21 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         onCreateAnnotations(jobInstance, frame, [objectState]);
     }
     // mabe end
-
+    // mabe track all bbs
+    private trackAllBBs = ():void =>{
+        const {
+            jobInstance,
+            frame,
+            annotations,
+            onSwitchTrackAllModal
+        } = this.props;
+        console.log(annotations);
+        onSwitchTrackAllModal(true);
+        annotations.forEach(annotation => {
+            console.log('client ID', annotation.frame)
+        });
+    }
+    // mabe end
     // ISL AUTOFIT
     private onShapedblClicked = (e: any): void => {
         const {
@@ -1200,6 +1264,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // ISL END
             AUTO_OCCLUDE: keyMap.AUTO_OCCLUDE,
             PREDICT_BBS: keyMap.PREDICT_BBS, // mabe predict bbs
+            TRACK_ALL: keyMap.TRACK_ALL, // mabe track all
         };
 
 
@@ -1324,6 +1389,14 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 preventDefault(event);
                 console.log('running inference in the current frame')
                 this.predictBBs();
+            },
+            // mabe end
+            // mabe track all
+            TRACK_ALL: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                console.log('Tracking all bbox in the current frame')
+                // this.predictBBs();
+                this.trackAllBBs();
             },
             // mabe end
         };

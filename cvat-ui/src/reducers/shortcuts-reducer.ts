@@ -386,6 +386,13 @@ const defaultKeyMap = {
         action: 'keydown',
     },
     // mabe end
+    // mabe track all
+    TRACK_ALL: {
+        name: 'Track all bounding boxes in the current frame',
+        description: 'Run tracking algorithm on all the boxes in the current frame',
+        sequences: ['['],
+        action: 'keydown',
+    }
 } as any as Record<string, ExtendedKeyMapOptions>;
 
 

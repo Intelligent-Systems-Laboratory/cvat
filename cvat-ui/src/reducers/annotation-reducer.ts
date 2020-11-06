@@ -146,11 +146,81 @@ const defaultState: AnnotationState = {
     // ISL END
     // mabe predict bbs
     predictions :[[0,0,0,0]],
+    // mabe end
+
+    // mabe track all bbs
+    trackAll:{
+        visible: false,
+        framesToTrack: 30,
+        results: [],
+        frameStart: 0,
+        sourceStates: [],
+        preview: null,
+        trackingStatus:false,
+    }
+    // mabe end
 
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // mabe track all bbs
+
+        case AnnotationActionTypes.CHANGE_NUM_FRAME_TO_TRACK_ALL: {
+            const {
+                frames
+            } = action.payload;
+            return {
+                ...state,
+                trackAll: {
+                    ...state.trackAll,
+                    framesToTrack:frames,
+                }
+            };
+        }
+        case AnnotationActionTypes.SWITCH_AUTO_TRACKALL: {
+            const {
+                status
+            } = action.payload;
+            return {
+                ...state,
+                trackAll: {
+                    ...state.trackAll,
+                    trackingStatus:status,
+                }
+            };
+        }
+        case AnnotationActionTypes.UPDATE_TRACKALL_RESULTS: {
+            const {
+                tracks,
+                visible,
+                trackingStatus,
+                frameStart,
+                ids,
+            } = action.payload;
+            return {
+                ...state,
+                trackAll: {
+                    ...state.trackAll,
+                    visible:visible,
+                    results:tracks,
+                    trackingStatus:trackingStatus,
+                    frameStart:frameStart,
+                    sourceStates:ids,
+                }
+            };
+        }
+        case AnnotationActionTypes.SWITCH_AUTO_TRACKALL_MODAL: {
+            const { visible } = action.payload;
+            return {
+                ...state,
+                trackAll: {
+                    ...state.trackAll,
+                    visible:visible
+                }
+            };
+        }
+        //
         // mabe predict bbs
         case AnnotationActionTypes.PREDICT_BBS: {
             const { bboxes } = action.payload;

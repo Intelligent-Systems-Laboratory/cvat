@@ -35,7 +35,9 @@ import {
     changeFrameAsync,
     switchAutoTrack,
     switchTrackModalVisibility,
-    fetch
+    fetch,
+    switchTrackAllModal,
+    switchTrackAll
 } from 'actions/annotation-actions';
 import {
     switchGrid,
@@ -111,7 +113,12 @@ interface StateToProps {
     // ISL END
     contextMenuVisibility: boolean; // ISL FIX CONTEXT MENU
     automaticTracking:any;
+    // mabe predict bbs
     predictions: number[][];
+    // mabe end
+    // mabe track all bbs
+    trackAll:any;
+    // end
 }
 
 interface DispatchToProps {
@@ -154,6 +161,10 @@ interface DispatchToProps {
     onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
     onFetch(jobInstance:any,url:string,params:any):void;
     // ISL END
+    // mabe track all bbs
+    onSwitchTrackAllModal(status:boolean):void;
+    onSwitchTrackAll(status:boolean):void;
+    // mabe end
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -210,8 +221,13 @@ function mapStateToProps(state: CombinedState): StateToProps {
             globalAttributesVisibility,
             // ISL END
             automaticTracking:automaticTracking,
+            // mabe predict bbs
+            predictions: predictions,
+            // mabe end
+            // mabe track all bbs
 
-            predictions: predictions
+            trackAll:trackAll,
+            // mabe end
         },
         settings: {
             player: {
@@ -302,7 +318,10 @@ function mapStateToProps(state: CombinedState): StateToProps {
         contextMenuVisibility, // ISL CONTEXT MENU
         automaticTracking,
         // mabe predict bbs
-        predictions
+        predictions,
+        // mabe end
+        // mabe track all bbs
+        trackAll,
         // mabe end
     };
 }
@@ -432,6 +451,14 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void{
             dispatch(switchTrackModalVisibility(visibility,jobInstance,frame_num,sourceState));
         },
+        // mabe track all bbs
+        onSwitchTrackAllModal(visibility:boolean):void{
+            dispatch(switchTrackAllModal(visibility));
+        },
+        onSwitchTrackAll(status:boolean):void{
+            dispatch(switchTrackAll(status));
+        },
+        // mabe end
     };
 }
 

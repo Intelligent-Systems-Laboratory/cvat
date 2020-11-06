@@ -451,6 +451,17 @@ export interface AnnotationState {
     // mabe predict bbs
     predictions :number[][],
     // mabe end
+    // mabe trackall bbs
+    trackAll:{
+        visible: boolean,
+        framesToTrack: number,
+        results: any[],
+        frameStart: number,
+        sourceStates: any[],
+        preview: any,
+        trackingStatus:boolean,
+    }
+    // mabe end
     aiToolsRef: MutableRefObject<any>;
 }
 

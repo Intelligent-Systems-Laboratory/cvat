@@ -230,7 +230,40 @@ export enum AnnotationActionTypes {
     // mabe predict bbs
     PREDICT_BBS = 'PREDICT_BBS',
     // mabe end
+    // mabe track all bbs
+    SWITCH_AUTO_TRACKALL_MODAL='SWITCH_AUTO_TRACKALL_MODAL',
+    UPDATE_TRACKALL_RESULTS='UPDATE_TRACKALL_RESULTS',
+    SWITCH_AUTO_TRACKALL='SWITCH_AUTO_TRACKALL',
+    CHANGE_NUM_FRAME_TO_TRACK_ALL = 'CHANGE_NUM_FRAME_TO_TRACK_ALL',
+    // mabe end
 }
+// mabe track all bbs
+
+export function changeNumFramesToTrackAll(frames: number): AnyAction{
+    return {
+        type: AnnotationActionTypes.CHANGE_NUM_FRAME_TO_TRACK_ALL,
+        payload: {
+            frames,
+        },
+    };
+}
+export function switchTrackAll(status: boolean): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_AUTO_TRACKALL,
+        payload: {
+            status,
+        },
+    };
+}
+export function switchTrackAllModal(visible: boolean): AnyAction {
+    return {
+        type: AnnotationActionTypes.SWITCH_AUTO_TRACKALL_MODAL,
+        payload: {
+            visible,
+        },
+    };
+}
+// mabe end
 // ISL FEATURES TOGGLE
 export function switchToggleFeatureModal(visible: boolean,): AnyAction {
     return {
@@ -282,6 +315,26 @@ export function fetch(jobInstance: any, url:string, params:any|undefined=null): 
                         type: AnnotationActionTypes.PREDICT_BBS,
                         payload: {
                             bboxes:data['bboxes'],
+                        },
+                    });
+
+
+
+                });
+            }
+            else if(url==`tasks/${jobInstance.task.id}/trackall`){
+                console.log('trackall BBs in annotation-actions');
+                jobInstance.annotations.fetch(url,params).then((data: any) => {
+                    console.log('data from server: ',data);
+
+                    dispatch({
+                        type: AnnotationActionTypes.UPDATE_TRACKALL_RESULTS,
+                        payload: {
+                            trackingStatus:true,
+                            visible:false,
+                            tracks:data,
+                            frameStart:params['frameStart'],
+                            ids:params['ids']
                         },
                     });
 

@@ -793,6 +793,7 @@
             async function fetch(id,url,params) { // generic fetching
                 const { backendAPI } = config;
                 console.log('fetching ',url);
+                console.log('params',params);
                 let response = null;
                 try {
                     if(params != null && url == 'tasks/1/ISLconfig'){
@@ -808,6 +809,15 @@
                         response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
                             params: {
                                 frameNumber: params['frameNumber'],
+                            }
+                        });
+                    }else if(url==`tasks/${id}/trackall`){
+                        console.log('tracking all bbs server-proxy');
+                        response = await Axios.post(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
+                            params: {
+                                framesToTrack: params['framesToTrack'],
+                                bboxes: params['bboxes'],
+                                frameStart: params['frameStart']
                             }
                         });
                     }

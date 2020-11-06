@@ -547,6 +547,49 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+    # EDITED END
+
+    # EDITED FOR TRACKING
+    @swagger_auto_schema(method='post', operation_summary='Returns tracker coordinates for all the bounding boxes',
+    )
+    @action(detail=True, methods=['POST'])
+    def trackall(self, request, pk):
+        try:
+            if request.method == 'POST':
+                print('request.data',request.data)
+                # get the parameters of the request
+                data = request.data['params']
+                bboxes = data['bboxes']
+                framesToTrack = int(data['framesToTrack'])
+                frameStart = int(data['frameStart'])
+
+                results = []
+
+                frameEnd = frameStart+framesToTrack
+
+
+                # get the frames
+                db_task = self.get_object()
+                frame_provider = FrameProvider(db_task.data)
+                data_quality = FrameProvider.Quality.COMPRESSED
+                skip = 2
+                out_type = FrameProvider.Type.NUMPY_ARRAY
+                frameList = frame_provider.get_frames_improved(frameStart,frameEnd,data_quality,out_type,skip)
+
+                for box in bboxes:
+                    print('tracking item ',bboxes.index(box))
+                    xtl = box[0]
+                    ytl = box[1]
+                    xbr = box[2]
+                    ybr = box[3]
+                    data = (xtl, ytl, xbr-xtl, ybr-ytl)
+                    result = cvat.apps.engine.tracker.track_pysot(frameList, data)
+                    results.append(result)
+
+            return Response(results)
+        except Exception as e:
+            msg = "something is wrong"
+            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
 
     # EDITED END
     # ISL GLOBAL ATTRIBUTES

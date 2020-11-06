@@ -70,7 +70,9 @@ path = os.path.abspath("./")
 config_path = os.path.join(path,'cvat/apps/engine/config.ini')
 config.read(config_path)
 # mabe end
-
+# mabe predict bbs
+from cvat.apps.engine.predict import predict
+# mabe end
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
 # We map the required paramater explicitly and add it into query arguments
@@ -645,6 +647,37 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             print(serializer.is_valid())
             print('serialized',serializer.data)
             return Response(serializer.data)
+    # ISL END
+    # MABE PREDICT BOUNDING BOXES
+    @swagger_auto_schema(method='get', operation_summary='Returns coordinates of potential bounding boxes',
+        manual_parameters=[
+            openapi.Parameter('frameNumber', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the box is located"),
+            ]
+    )
+    @action(detail=True, methods=['GET'])
+    def predictBBs(self, request, pk):
+        frame = request.query_params.get('frameNumber', None)
+        data = [0,0,100,100]
+
+        # ADD code for getting the image here
+        db_task = self.get_object()
+        frame_provider = FrameProvider(db_task.data)
+        data_quality = FrameProvider.Quality.ORIGINAL
+        img, mime = frame_provider.get_frame(int(frame), data_quality)
+        img = Image.open(img)
+        orig_img = np.array(img)
+        try:
+            data = predict(orig_img)
+            # data = [100,100,200,200]
+            new_coords = {
+                "bboxes" : data['bbox'],
+            }
+            return Response(new_coords)
+        except Exception as e:
+            msg = "Error occured while predicting."
+            return Response(data='%s %s' %(msg , str(e)), status=status.HTTP_400_BAD_REQUEST)
+
     # ISL END
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',
         responses={'200': JobSerializer(many=True)})

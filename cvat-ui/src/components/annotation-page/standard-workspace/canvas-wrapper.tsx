@@ -123,6 +123,9 @@ interface Props {
     onSwitchAutoTrack(status:boolean):void;
     onSwitchTrackModalVisibility(visibility:boolean,jobInstance:any, frame_num:number,sourceState:any):void;
     onFetch(jobInstance:any,url:string,params:any):void;
+    // mabe predict bbs
+    predictions: number[][];
+    // mabe
 }
 
 export default class CanvasWrapperComponent extends React.PureComponent<Props> {
@@ -193,7 +196,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             globalAttributesVisibility,
             onSetGlobalAttributesVisibility,
             automaticTracking,
-            onUpdateAnnotations,onSwitchAutoTrack
+            onUpdateAnnotations,onSwitchAutoTrack,
+            predictions,
         } = this.props;
         // console.log(this.props);
         // console.log(job);
@@ -345,7 +349,12 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         }
 
         this.activateOnCanvas();
-
+        if(prevProps.predictions !== predictions){
+            console.log('predictions changed',predictions);
+            for(var prediction of predictions){
+                this.createNewBox(prediction);
+            }
+        }
         if(automaticTracking.tracking){
             setTimeout(()=>{
                 let index = ((frameData.number - automaticTracking.frameStart)/2) - 1;
@@ -528,7 +537,66 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         onUpdateAnnotations(annotations);
     }
     // ISL END
+    // mabe predict bbs
+    private predictBBs = ():void => {
 
+        const {
+            onFetch,
+            jobInstance,
+            frame
+        } = this.props;
+        var params = {
+            frameNumber: frame,
+        }
+        onFetch(jobInstance,`tasks/${jobInstance.task.id}/predictBBs`,params);
+    };
+    private createNewBox = (prediction:number[]): void => {
+        const {
+            jobInstance,
+            activeLabelID,
+            activeObjectType,
+            frame,
+            onShapeDrawn,
+            onCreateAnnotations,
+            globalAttributes,
+        } = this.props;
+        var state = {
+            clientID: undefined,
+            points:prediction,
+            shapeType:'rectangle',
+            zOrder: 0,
+        }
+        const isDrawnFromScratch = !state.label;
+
+        state.objectType = state.objectType || activeObjectType;
+        state.label = state.label || jobInstance.task.labels
+            .filter((label: any) => label.id === activeLabelID)[0];
+        state.occluded = state.occluded || false;
+        state.frame = frame;
+        // ISL GLOBAL ATTRIBUTES
+        console.log(state);
+        const nameToIDMap:Record<string, number> = {};
+        for (const attribute of state.label.attributes) {
+            //save the corresponding IDs of each attribute
+            nameToIDMap[attribute.name] = attribute.id;
+        }
+
+        const attr: Record<number, string> = {};
+        // get the global attribute's name and value and apply it to the new rectangle if the attribute exist
+        for (const key in globalAttributes) {
+            if(nameToIDMap[key] !== undefined || ""){//nameToIDMap[key] is undefined if the attribute does not exist
+                if(globalAttributes[key] !== ""){//globalAttributes[key] is "", it means that global attributes are not yet set
+                    attr[nameToIDMap[key]] = globalAttributes[key];
+                }
+            }else{
+                // do nothing for now
+            }
+        }
+        const objectState = new cvat.classes.ObjectState(state);
+        objectState.attributes = attr; // set the values to the edited values
+        onCreateAnnotations(jobInstance, frame, [objectState]);
+    }
+    // mabe end
 
     // ISL AUTOFIT
     private onShapedblClicked = (e: any): void => {
@@ -587,6 +655,8 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
         }
 
         const { state, duration } = event.detail;
+        console.log('state',state);
+        console.log('duration',duration);
         const isDrawnFromScratch = !state.label;
         if (isDrawnFromScratch) {
             jobInstance.logger.log(LogType.drawObject, { count: 1, duration });
@@ -1129,6 +1199,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             AUTO_TRACK_START_FRAME: keyMap.AUTO_TRACK_START_FRAME,
             // ISL END
             AUTO_OCCLUDE: keyMap.AUTO_OCCLUDE,
+            PREDICT_BBS: keyMap.PREDICT_BBS, // mabe predict bbs
         };
 
 
@@ -1248,6 +1319,13 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 this.autoOcclude();
             },
             // ISL END
+            // mabe predict bbs
+            PREDICT_BBS: (event: KeyboardEvent | undefined) => {
+                preventDefault(event);
+                console.log('running inference in the current frame')
+                this.predictBBs();
+            },
+            // mabe end
         };
 
         return (

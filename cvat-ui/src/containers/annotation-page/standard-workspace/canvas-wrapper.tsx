@@ -111,6 +111,7 @@ interface StateToProps {
     // ISL END
     contextMenuVisibility: boolean; // ISL FIX CONTEXT MENU
     automaticTracking:any;
+    predictions: number[][];
 }
 
 interface DispatchToProps {
@@ -209,6 +210,8 @@ function mapStateToProps(state: CombinedState): StateToProps {
             globalAttributesVisibility,
             // ISL END
             automaticTracking:automaticTracking,
+
+            predictions: predictions
         },
         settings: {
             player: {
@@ -298,6 +301,9 @@ function mapStateToProps(state: CombinedState): StateToProps {
         // ISL END
         contextMenuVisibility, // ISL CONTEXT MENU
         automaticTracking,
+        // mabe predict bbs
+        predictions
+        // mabe end
     };
 }
 

@@ -75,6 +75,15 @@ def preprocess(image, max_size=512, mean=(0.485, 0.456, 0.406), std=(0.229, 0.22
 
     return ori_imgs, framed_imgs, framed_metas
 
+def preprocess_frame(frame, max_size=512, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
+    ori_imgs = [frame[..., ::-1]]
+    normalized_imgs = [(img / 255 - mean) / std for img in ori_imgs]
+    imgs_meta = [aspectaware_resize_padding(img, max_size, max_size,
+                                            means=None) for img in normalized_imgs]
+    framed_imgs = [img_meta[0] for img_meta in imgs_meta]
+    framed_metas = [img_meta[1:] for img_meta in imgs_meta]
+
+    return ori_imgs, framed_imgs, framed_metas
 
 def preprocess_video(*frame_from_video, max_size=512, mean=(0.406, 0.456, 0.485), std=(0.225, 0.224, 0.229)):
     ori_imgs = frame_from_video

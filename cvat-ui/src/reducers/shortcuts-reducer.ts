@@ -378,6 +378,14 @@ const defaultKeyMap = {
         action: 'keydown',
     },
     // ISL END
+    // mabe predict bbs
+    PREDICT_BBS: {
+        name: 'Automatically predict bounding boxes in the current frame',
+        description: 'Run inference algorithm in the current frame',
+        sequences: ['p'],
+        action: 'keydown',
+    },
+    // mabe end
 } as any as Record<string, ExtendedKeyMapOptions>;
 
 

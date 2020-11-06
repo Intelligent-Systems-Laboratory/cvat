@@ -448,7 +448,9 @@ export interface AnnotationState {
         globalattributesState: boolean,
     }
     // ISL END
-
+    // mabe predict bbs
+    predictions :number[][],
+    // mabe end
     aiToolsRef: MutableRefObject<any>;
 }
 

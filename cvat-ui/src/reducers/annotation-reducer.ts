@@ -142,12 +142,24 @@ const defaultState: AnnotationState = {
         visible: false,
         autofitState:false,
         globalattributesState: false,
-    }
+    },
     // ISL END
+    // mabe predict bbs
+    predictions :[[0,0,0,0]],
+
 };
 
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
+        // mabe predict bbs
+        case AnnotationActionTypes.PREDICT_BBS: {
+            const { bboxes } = action.payload;
+            return {
+                ...state,
+                predictions:bboxes
+            };
+        }
+        // mabe end
         // ISL FEATURES MODAL
 
         case AnnotationActionTypes.TOGGLE_AUTOFIT: {

@@ -795,13 +795,20 @@
                 console.log('fetching ',url);
                 let response = null;
                 try {
-                    if(params != null){
+                    if(params != null && url == 'tasks/1/ISLconfig'){
                         response = await Axios.post(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
                             params: params,
                         });
-                    }else{
+                    }else if(params == null && url == 'tasks/1/ISLconfig'){
                         response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
 
+                        });
+                    }else if(url==`tasks/${id}/predictBBs`){
+                        console.log('predict bbs in server-proxy')
+                        response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
+                            params: {
+                                frameNumber: params['frameNumber'],
+                            }
                         });
                     }
 

@@ -225,8 +225,11 @@ export enum AnnotationActionTypes {
     SET_AI_TOOLS_REF = 'SET_AI_TOOLS_REF',
     // ISL FEATURES TOGGLE
     SWITCH_TOGGLE_FEATURES_MODAL = 'TOGGLE_FEATURES_MODAL',
-    TOGGLE_AUTOFIT='TOGGLE_AUTOFIT'
+    TOGGLE_AUTOFIT='TOGGLE_AUTOFIT',
     // ISL END
+    // mabe predict bbs
+    PREDICT_BBS = 'PREDICT_BBS',
+    // mabe end
 }
 // ISL FEATURES TOGGLE
 export function switchToggleFeatureModal(visible: boolean,): AnyAction {
@@ -254,19 +257,38 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
 export function fetch(jobInstance: any, url:string, params:any|undefined=null): AnyAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
-            jobInstance.annotations.fetch(url,params).then((data: any) => {
-                console.log('data from server: ',data);
-                if(url=='tasks/1/ISLconfig'){
+            if(url=='tasks/1/ISLconfig'){
+                jobInstance.annotations.fetch(url,params).then((data: any) => {
+                    console.log('data from server: ',data);
+                    if(url=='tasks/1/ISLconfig'){
+                        dispatch({
+                            type: AnnotationActionTypes.TOGGLE_AUTOFIT,
+                            payload: {
+                                autofit: data['autofit'],
+                                globalattributes: data['globalattributes'],
+                            },
+                        });
+                    }
+
+
+                });
+            }
+            else if(url==`tasks/${jobInstance.task.id}/predictBBs`){
+                console.log('predictBBs in annotation-actions');
+                jobInstance.annotations.fetch(url,params).then((data: any) => {
+                    console.log('data from server: ',data);
+
                     dispatch({
-                        type: AnnotationActionTypes.TOGGLE_AUTOFIT,
+                        type: AnnotationActionTypes.PREDICT_BBS,
                         payload: {
-                            autofit: data['autofit'],
-                            globalattributes: data['globalattributes'],
+                            bboxes:data['bboxes'],
                         },
                     });
-                }
 
-            });
+
+
+                });
+            }
         } catch (error) {
             console.log('Error Occured While Fetching', error);
         }

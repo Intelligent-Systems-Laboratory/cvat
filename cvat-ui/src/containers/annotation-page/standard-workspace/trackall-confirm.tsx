@@ -115,6 +115,10 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
         super(props);
     }
     public track = ():void=>{
+        var loading = document.getElementById('trackall-loading');
+        if(loading){
+            loading.style.visibility="";
+        }
         const {
             trackAll,
             jobInstance,
@@ -137,8 +141,9 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             frameStart: frame,
             ids:ids,
         }
-        trackAll(jobInstance,'tasks/1/trackall',params);
+        trackAll(jobInstance,`tasks/${jobInstance.task.id}/trackall`,params);
         console.log('start tracking all bbs');
+
     }
     public componentDidUpdate(prevProps: Props): void {
         const {

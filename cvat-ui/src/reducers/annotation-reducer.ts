@@ -182,13 +182,25 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
             const {
                 status
             } = action.payload;
-            return {
-                ...state,
-                trackAll: {
-                    ...state.trackAll,
-                    trackingStatus:status,
-                }
-            };
+            if(!status){
+                return {
+                    ...state,
+                    trackAll: {
+                        ...state.trackAll,
+                        trackingStatus:status,
+                        results:[]
+                    }
+                };
+            }else{
+                return {
+                    ...state,
+                    trackAll: {
+                        ...state.trackAll,
+                        trackingStatus:status,
+                    }
+                };
+            }
+
         }
         case AnnotationActionTypes.UPDATE_TRACKALL_RESULTS: {
             const {

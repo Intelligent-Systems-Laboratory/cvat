@@ -16,7 +16,6 @@ from cvat.apps.engine.efficientdet.utils import BBoxTransform, ClipBoxes
 from cvat.apps.engine.efficientdet_utils.utils import preprocess,preprocess_frame, invert_affine, postprocess, STANDARD_COLORS, standard_to_bgr, get_index_label, plot_one_box
 import os
 
-compound_coef = 0
 force_input_size = None  # set None to use default size
 # img_path = 'test/frame_000000.jpg'
 
@@ -47,7 +46,8 @@ color_list = standard_to_bgr(STANDARD_COLORS)
 
 # frame = cv2.imread(img_path)
 
-def predict(frame):
+def predict(frame,compound_coef = 0):
+    compound_coef = int(compound_coef)
     # tf bilinear interpolation is different from any other's, just make do
     input_sizes = [512, 640, 768, 896, 1024, 1280, 1280, 1536, 1536]
     input_size = input_sizes[compound_coef] if force_input_size is None else force_input_size

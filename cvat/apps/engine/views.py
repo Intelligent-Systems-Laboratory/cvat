@@ -461,6 +461,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     )
     @action(detail=True, methods=['GET'])
     def tracking(self, request, pk):
+        config.read(config_path)
         try:
             useCroppedBG = False
             startTime = current_milli_time()
@@ -517,7 +518,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
             start_csrt = current_milli_time()
             print(data)
-            results = cvat.apps.engine.tracker.track_pysot(frameList, data)
+            results = cvat.apps.engine.tracker.track(frameList, data,config['main']['tracker'])
             print('results length',len(results))
             # enable/disable grabcut on the results
             # for result,frame in zip(results,frameList):
@@ -639,7 +640,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
 
     # ISL END
     # ISL TOGGLE FEATURES
-    @swagger_auto_schema(method='get', operation_summary='Method return ISL Features Configuration'
+    @swagger_auto_schema(method='get', operation_summary='Method returns ISL Features Configuration'
     )
     @swagger_auto_schema(method='post', operation_summary='Method allows to edit ISL Features Configuration'
     )
@@ -652,20 +653,22 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             print('request.data',request.data)
             data = request.data['params']
             try:
-                try:
-                    if(data['autofit'] is not None):
-                        print('received autofit',data['autofit'])
-                        print(type(data['autofit']))
-                        print(type(str(data['autofit'])))
-                        config['main']['autofit'] = str(data['autofit'])
-                except:
-                    print('no data for autofit')
-                try:
-                    if(data['globalattributes'] is not None):
-                        print('received globalattributes',data['globalattributes'])
-                        config['main']['globalattributes'] = str(data['globalattributes'])
-                except:
-                    print('no data for global attributes')
+                # try:
+                #     if(data['autofit'] is not None):
+                #         print('received autofit',data['autofit'])
+                #         print(type(data['autofit']))
+                #         print(type(str(data['autofit'])))
+                #         config['main']['autofit'] = str(data['autofit'])
+                # except:
+                #     print('no data for autofit')
+                # try:
+                #     if(data['globalattributes'] is not None):
+                #         print('received globalattributes',data['globalattributes'])
+                #         config['main']['globalattributes'] = str(data['globalattributes'])
+                # except:
+                #     print('no data for global attributes')
+                for attr,value in data.items():
+                    config['main'][attr] = str(value)
                 with open(config_path, 'w') as configfile:
                     config.write(configfile)
                 # config.write(config_path)
@@ -703,6 +706,8 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         frame = request.query_params.get('frameNumber', None)
         data = [0,0,100,100]
 
+        config = ConfigParser()
+        config.read(config_path)
         # ADD code for getting the image here
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
@@ -711,7 +716,8 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         img = Image.open(img)
         orig_img = np.array(img)
         try:
-            data = predict(orig_img)
+            print()
+            data = predict(orig_img,config['main']['predict_bb_models'])
             # data = [100,100,200,200]
             new_coords = {
                 "bboxes" : data['bbox'],

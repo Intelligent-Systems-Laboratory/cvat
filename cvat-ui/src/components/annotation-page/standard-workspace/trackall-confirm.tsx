@@ -84,7 +84,7 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                 </div>
                 <div id='track-canvas-container'>
                     <div id='track-loading-div'>
-                    <Spin id={'track-loading'} style={{visibility: "hidden"}}></Spin>
+                    <Spin id={'trackall-loading'} style={{visibility: "hidden"}}></Spin>
                     </div>
                     <div id='track-canvas-div'>
                     {

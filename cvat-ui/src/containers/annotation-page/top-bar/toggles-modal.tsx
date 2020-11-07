@@ -26,6 +26,8 @@ interface DispatchToProps {
     toggleAutoFit(jobInstance:any,value:boolean):void;
     toggleGlobalAttributes(jobInstance:any,value:boolean):void;
     fetchInitialState(jobInstance:any):void;
+    changeModel(jobInstance:any,modelNumber:number):void;
+    changeTracker(jobInstance:any,tracker:string):void;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -72,6 +74,19 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         fetchInitialState(jobInstance:any):void{
             dispatch(fetch(jobInstance,"tasks/1/ISLconfig"));
+        },
+        changeModel(jobInstance:any,modelNumber:number):void{
+            var params = {
+                predict_bb_models:modelNumber
+
+            }
+            dispatch(fetch(jobInstance,"tasks/1/ISLconfig",params));
+        },
+        changeTracker(jobInstance:any,tracker:string):void{
+            var params = {
+                tracker:tracker
+            }
+            dispatch(fetch(jobInstance,"tasks/1/ISLconfig",params));
         }
     };
 }
@@ -86,10 +101,26 @@ class TogglesModalContainer extends React.PureComponent<Props> {
     public componentDidMount(): void {
         const{
             fetchInitialState,
-            jobInstance
+            jobInstance,
         } = this.props;
         console.log('fetch initial config');
         fetchInitialState(jobInstance);
+    }
+    private predictBBModelOnChange = (event:any):void =>{
+        const{
+            changeModel,
+            jobInstance
+        } = this.props;
+        console.log('model changed to ',event.target.value);
+        changeModel(jobInstance,parseInt(event.target.value));
+    }
+    private trackerOnChange = (event:any):void =>{
+        const{
+            jobInstance,
+            changeTracker
+        } = this.props;
+        console.log('tracker changed to ',event.target.value);
+        changeTracker(jobInstance,event.target.value);
     }
     public render(): JSX.Element {
         const {
@@ -111,6 +142,8 @@ class TogglesModalContainer extends React.PureComponent<Props> {
                 toggleGlobalAttributes={toggleGlobalAttributes}
                 autofitInitState={autofitInitState}
                 globalattributesInitState={globalattributesInitState}
+                modelOnChange = {this.predictBBModelOnChange}
+                trackerOnChange={this.trackerOnChange}
             />
         );
     }

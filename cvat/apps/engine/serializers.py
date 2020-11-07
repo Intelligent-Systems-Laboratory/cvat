@@ -500,3 +500,5 @@ class AnnotationFileSerializer(serializers.Serializer):
 class ISLConfigSerializer(serializers.Serializer):
     autofit = serializers.BooleanField()
     globalattributes = serializers.BooleanField()
+    predict_bb_model = serializers.IntegerField()
+    tracker = serializers.CharField()

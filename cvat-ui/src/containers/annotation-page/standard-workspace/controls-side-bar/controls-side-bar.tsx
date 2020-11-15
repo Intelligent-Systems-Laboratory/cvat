@@ -68,14 +68,9 @@ function mapStateToProps(state: CombinedState): StateToProps {
             // ISL END
         },
         settings: {
-            player: {
-                rotateAll,
-            },
+            player: { rotateAll },
         },
-        shortcuts: {
-            keyMap,
-            normalizedKeyMap,
-        },
+        shortcuts: { keyMap, normalizedKeyMap },
     } = state;
 
     return {
@@ -126,7 +121,4 @@ function dispatchToProps(dispatch: any): DispatchToProps {
     };
 }
 
-export default connect(
-    mapStateToProps,
-    dispatchToProps,
-)(ControlsSideBarComponent);
+export default connect(mapStateToProps, dispatchToProps)(ControlsSideBarComponent);

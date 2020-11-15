@@ -8,7 +8,6 @@ import Icon from 'antd/lib/icon';
 import Button from 'antd/lib/button';
 import Text from 'antd/lib/typography/Text';
 
-
 interface Props {
     labelName: string;
     labelColor: string;
@@ -34,6 +33,17 @@ function LabelItemComponent(props: Props): JSX.Element {
         unlockStates,
     } = props;
 
+    const classes = {
+        lock: {
+            enabled: { className: 'cvat-label-item-button-lock cvat-label-item-button-lock-enabled' },
+            disabled: { className: 'cvat-label-item-button-lock' },
+        },
+        hidden: {
+            enabled: { className: 'cvat-label-item-button-hidden cvat-label-item-button-hidden-enabled' },
+            disabled: { className: 'cvat-label-item-button-hidden' },
+        },
+    };
+
     return (
         <Row
             type='flex'
@@ -46,17 +56,23 @@ function LabelItemComponent(props: Props): JSX.Element {
                 <Button style={{ background: labelColor }} className='cvat-label-item-color-button' />
             </Col>
             <Col span={14}>
-                <Text strong className='cvat-text'>{labelName}</Text>
+                <Text strong className='cvat-text'>
+                    {labelName}
+                </Text>
             </Col>
             <Col span={3}>
-                { statesLocked
-                    ? <Icon type='lock' onClick={unlockStates} />
-                    : <Icon type='unlock' onClick={lockStates} />}
+                {statesLocked ? (
+                    <Icon {...classes.lock.enabled} type='lock' onClick={unlockStates} />
+                ) : (
+                    <Icon {...classes.lock.disabled} type='unlock' onClick={lockStates} />
+                )}
             </Col>
             <Col span={3}>
-                { statesHidden
-                    ? <Icon type='eye-invisible' onClick={showStates} />
-                    : <Icon type='eye' onClick={hideStates} />}
+                {statesHidden ? (
+                    <Icon {...classes.hidden.enabled} type='eye-invisible' onClick={showStates} />
+                ) : (
+                    <Icon {...classes.hidden.disabled} type='eye' onClick={hideStates} />
+                )}
             </Col>
         </Row>
     );

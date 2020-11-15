@@ -15,7 +15,6 @@ import ObjectSideBarComponent from 'components/annotation-page/standard-workspac
 import CanvasPointContextMenuComponent from 'components/annotation-page/standard-workspace/canvas-point-context-menu';
 import TrackAllConfirmContainer from 'containers/annotation-page/standard-workspace/trackall-confirm';
 
-
 export default function StandardWorkspaceComponent(): JSX.Element {
     return (
         <Layout hasSider className='cvat-standard-workspace'>

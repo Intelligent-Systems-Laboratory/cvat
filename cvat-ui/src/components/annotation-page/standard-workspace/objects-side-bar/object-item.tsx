@@ -5,11 +5,7 @@
 import React from 'react';
 
 import ObjectButtonsContainer from 'containers/annotation-page/standard-workspace/objects-side-bar/object-buttons';
-import {
-    ObjectType,
-    ShapeType,
-    ColorBy,
-} from 'reducers/interfaces';
+import { ObjectType, ShapeType, ColorBy } from 'reducers/interfaces';
 import ItemDetails, { attrValuesAreEqual } from './object-item-details';
 import ItemBasics from './object-item-basics';
 
@@ -847,20 +843,22 @@ interface Props {
 }
 
 function objectItemsAreEqual(prevProps: Props, nextProps: Props): boolean {
-    return nextProps.activated === prevProps.activated
-        && nextProps.locked === prevProps.locked
-        && nextProps.labelID === prevProps.labelID
-        && nextProps.color === prevProps.color
-        && nextProps.clientID === prevProps.clientID
-        && nextProps.serverID === prevProps.serverID
-        && nextProps.objectType === prevProps.objectType
-        && nextProps.shapeType === prevProps.shapeType
-        && nextProps.collapsed === prevProps.collapsed
-        && nextProps.labels === prevProps.labels
-        && nextProps.attributes === prevProps.attributes
-        && nextProps.normalizedKeyMap === prevProps.normalizedKeyMap
-        && nextProps.colorBy === prevProps.colorBy
-        && attrValuesAreEqual(nextProps.attrValues, prevProps.attrValues);
+    return (
+        nextProps.activated === prevProps.activated &&
+        nextProps.locked === prevProps.locked &&
+        nextProps.labelID === prevProps.labelID &&
+        nextProps.color === prevProps.color &&
+        nextProps.clientID === prevProps.clientID &&
+        nextProps.serverID === prevProps.serverID &&
+        nextProps.objectType === prevProps.objectType &&
+        nextProps.shapeType === prevProps.shapeType &&
+        nextProps.collapsed === prevProps.collapsed &&
+        nextProps.labels === prevProps.labels &&
+        nextProps.attributes === prevProps.attributes &&
+        nextProps.normalizedKeyMap === prevProps.normalizedKeyMap &&
+        nextProps.colorBy === prevProps.colorBy &&
+        attrValuesAreEqual(nextProps.attrValues, prevProps.attrValues)
+    );
 }
 
 function ObjectItemComponent(props: Props): JSX.Element {
@@ -918,18 +916,18 @@ function ObjectItemComponent(props: Props): JSX.Element {
         activateTracking,
     } = props;
 
-    const type = objectType === ObjectType.TAG ? ObjectType.TAG.toUpperCase()
-        : `${shapeType.toUpperCase()} ${objectType.toUpperCase()}`;
+    const type =
+        objectType === ObjectType.TAG
+            ? ObjectType.TAG.toUpperCase()
+            : `${shapeType.toUpperCase()} ${objectType.toUpperCase()}`;
 
-    const className = !activated ? 'cvat-objects-sidebar-state-item'
+    const className = !activated
+        ? 'cvat-objects-sidebar-state-item'
         : 'cvat-objects-sidebar-state-item cvat-objects-sidebar-state-active-item';
 
     return (
         <div style={{ display: 'flex', marginBottom: '1px' }}>
-            <div
-                className='cvat-objects-sidebar-state-item-color'
-                style={{ background: `${color}` }}
-            />
+            <div className='cvat-objects-sidebar-state-item-color' style={{ background: `${color}` }} />
             <div
                 onMouseEnter={activate}
                 id={`cvat-objects-sidebar-state-item-${clientID}`}
@@ -1015,19 +1013,16 @@ function ObjectItemComponent(props: Props): JSX.Element {
                 //     // ISL END
                     activateTracking={activateTracking}
                 />
-                <ObjectButtonsContainer
-                    clientID={clientID}
-                />
-                {!!attributes.length
-                    && (
-                        <ItemDetails
-                            collapsed={collapsed}
-                            attributes={attributes}
-                            values={attrValues}
-                            collapse={collapse}
-                            changeAttribute={changeAttribute}
-                        />
-                    )}
+                <ObjectButtonsContainer clientID={clientID} />
+                {!!attributes.length && (
+                    <ItemDetails
+                        collapsed={collapsed}
+                        attributes={attributes}
+                        values={attrValues}
+                        collapse={collapse}
+                        changeAttribute={changeAttribute}
+                    />
+                )}
             </div>
         </div>
     );

@@ -75,19 +75,10 @@ function mapStateToProps(state: CombinedState): StateToProps {
             showChangePasswordDialog: changePasswordDialogShown,
             allowChangePassword: renderChangePasswordItem,
         },
-        plugins: {
-            list,
-        },
-        about: {
-            server,
-            packageVersion,
-        },
-        shortcuts: {
-            normalizedKeyMap,
-        },
-        settings: {
-            showDialog: settingsDialogShown,
-        },
+        plugins: { list },
+        about: { server, packageVersion },
+        shortcuts: { normalizedKeyMap },
+        settings: { showDialog: settingsDialogShown },
     } = state;
 
     return {
@@ -125,9 +116,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
     return {
         onLogout: (): void => dispatch(logoutAsync()),
         switchSettingsDialog: (show: boolean): void => dispatch(switchSettingsDialogAction(show)),
-        switchChangePasswordDialog: (show: boolean): void => (
-            dispatch(authActions.switchChangePasswordDialog(show))
-        ),
+        switchChangePasswordDialog: (show: boolean): void => dispatch(authActions.switchChangePasswordDialog(show)),
     };
 }
 
@@ -149,13 +138,7 @@ function HeaderContainer(props: Props): JSX.Element {
         isModelsPluginActive,
     } = props;
 
-    const {
-        CHANGELOG_URL,
-        LICENSE_URL,
-        GITTER_URL,
-        FORUM_URL,
-        GITHUB_URL,
-    } = consts;
+    const { CHANGELOG_URL, LICENSE_URL, GITTER_URL, FORUM_URL, GITHUB_URL } = consts;
 
     const history = useHistory();
 
@@ -164,46 +147,44 @@ function HeaderContainer(props: Props): JSX.Element {
             title: `${tool.name}`,
             content: (
                 <div>
+                    <p>{`${tool.description}`}</p>
                     <p>
-                        {`${tool.description}`}
+                        <Text strong>Server version:</Text>
+                        <Text type='secondary'>{` ${tool.server.version}`}</Text>
                     </p>
                     <p>
-                        <Text strong>
-                            Server version:
-                        </Text>
-                        <Text type='secondary'>
-                            {` ${tool.server.version}`}
-                        </Text>
+                        <Text strong>Core version:</Text>
+                        <Text type='secondary'>{` ${tool.core.version}`}</Text>
                     </p>
                     <p>
-                        <Text strong>
-                            Core version:
-                        </Text>
-                        <Text type='secondary'>
-                            {` ${tool.core.version}`}
-                        </Text>
+                        <Text strong>Canvas version:</Text>
+                        <Text type='secondary'>{` ${tool.canvas.version}`}</Text>
                     </p>
                     <p>
-                        <Text strong>
-                            Canvas version:
-                        </Text>
-                        <Text type='secondary'>
-                            {` ${tool.canvas.version}`}
-                        </Text>
-                    </p>
-                    <p>
-                        <Text strong>
-                            UI version:
-                        </Text>
-                        <Text type='secondary'>
-                            {` ${tool.ui.version}`}
-                        </Text>
+                        <Text strong>UI version:</Text>
+                        <Text type='secondary'>{` ${tool.ui.version}`}</Text>
                     </p>
                     <Row type='flex' justify='space-around'>
-                        <Col><a href={CHANGELOG_URL} target='_blank' rel='noopener noreferrer'>{'What\'s new?'}</a></Col>
-                        <Col><a href={LICENSE_URL} target='_blank' rel='noopener noreferrer'>License</a></Col>
-                        <Col><a href={GITTER_URL} target='_blank' rel='noopener noreferrer'>Need help?</a></Col>
-                        <Col><a href={FORUM_URL} target='_blank' rel='noopener noreferrer'>Forum on Intel Developer Zone</a></Col>
+                        <Col>
+                            <a href={CHANGELOG_URL} target='_blank' rel='noopener noreferrer'>
+                                What&apos;s new?
+                            </a>
+                        </Col>
+                        <Col>
+                            <a href={LICENSE_URL} target='_blank' rel='noopener noreferrer'>
+                                License
+                            </a>
+                        </Col>
+                        <Col>
+                            <a href={GITTER_URL} target='_blank' rel='noopener noreferrer'>
+                                Need help?
+                            </a>
+                        </Col>
+                        <Col>
+                            <a href={FORUM_URL} target='_blank' rel='noopener noreferrer'>
+                                Forum on Intel Developer Zone
+                            </a>
+                        </Col>
                     </Row>
                 </div>
             ),
@@ -487,7 +468,7 @@ function HeaderContainer(props: Props): JSX.Element {
                                             </table>
 
                             <span>
-                                <Button
+                                {/* <Button
                                     className='cvat-header-button'
                                     type='link'
                                     onClick={
@@ -498,7 +479,7 @@ function HeaderContainer(props: Props): JSX.Element {
                                 >
                                     <Icon type='question-circle' />
                                     Help
-                                </Button>
+                                </Button> */}
                             </span>
 
                 </div>
@@ -530,10 +511,7 @@ function HeaderContainer(props: Props): JSX.Element {
                 </Menu.Item>
             )}
 
-            <Menu.Item
-                title={`Press ${switchSettingsShortcut} to switch`}
-                onClick={() => switchSettingsDialog(true)}
-            >
+            <Menu.Item title={`Press ${switchSettingsShortcut} to switch`} onClick={() => switchSettingsDialog(true)}>
                 <Icon type='setting' />
                 Settings
             </Menu.Item>
@@ -542,24 +520,17 @@ function HeaderContainer(props: Props): JSX.Element {
                 About
             </Menu.Item>
             {renderChangePasswordItem && (
-                <Menu.Item
-                    onClick={(): void => switchChangePasswordDialog(true)}
-                    disabled={changePasswordFetching}
-                >
+                <Menu.Item onClick={(): void => switchChangePasswordDialog(true)} disabled={changePasswordFetching}>
                     {changePasswordFetching ? <Icon type='loading' /> : <Icon type='edit' />}
                     Change password
                 </Menu.Item>
             )}
 
-            <Menu.Item
-                onClick={onLogout}
-                disabled={logoutFetching}
-            >
+            <Menu.Item onClick={onLogout} disabled={logoutFetching}>
                 {logoutFetching ? <Icon type='loading' /> : <Icon type='logout' />}
                 Logout
             </Menu.Item>
-
-                        </Menu>
+        </Menu>
     );
 
     return (
@@ -572,12 +543,10 @@ function HeaderContainer(props: Props): JSX.Element {
                     type='link'
                     value='tasks'
                     href='/tasks?page=1'
-                    onClick={
-                        (event: React.MouseEvent): void => {
-                            event.preventDefault();
-                            history.push('/tasks?page=1');
-                        }
-                    }
+                    onClick={(event: React.MouseEvent): void => {
+                        event.preventDefault();
+                        history.push('/tasks?page=1');
+                    }}
                 >
                     Tasks
                 </Button>
@@ -588,12 +557,10 @@ function HeaderContainer(props: Props): JSX.Element {
                         type='link'
                         value='models'
                         href='/models'
-                        onClick={
-                            (event: React.MouseEvent): void => {
-                                event.preventDefault();
-                                history.push('/models');
-                            }
-                        }
+                        onClick={(event: React.MouseEvent): void => {
+                            event.preventDefault();
+                            history.push('/models');
+                        }}
                     >
                         Models
                     </Button>
@@ -603,14 +570,12 @@ function HeaderContainer(props: Props): JSX.Element {
                         className='cvat-header-button'
                         type='link'
                         href={`${tool.server.host}/analytics/app/kibana`}
-                        onClick={
-                            (event: React.MouseEvent): void => {
-                                event.preventDefault();
-                                // false positive
-                                // eslint-disable-next-line
-                                window.open(`${tool.server.host}/analytics/app/kibana`, '_blank');
-                            }
-                        }
+                        onClick={(event: React.MouseEvent): void => {
+                            event.preventDefault();
+                            // false positive
+                            // eslint-disable-next-line
+                            window.open(`${tool.server.host}/analytics/app/kibana`, '_blank');
+                        }}
                     >
                         Analytics
                     </Button>
@@ -621,14 +586,12 @@ function HeaderContainer(props: Props): JSX.Element {
                     className='cvat-header-button'
                     type='link'
                     href={GITHUB_URL}
-                    onClick={
-                        (event: React.MouseEvent): void => {
-                            event.preventDefault();
-                            // false positive
-                            // eslint-disable-next-line security/detect-non-literal-fs-filename
-                            window.open(GITHUB_URL, '_blank');
-                        }
-                    }
+                    onClick={(event: React.MouseEvent): void => {
+                        event.preventDefault();
+                        // false positive
+                        // eslint-disable-next-line security/detect-non-literal-fs-filename
+                        window.open(GITHUB_URL, '_blank');
+                    }}
                 >
                     <Icon type='github' />
                     <Text className='cvat-text-color'>GitHub</Text>
@@ -659,18 +622,9 @@ function HeaderContainer(props: Props): JSX.Element {
                         <Icon className='cvat-header-menu-icon' type='caret-down' />
                     </span>
                 </Dropdown>
-                </div>
-            <SettingsModal
-                visible={settingsDialogShown}
-                onClose={() => switchSettingsDialog(false)}
-            />
-            { renderChangePasswordItem
-                && (
-                    <ChangePasswordDialog
-                        onClose={() => switchChangePasswordDialog(false)}
-                    />
-                )}
-
+            </div>
+            <SettingsModal visible={settingsDialogShown} onClose={() => switchSettingsDialog(false)} />
+            {renderChangePasswordItem && <ChangePasswordDialog onClose={() => switchChangePasswordDialog(false)} />}
         </Layout.Header>
     );
 }
@@ -688,7 +642,4 @@ function propsAreTheSame(prevProps: Props, nextProps: Props): boolean {
     return equal;
 }
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps,
-)(React.memo(HeaderContainer, propsAreTheSame));
+export default connect(mapStateToProps, mapDispatchToProps)(React.memo(HeaderContainer, propsAreTheSame));

@@ -5,7 +5,6 @@
 import { combineReducers, Reducer } from 'redux';
 import authReducer from './auth-reducer';
 import tasksReducer from './tasks-reducer';
-import usersReducer from './users-reducer';
 import aboutReducer from './about-reducer';
 import shareReducer from './share-reducer';
 import formatsReducer from './formats-reducer';
@@ -17,12 +16,10 @@ import settingsReducer from './settings-reducer';
 import shortcutsReducer from './shortcuts-reducer';
 import userAgreementsReducer from './useragreements-reducer';
 
-
 export default function createRootReducer(): Reducer {
     return combineReducers({
         auth: authReducer,
         tasks: tasksReducer,
-        users: usersReducer,
         about: aboutReducer,
         share: shareReducer,
         formats: formatsReducer,

@@ -93,12 +93,6 @@ export interface PluginsState {
     list: PluginsList;
 }
 
-export interface UsersState {
-    users: any[];
-    fetching: boolean;
-    initialized: boolean;
-}
-
 export interface AboutState {
     server: any;
     packageVersion: {
@@ -123,7 +117,8 @@ export interface UserAgreementsState {
     initialized: boolean;
 }
 
-export interface ShareFileInfo { // get this data from cvat-core
+export interface ShareFileInfo {
+    // get this data from cvat-core
     name: string;
     type: 'DIR' | 'REG';
 }
@@ -146,7 +141,7 @@ export interface Model {
     description: string;
     type: string;
     params: {
-        canvas: object;
+        canvas: Record<string, unknown>;
     };
 }
 
@@ -552,7 +547,6 @@ export interface MetaState {
 export interface CombinedState {
     auth: AuthState;
     tasks: TasksState;
-    users: UsersState;
     about: AboutState;
     share: ShareState;
     formats: FormatsState;

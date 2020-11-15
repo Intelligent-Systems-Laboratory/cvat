@@ -441,6 +441,8 @@ export interface AnnotationState {
         visible: boolean,
         autofitState:boolean,
         globalattributesState: boolean,
+        trackerState: string,
+        modelState: number,
     }
     // ISL END
     // mabe predict bbs

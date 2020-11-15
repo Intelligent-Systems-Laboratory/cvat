@@ -15,6 +15,8 @@ interface Props {
     toggleGlobalAttributes(jobInstance:any,value:boolean):void;
     autofitInitState:boolean;
     globalattributesInitState: boolean;
+    trackerInitState: string;
+    modelInitState: number;
     modelOnChange(event:any): void;
     trackerOnChange(event:any): void;
 }
@@ -26,6 +28,8 @@ export default function TogglesModal(props: Props): JSX.Element {
         toggleGlobalAttributes,
         autofitInitState,
         globalattributesInitState,
+        trackerInitState,
+        modelInitState,
         modelOnChange,
         trackerOnChange,
 
@@ -63,13 +67,13 @@ export default function TogglesModal(props: Props): JSX.Element {
                 </Col>
                 <Col flex={1}>
                     <Switch defaultChecked={globalattributesInitState} onChange={toggleGA} />
-                </Col>z
+                </Col>
                 <Col flex={9}>
                     <Text>Predict Bounding box model</Text>
                 </Col>
                 <Col flex={1}>
 
-                        <Radio.Group defaultValue="0" buttonStyle="solid" onChange={modelOnChange}>
+                        <Radio.Group defaultValue={modelInitState+""} buttonStyle="solid" onChange={modelOnChange}>
                         {options_models.map((value, index) => {
                             return <Radio.Button key={index} value={value}>{value}</Radio.Button>
                         })}
@@ -80,7 +84,7 @@ export default function TogglesModal(props: Props): JSX.Element {
                 </Col>
                 <Col flex={1}>
 
-                        <Radio.Group defaultValue="CSRT" buttonStyle="solid" onChange={trackerOnChange}>
+                        <Radio.Group defaultValue={trackerInitState} buttonStyle="solid" onChange={trackerOnChange}>
                         {options_tracker.map((value, index) => {
                             return <Radio.Button key={index} value={value}>{value}</Radio.Button>
                         })}

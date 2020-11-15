@@ -131,6 +131,8 @@ const defaultState: AnnotationState = {
         visible: false,
         autofitState:false,
         globalattributesState: false,
+        modelState:0,
+        trackerState:'pysot',
     },
     // ISL END
     // mabe predict bbs
@@ -234,13 +236,15 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         // ISL FEATURES MODAL
 
         case AnnotationActionTypes.TOGGLE_AUTOFIT: {
-            const { autofit,globalattributes } = action.payload;
+            const { autofit,globalattributes,tracker,model } = action.payload;
             return {
                 ...state,
                 featuresToggle:{
                     ...state.featuresToggle,
                     autofitState:autofit,
                     globalattributesState:globalattributes,
+                    modelState:model,
+                    trackerState:tracker,
                 }
             };
         }

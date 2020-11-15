@@ -686,10 +686,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         else:
             data = {}
             for attr,value in config['main'].items():
-                print(attr,value)
+                print('(',type(value),')',attr,value)
                 data[attr]=value
+            print('data',data)
             serializer = ISLConfigSerializer(data=data)
-            print(data)
             print(serializer.is_valid())
             print('serialized',serializer.data)
             return Response(serializer.data)

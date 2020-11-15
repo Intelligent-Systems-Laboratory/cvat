@@ -292,6 +292,8 @@ export function fetch(jobInstance: any, url:string, params:any|undefined=null): 
                             payload: {
                                 autofit: data['autofit'],
                                 globalattributes: data['globalattributes'],
+                                tracker: data['tracker'],
+                                model: data['predict_bb_model'],
                             },
                         });
                     }

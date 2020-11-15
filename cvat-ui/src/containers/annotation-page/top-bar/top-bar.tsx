@@ -331,6 +331,7 @@ class AnnotationTopBarContainer extends React.PureComponent<Props, State> {
             console.log(featuresToggle.globalattributesState);
             this.showGlobalAttributesModal();
             this.waitPageToCompleteLoading();
+            this.firstTime = false;
         }
         // ISL END
     }

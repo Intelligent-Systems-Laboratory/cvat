@@ -10,7 +10,6 @@ import {
     okGlobalAttributes,
     switchToggleFeatureModal,
     fetch,
-    autoFit,
 } from 'actions/annotation-actions';
 import TogglesModal from 'components/annotation-page/top-bar/toggles-modal';
 
@@ -19,6 +18,8 @@ interface StateToProps {
     jobInstance:any;
     autofitInitState:boolean;
     globalattributesInitState: boolean;
+    trackerInitState: string;
+    modelInitState: number;
 }
 
 interface DispatchToProps {
@@ -37,6 +38,8 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 visible:visible,
                 autofitState:autofitInitState,
                 globalattributesState:globalattributesInitState,
+                trackerState:trackerInitState,
+                modelState:modelInitState,
             },
             job: {
                 instance: jobInstance
@@ -50,6 +53,8 @@ function mapStateToProps(state: CombinedState): StateToProps {
         jobInstance,
         autofitInitState,
         globalattributesInitState,
+        modelInitState,
+        trackerInitState,
     };
 }
 
@@ -73,6 +78,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(fetch(jobInstance,"tasks/1/ISLconfig",params));
         },
         fetchInitialState(jobInstance:any):void{
+            console.log('FETCH initial');
             dispatch(fetch(jobInstance,"tasks/1/ISLconfig"));
         },
         changeModel(jobInstance:any,modelNumber:number):void{
@@ -131,6 +137,8 @@ class TogglesModalContainer extends React.PureComponent<Props> {
             toggleGlobalAttributes,
             autofitInitState,
             globalattributesInitState,
+            trackerInitState,
+            modelInitState,
         } = this.props;
 
         return (
@@ -144,6 +152,8 @@ class TogglesModalContainer extends React.PureComponent<Props> {
                 globalattributesInitState={globalattributesInitState}
                 modelOnChange = {this.predictBBModelOnChange}
                 trackerOnChange={this.trackerOnChange}
+                modelInitState={modelInitState}
+                trackerInitState={trackerInitState}
             />
         );
     }

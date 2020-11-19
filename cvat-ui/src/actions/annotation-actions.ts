@@ -325,8 +325,7 @@ export function fetch(jobInstance: any, url:string, params:any|undefined=null): 
                     dispatch({
                         type: AnnotationActionTypes.UPDATE_TRACKALL_RESULTS,
                         payload: {
-                            trackingStatus:true,
-                            visible:false,
+                            trackingStatus:false,
                             tracks:data,
                             frameStart:params['frameStart'],
                             ids:params['ids']

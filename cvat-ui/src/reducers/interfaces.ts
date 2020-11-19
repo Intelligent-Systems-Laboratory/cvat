@@ -457,6 +457,7 @@ export interface AnnotationState {
         sourceStates: any[],
         preview: any,
         trackingStatus:boolean,
+        loading:boolean,
     }
     // mabe end
     aiToolsRef: MutableRefObject<any>;

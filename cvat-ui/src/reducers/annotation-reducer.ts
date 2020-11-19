@@ -148,6 +148,7 @@ const defaultState: AnnotationState = {
         sourceStates: [],
         preview: null,
         trackingStatus:false,
+        loading:false,
     }
     // mabe end
 
@@ -205,21 +206,27 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 ...state,
                 trackAll: {
                     ...state.trackAll,
-                    visible:visible,
                     results:tracks,
                     trackingStatus:trackingStatus,
                     frameStart:frameStart,
                     sourceStates:ids,
+                    loading:false,
                 }
             };
         }
         case AnnotationActionTypes.SWITCH_AUTO_TRACKALL_MODAL: {
             const { visible } = action.payload;
+            let states:number[]=[];
+            state.annotations.states.forEach(state => {
+                states.push(state.clientID);
+            })
             return {
                 ...state,
                 trackAll: {
                     ...state.trackAll,
-                    visible:visible
+                    visible:visible,
+                    loading:true,
+                    sourceStates:states
                 }
             };
         }

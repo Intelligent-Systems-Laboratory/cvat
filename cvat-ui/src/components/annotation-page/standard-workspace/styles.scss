@@ -240,3 +240,28 @@
     color: #ffffff;
     border-color: #000000;
 }
+
+#trackall-body {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#trackall-sidebar {
+    background: #57585A;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+#vehicle-select {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    overflow-x: auto;
+}
+
+#trackall-vehicle-view-container {
+
+    justify-self: stretch;
+}

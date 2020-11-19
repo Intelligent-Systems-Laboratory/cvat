@@ -1372,7 +1372,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 zoomCanvasCtx.lineTo(this.fixedZoomSize,this.fixedZoomSize/2);
                 zoomCanvasCtx.stroke();
                 // ISL END
-                
+
                 if (typeof data.redraw === 'number') {
                     this.setupServiceHidden(data.redraw, true);
                 }
@@ -2098,7 +2098,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
     private deactivateShape(): void {
 
         if (this.activeElement.clientID !== null) {
-            console.log('deactivate');
+            // console.log('deactivate');
             const { displayAllText } = this.configuration;
             const { clientID } = this.activeElement;
             const drawnState = this.drawnStates[clientID];

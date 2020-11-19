@@ -12,6 +12,7 @@ import { clamp } from 'utils/math';
 import Button from 'antd/lib/button';
 import config from 'cvat-core/src/config';
 import Spin from 'antd/lib/spin';
+import Radio, { RadioChangeEvent } from 'antd/lib/radio';
 
 interface Props {
     visible: boolean,
@@ -23,7 +24,10 @@ interface Props {
     trackingStatus:boolean,
     onCancel():void,
     onOk():void,
-    onChangeNumFramesToTrack(frames: number): void;
+    onChangeNumFramesToTrack(frames: number): void,
+    jobInstance: any,
+    previewChangeHandler(clientID: number): void,
+    loading:boolean,
 }
 
 export default function TrackAllConfirmComponent(props: Props): JSX.Element {
@@ -37,7 +41,10 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
         trackingStatus,
         onCancel,
         onOk,
-        onChangeNumFramesToTrack
+        onChangeNumFramesToTrack,
+        jobInstance,
+        previewChangeHandler,
+        loading,
     } = props;
 
     var num_frames_to_track = 10;
@@ -49,9 +56,9 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
             cancelText='Cancel'
             onOk={onOk}
             onCancel={onCancel}
-            title='Track all objects'
+            title='Vehicle Tracking'
             visible={visible}
-            width = {200}
+            width = {1600}
         >
             {/* <div className='cvat-track-confirm'>
                 <Text>Track up to how many frames? 0 for indefinite.</Text>
@@ -82,32 +89,56 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
 
                 />
                 </div>
-                <div id='track-canvas-container'>
-                    <div id='track-loading-div'>
-                    <Spin id={'trackall-loading'} style={{visibility: "hidden"}}></Spin>
+                <div id='trackall-body'>
+                    <div id='track-canvas-container'>
+                        <div id='track-loading-div'>
+                            {
+                                loading && <Spin id={'trackall-loading'}></Spin>
+                            }
+
+                        </div>
+                        <div id='trackall-canvas-div'>
+                        {
+                            // automaticTracking.jobInstance != null &&
+                                <img src={`${backendAPI}/tasks/${jobInstance.task.id}/data?type=frame&amp;quality=compressed&amp;number=${30}`} width="1365" height="767" id='trackall-image' style={{display: "none"}}
+                                    onLoad={()=>{
+                                    console.log('track all image loaded ');
+                                    // console.log(automaticTracking.current);
+                                    let outputImg = document.getElementById('trackall-image') as HTMLImageElement;
+
+                                    let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
+                                    let ctx = canvas.getContext('2d');
+                                    if(ctx && outputImg){
+                                        ctx.drawImage(outputImg,0,0,canvas.width,canvas.height);
+                                    }
+                                canvas.style.visibility ='';
+                            }}></img>
+                        }
+                        <canvas id='trackall-canvas' style={{visibility: "hidden"}} width='1200' height={1200*1080/1920}></canvas>
+                        {/* <canvas id='track-canvas' ></canvas> */}
+                        </div>
+
+
+
+
                     </div>
-                    <div id='track-canvas-div'>
-                    {
-                        // automaticTracking.jobInstance != null &&
-                        //     <img src={`${backendAPI}/tasks/${automaticTracking.jobInstance.task.id}/data?type=frame&amp;quality=compressed&amp;number=${automaticTracking.current}`} width="1365" height="767" id='track-image' style={{display: "none"}}
-                        //         onLoad={()=>{
-                        //         console.log('refreshed');
-                        //         console.log(automaticTracking.current);
-                        //         var loading = document.getElementById('track-loading');
-                        //     if (loading){
-                        //         loading.style.display ="none";
-                        //     }
-                        // }}></img>
-                    }
-                    {/* <canvas id='track-canvas' style={{visibility: "hidden"}}></canvas> */}
-                    {/* <canvas id='track-canvas' ></canvas> */}
+                    <div id='trackall-sidebar'>
+                        <Text style={{color:"#FFFFFF",padding: "10px 10px"}} strong>Vehicle ID</Text>
+                        <div id='vehicle-select'>
+                            <Radio.Group defaultValue={"0"} buttonStyle="solid" onChange={(e:RadioChangeEvent)=>{
+                                previewChangeHandler(e.target.value);
+                            }}>
+                                {/* <Radio.Button key={0} value={'hi'}>{'hi'}</Radio.Button> */}
+                                {sourceStates.map((clientID, index) => {
+                                    return <Radio.Button key={index} value={clientID}>{clientID}</Radio.Button>
+                                })}
+                            </Radio.Group>
+                        </div>
+                        <div id='trackall-vehicle-view-container'>
+                            <canvas id='trackall-vehicle-view-canvas' width='300' height={200}></canvas>
+                        </div>
                     </div>
-
-
-
-
                 </div>
-
             </div>
         </Modal>
     );

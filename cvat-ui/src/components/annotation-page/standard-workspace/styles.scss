@@ -248,10 +248,10 @@
 }
 
 #trackall-sidebar {
-    background: #57585A;
+    background: #777777;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
 }
 
 #vehicle-select {
@@ -259,9 +259,12 @@
     flex-wrap: wrap;
     flex-direction: column;
     overflow-x: auto;
+    padding: 10px 10px 10px 10px;
 }
 
 #trackall-vehicle-view-container {
 
     justify-self: stretch;
+    padding: 10px 10px 10px 10px;
+    background: #dddddd;
 }

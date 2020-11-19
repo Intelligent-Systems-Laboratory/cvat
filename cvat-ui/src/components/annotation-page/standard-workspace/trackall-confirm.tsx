@@ -45,6 +45,7 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
         jobInstance,
         previewChangeHandler,
         loading,
+        frame,
     } = props;
 
     var num_frames_to_track = 10;
@@ -100,7 +101,7 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                         <div id='trackall-canvas-div'>
                         {
                             // automaticTracking.jobInstance != null &&
-                                <img src={`${backendAPI}/tasks/${jobInstance.task.id}/data?type=frame&amp;quality=compressed&amp;number=${30}`} width="1365" height="767" id='trackall-image' style={{display: "none"}}
+                                <img src={`${backendAPI}/tasks/${jobInstance.task.id}/data?type=frame&amp;quality=compressed&amp;number=${frameStart+framesToTrack}`} width="1365" height="767" id='trackall-image' style={{display: "none"}}
                                     onLoad={()=>{
                                     console.log('track all image loaded ');
                                     // console.log(automaticTracking.current);

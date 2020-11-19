@@ -334,7 +334,7 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             preview,
             trackingStatus,
             cancel,
-
+            frame,
             onChangeNumFramesToTrack,
             jobInstance,
             loading
@@ -345,7 +345,7 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             <TrackAllConfirmComponent
                 visible={visible}
                 framesToTrack = {framesToTrack}
-                frameStart = {frameStart}
+                frameStart = {frame}
                 preview = {preview}
                 results = {results}
                 sourceStates = {sourceStates}

@@ -142,7 +142,7 @@ export default function TrackConfirmComponent(props: Props): JSX.Element {
                         }> Height- </Button>
 
                     </div>
-                    <div id='track-right-bottom-buttons'>
+                    <div id='decision-buttons-container'>
                         {/* <Button className='btn-bottom'> Done </Button> */}
                         <Button className='btn-bottom' onClick={
                             (event:any) => {

@@ -17,13 +17,15 @@ from glob import glob
 from cvat.apps.engine.pysot.core.config import cfg
 from cvat.apps.engine.pysot.models.model_builder import ModelBuilder
 from cvat.apps.engine.pysot.tracker.tracker_builder import build_tracker
-def track(frameList, initBB, tracker):
+class Tracker:
     results = []
-    if(tracker == 'CSRT'):
-        results = track_CSRT(frameList,initBB)
-    elif(tracker == 'pysot'):
-        results = track_CSRT(frameList,initBB)
-    return results
+    def track(self, frameList, initBB, tracker):
+        if(tracker == 'CSRT'):
+            results = track_CSRT(frameList,initBB)
+        elif(tracker == 'pysot'):
+            results = track_CSRT(frameList,initBB)
+        self.results = results
+        return results
 def track_CSRT(frameList, initBB):
     start = 0
     coords = []

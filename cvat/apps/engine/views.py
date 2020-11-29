@@ -57,7 +57,7 @@ from PIL import Image
 import numpy as np
 # ISL END
 
-import cvat.apps.engine.tracker # ISL TRACKING
+from cvat.apps.engine.tracker import Tracker# ISL TRACKING
 from cvat.apps.engine.efficientcut import efficientcut #ISL EFFICIENTCUT
 
 import json # ISL GLOBAL ATTRIBUTES
@@ -73,6 +73,11 @@ config.read(config_path)
 # mabe predict bbs
 from cvat.apps.engine.predict import predict
 # mabe end
+
+# mabe trackall
+previews = []
+# mabe end
+
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
 # send requests with ?format=openapi suffix instead of ?scheme=openapi.
 # We map the required paramater explicitly and add it into query arguments
@@ -518,7 +523,8 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             print('Frame fetching time: %d' % (current_milli_time() - start_frame_fetch))
             start_csrt = current_milli_time()
             print(data)
-            results = cvat.apps.engine.tracker.track(frameList, data,config['main']['tracker'])
+            tracker = Tracker()
+            results = tracker.track(frameList, data,config['main']['tracker'])
             print('results length',len(results))
             # enable/disable grabcut on the results
             # for result,frame in zip(results,frameList):
@@ -553,9 +559,26 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     # EDITED FOR TRACKING
     @swagger_auto_schema(method='post', operation_summary='Returns tracker coordinates for all the bounding boxes',
     )
-    @action(detail=True, methods=['POST'])
+    @swagger_auto_schema(method='get', operation_summary='Method returns preview for the trackall feature',
+        manual_parameters=[
+            openapi.Parameter('type', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_STRING,
+                enum=['chunk', 'frame', 'preview'],
+                description="Specifies the type of the requested data"),
+            openapi.Parameter('quality', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_STRING,
+                enum=['compressed', 'original'],
+                description="Specifies the quality level of the requested data, doesn't matter for 'preview' type"),
+            openapi.Parameter('number', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="A unique number value identifying chunk or frame, doesn't matter for 'preview' type"),
+            openapi.Parameter('frame-start', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies the frame number in which the tracking will begin"),
+            openapi.Parameter('object-id', in_=openapi.IN_QUERY, required=True, type=openapi.TYPE_NUMBER,
+                description="Specifies ID of the focused object in tracking"),
+            ]
+    )
+    @action(detail=True, methods=['POST','GET'])
     def trackall(self, request, pk):
         try:
+            previews = []
             if request.method == 'POST':
                 print('request.data',request.data)
                 # get the parameters of the request
@@ -576,18 +599,82 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                 skip = 2
                 out_type = FrameProvider.Type.NUMPY_ARRAY
                 frameList = frame_provider.get_frames_improved(frameStart,frameEnd,data_quality,out_type,skip)
-
-                for box in bboxes:
-                    print('tracking item ',bboxes.index(box))
-                    xtl = box[0]
-                    ytl = box[1]
-                    xbr = box[2]
-                    ybr = box[3]
+                tracker = Tracker()
+                for bbox in bboxes:
+                    print('tracking item ',bboxes.index(bbox))
+                    xtl = bbox[0]
+                    ytl = bbox[1]
+                    xbr = bbox[2]
+                    ybr = bbox[3]
                     data = (xtl, ytl, xbr-xtl, ybr-ytl)
-                    result = cvat.apps.engine.tracker.track_pysot(frameList, data)
+                    result = tracker.track(frameList, data,'pysot')
                     results.append(result)
+                    frame = frameList[-1]
+                    crops = []
+                    for i in range(0,len(result),3):
+                        if(i==0):
+                            crop = frame[bbox[1]:bbox[1]+bbox[3],bbox[0]:bbox[0]+bbox[2]]
+                            crops.append(crop)
+                        # frameList[-1][ytl:yrb,xtl:xbr]
+                    frame[bbox[1]:bbox[1]+bbox[3],bbox[0]:bbox[0]+bbox[2]]=crops[0]
+                    previews.append(frame)
+                return Response(results)
+            else:
+                # GET request
+                data_type = request.query_params.get('type', None)
+                data_id = request.query_params.get('number', None)
+                data_quality = request.query_params.get('quality', 'compressed')
+                frame_start = request.query_params.get('frame-start', None)
+                object_id = request.query_params.get('object-id', None)
+                possible_data_type_values = ('chunk', 'frame', 'preview')
+                possible_quality_values = ('compressed', 'original')
 
-            return Response(results)
+                if not data_type or data_type not in possible_data_type_values:
+                    return Response(data='data type not specified or has wrong value', status=status.HTTP_400_BAD_REQUEST)
+                elif data_type == 'chunk' or data_type == 'frame':
+                    if not data_id:
+                        return Response(data='number not specified', status=status.HTTP_400_BAD_REQUEST)
+                    elif data_quality not in possible_quality_values:
+                        return Response(data='wrong quality value', status=status.HTTP_400_BAD_REQUEST)
+
+                try:
+                    db_task = self.get_object()
+                    db_data = db_task.data
+                    frame_provider = FrameProvider(db_task.data)
+
+                    if data_type == 'chunk':
+                        data_id = int(data_id)
+
+                        data_quality = FrameProvider.Quality.COMPRESSED \
+                            if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
+
+                        #TODO: av.FFmpegError processing
+                        if settings.USE_CACHE and db_data.storage_method == StorageMethodChoice.CACHE:
+                            buff, mime_type = frame_provider.get_chunk(data_id, data_quality)
+                            return HttpResponse(buff.getvalue(), content_type=mime_type)
+
+                        # Follow symbol links if the chunk is a link on a real image otherwise
+                        # mimetype detection inside sendfile will work incorrectly.
+                        path = os.path.realpath(frame_provider.get_chunk(data_id, data_quality))
+                        return sendfile(request, path)
+
+                    elif data_type == 'frame':
+                        data_id = int(data_id)
+                        data_quality = FrameProvider.Quality.COMPRESSED \
+                            if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
+                        buf, mime = frame_provider.get_frame(data_id, data_quality)
+                        return HttpResponse(buf.getvalue(), content_type=mime)
+
+                    elif data_type == 'preview':
+                        return sendfile(request, frame_provider.get_preview())
+                    else:
+                        return Response(data='unknown data type {}.'.format(data_type), status=status.HTTP_400_BAD_REQUEST)
+                except APIException as e:
+                    return Response(data=e.default_detail, status=e.status_code)
+                except Exception as e:
+                    msg = 'cannot get requested data type: {}, number: {}, quality: {}'.format(data_type, data_id, data_quality)
+                    slogger.task[pk].error(msg, exc_info=True)
+                    return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             msg = "something is wrong"
             return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
@@ -728,6 +815,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             return Response(data='%s %s' %(msg , str(e)), status=status.HTTP_400_BAD_REQUEST)
 
     # ISL END
+
     @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',
         responses={'200': JobSerializer(many=True)})
     @action(detail=True, methods=['GET'], serializer_class=JobSerializer)

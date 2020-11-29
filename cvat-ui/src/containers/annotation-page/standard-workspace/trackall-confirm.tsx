@@ -147,8 +147,8 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
         //     }
         // }
         // fix
-        const canvasMaxWidth = 1000;
-        const canvasMaxHeight = 550;
+        const canvasMaxWidth = 1200;
+        const canvasMaxHeight = canvasMaxWidth*1080/1920;
 
         var bboxMaxPercent = 0.8;
         var scaleFactor = 1;
@@ -260,8 +260,21 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
         const {
             visible,
             results,
-            sourceStates
+            sourceStates,
+            framesToTrack,
+            loading
         } = this.props;
+        if(framesToTrack != prevProps.framesToTrack){
+            console.log('framesToTrack',framesToTrack);
+            if(loading){
+
+                this.track();
+                console.log('already loading');
+            }
+        }
+        if(loading != prevProps.loading){
+            console.log('loading',loading);
+        }
         if(visible!=prevProps.visible && visible){
             this.track();
             this.waitForElementToDisplay("#trackall-vehicle-view-canvas",()=>{
@@ -280,6 +293,15 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
         if(results!=prevProps.results){
             console.log('results updated');
 
+            this.drawResults();
+            this.changePreview(sourceStates[0]);
+        }
+    }
+    public drawResults =():void =>{
+        const {
+            results
+        } = this.props;
+        try {
             let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
             let ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
             ctx.beginPath();
@@ -289,40 +311,90 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
                 let result = track[track.length-1];
                 let width = result[2]-result[0];
                 let height = result[3]-result[1];
-                let scale = 1920/canvas.width;
-                ctx.rect(result[0]/scale,result[1]/scale,width/scale,height/scale);
+                let scaleX = 1920/canvas.width;
+                let scaleY = 1080/canvas.height;
+                ctx.rect(result[0]/scaleX,result[1]/scaleY,width/scaleX,height/scaleY);
             });
             ctx.stroke();
-            this.changePreview(sourceStates[0]);
+        } catch (error) {
+            console.log('error');
         }
+
     }
     public changePreview = (clientID:number) =>{
         const{
             sourceStates,
             results
         } = this.props;
+
+        this.draw(); //redraw the image
+        this.drawResults();
         let index = sourceStates.indexOf(clientID);
         console.log('index',index);
         var offset = 20;
         if(index >= 0){
             let previewCanvas = window.document.getElementById('trackall-vehicle-view-canvas') as HTMLCanvasElement;
-                if(previewCanvas){
-                    let previewCtx = previewCanvas.getContext('2d') as CanvasRenderingContext2D;
-                    previewCtx.fillStyle='gray';
-                    previewCtx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
-                    previewCtx.stroke();
-                    var outputImg = document.getElementById('trackall-image') as HTMLImageElement;
-                    var bbox = results[index][results.length-1];
+            if(previewCanvas){
+                let previewCtx = previewCanvas.getContext('2d') as CanvasRenderingContext2D;
+                previewCtx.fillStyle='gray';
+                previewCtx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
+                previewCtx.stroke();
+                var outputImg = document.getElementById('trackall-image') as HTMLImageElement;
+                var bbox = results[index][results[index].length-1];
 
-                    let width = bbox[2]-bbox[0]+2*offset;
-                    let height = bbox[3]-bbox[1]+2*offset;
-                    let aspectRatio = height/width;
-                    console.log('aspect ratio',aspectRatio);
-                    previewCanvas.height = previewCanvas.width *aspectRatio;
-                    console.log('canvas AR',previewCanvas.height/previewCanvas.width);
-                    previewCtx.drawImage(outputImg,bbox[0]-offset,bbox[1]-offset,width,height,0,0,previewCanvas.width,previewCanvas.height);
-                }
+                let width = bbox[2]-bbox[0]+2*offset;
+                let height = bbox[3]-bbox[1]+2*offset;
+                let aspectRatio = height/width;
+                console.log('aspect ratio',aspectRatio);
+                previewCanvas.height = previewCanvas.width *aspectRatio;
+                console.log('canvas AR',previewCanvas.height/previewCanvas.width);
+                previewCtx.drawImage(outputImg,bbox[0]-offset,bbox[1]-offset,width,height,0,0,previewCanvas.width,previewCanvas.height);
+            }
+            this.changeSelected(index);
         }
+    }
+    public changeSelected = (index:number):void =>{
+        const {
+            results,
+        } = this.props;
+        var dotSize=3;
+        let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
+        let ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+        var bbox:number[] = results[index][results[index].length-1];
+        let scaleX = 1920/canvas.width;
+        let scaleY = 1080/canvas.height;
+        //dots outline
+        ctx.strokeStyle = "#000000";
+        ctx.beginPath();
+        ctx.arc(bbox[0]/scaleX, bbox[1]/scaleY, dotSize+1, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bbox[0]/scaleX, bbox[3]/scaleY, dotSize+1, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bbox[2]/scaleX, bbox[1]/scaleY, dotSize+1, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bbox[2]/scaleX, bbox[3]/scaleY, dotSize+1, 0, 2 * Math.PI);
+        ctx.stroke();
+        //dots
+        ctx.strokeStyle = "#FF0000";
+        ctx.beginPath();
+        ctx.arc(bbox[0]/scaleX, bbox[1]/scaleY, dotSize, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bbox[0]/scaleX, bbox[3]/scaleY, dotSize, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bbox[2]/scaleX, bbox[1]/scaleY, dotSize, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bbox[2]/scaleX, bbox[3]/scaleY, dotSize, 0, 2 * Math.PI);
+        ctx.stroke();
+
+
+
+
     }
     public render(): JSX.Element {
         const {

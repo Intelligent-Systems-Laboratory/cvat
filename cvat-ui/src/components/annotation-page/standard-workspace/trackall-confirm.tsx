@@ -13,6 +13,11 @@ import Button from 'antd/lib/button';
 import config from 'cvat-core/src/config';
 import Spin from 'antd/lib/spin';
 import Radio, { RadioChangeEvent } from 'antd/lib/radio';
+import { SettingsIcon } from 'icons';
+import Icon from 'antd/lib/icon';
+
+import CloseCircleOutlined from '@ant-design/icons/CloseCircleOutlined';
+import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined';
 
 interface Props {
     visible: boolean,
@@ -45,7 +50,6 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
         jobInstance,
         previewChangeHandler,
         loading,
-        frame,
     } = props;
 
     var num_frames_to_track = 10;
@@ -94,14 +98,16 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                     <div id='track-canvas-container'>
                         <div id='track-loading-div'>
                             {
-                                loading && <Spin id={'trackall-loading'}></Spin>
-                            }
+                                loading &&
+                                <Spin id={'trackall-loading'} ></Spin>
+
+                                }
 
                         </div>
                         <div id='trackall-canvas-div'>
                         {
-                            // automaticTracking.jobInstance != null &&
-                                <img src={`${backendAPI}/tasks/${jobInstance.task.id}/data?type=frame&amp;quality=compressed&amp;number=${frameStart+framesToTrack}`} width="1365" height="767" id='trackall-image' style={{display: "none"}}
+                            // automaticTracking.jobInstance != null &&tasks/1/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=0
+                                <img src={`${backendAPI}/tasks/${jobInstance.task.id}/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=0`} width="1365" height="767" id='trackall-image' style={{display: "none"}}
                                     onLoad={()=>{
                                     console.log('track all image loaded ');
                                     // console.log(automaticTracking.current);
@@ -137,6 +143,31 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                         </div>
                         <div id='trackall-vehicle-view-container'>
                             <canvas id='trackall-vehicle-view-canvas' width='300' height={200}></canvas>
+                        </div>
+                        <div id='decision-buttons-container'>
+                                <Button className='btn-bottom' onClick={
+                                    (event:any) => {
+                                        var resize={x:5,y:0};
+                                        var drag={x:0,y:0};
+                                        // onEditLastTrackState(drag,resize);
+                                    }
+                                }> Edit</Button>
+                                <Button className='btn-bottom' onClick={
+                                    (event:any) => {
+                                        var resize={x:-5,y:0};
+                                        var drag={x:0,y:0};
+                                        // onEditLastTrackState(drag,resize);
+                                    }
+                                }> Delete</Button>
+                                <Button className='btn-bottom' onClick={
+                                    (event:any) => {
+                                        var resize={x:0,y:5};
+                                        var drag={x:0,y:0};
+                                        // onEditLastTrackState(drag,resize);
+                                    }
+                                }> Confirm </Button>
+
+
                         </div>
                     </div>
                 </div>

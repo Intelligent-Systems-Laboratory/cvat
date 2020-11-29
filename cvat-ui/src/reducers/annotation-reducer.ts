@@ -167,6 +167,7 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 trackAll: {
                     ...state.trackAll,
                     framesToTrack:frames,
+                    loading:true,
                 }
             };
         }

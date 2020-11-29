@@ -244,7 +244,9 @@
 #trackall-body {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: stretch;
+    background: crimson;
 }
 
 #trackall-sidebar {
@@ -257,9 +259,10 @@
 #vehicle-select {
     display: flex;
     flex-wrap: wrap;
-    flex-direction: column;
+    flex-direction: row;
     overflow-x: auto;
     padding: 10px 10px 10px 10px;
+    align-items: center;
 }
 
 #trackall-vehicle-view-container {
@@ -267,4 +270,10 @@
     justify-self: stretch;
     padding: 10px 10px 10px 10px;
     background: #dddddd;
+}
+
+#decision-buttons-container {
+    justify-self: flex-end;
+    padding-top: 20px;
+    padding-bottom: 10px;
 }

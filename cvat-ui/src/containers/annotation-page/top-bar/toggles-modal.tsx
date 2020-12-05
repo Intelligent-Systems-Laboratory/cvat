@@ -78,7 +78,7 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
             dispatch(fetch(jobInstance,"tasks/1/ISLconfig",params));
         },
         fetchInitialState(jobInstance:any):void{
-            console.log('FETCH initial');
+            // console.log('FETCH initial');
             dispatch(fetch(jobInstance,"tasks/1/ISLconfig"));
         },
         changeModel(jobInstance:any,modelNumber:number):void{
@@ -109,7 +109,7 @@ class TogglesModalContainer extends React.PureComponent<Props> {
             fetchInitialState,
             jobInstance,
         } = this.props;
-        console.log('fetch initial config');
+        // console.log('fetch initial config');
         fetchInitialState(jobInstance);
     }
     private predictBBModelOnChange = (event:any):void =>{
@@ -117,7 +117,7 @@ class TogglesModalContainer extends React.PureComponent<Props> {
             changeModel,
             jobInstance
         } = this.props;
-        console.log('model changed to ',event.target.value);
+        // console.log('model changed to ',event.target.value);
         changeModel(jobInstance,parseInt(event.target.value));
     }
     private trackerOnChange = (event:any):void =>{
@@ -125,7 +125,7 @@ class TogglesModalContainer extends React.PureComponent<Props> {
             jobInstance,
             changeTracker
         } = this.props;
-        console.log('tracker changed to ',event.target.value);
+        // console.log('tracker changed to ',event.target.value);
         changeTracker(jobInstance,event.target.value);
     }
     public render(): JSX.Element {

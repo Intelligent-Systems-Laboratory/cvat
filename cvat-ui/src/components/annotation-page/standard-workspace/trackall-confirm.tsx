@@ -35,6 +35,7 @@ interface Props {
     loading:boolean,
 }
 
+var first_time = true;
 export default function TrackAllConfirmComponent(props: Props): JSX.Element {
     const {
         visible,
@@ -109,16 +110,14 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                             // automaticTracking.jobInstance != null &&tasks/1/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=0
                                 <img src={`${backendAPI}/tasks/${jobInstance.task.id}/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=0`} width="1365" height="767" id='trackall-image' style={{display: "none"}}
                                     onLoad={()=>{
-                                    console.log('track all image loaded ');
-                                    // console.log(automaticTracking.current);
                                     let outputImg = document.getElementById('trackall-image') as HTMLImageElement;
-
                                     let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
                                     let ctx = canvas.getContext('2d');
-                                    if(ctx && outputImg){
+                                    if(ctx && outputImg && first_time){
                                         ctx.drawImage(outputImg,0,0,canvas.width,canvas.height);
+                                        first_time = false;
+                                        canvas.style.visibility ='';
                                     }
-                                canvas.style.visibility ='';
                             }}></img>
                         }
                         <canvas id='trackall-canvas' style={{visibility: "hidden"}} width='1200' height={1200*1080/1920}></canvas>

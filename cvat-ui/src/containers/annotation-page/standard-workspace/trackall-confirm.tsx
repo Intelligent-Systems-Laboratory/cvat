@@ -22,6 +22,7 @@ import {
 
 import { CombinedState } from 'reducers/interfaces';
 import TrackAllConfirmComponent from 'components/annotation-page/standard-workspace/trackall-confirm';
+import config from 'cvat-core/src/config';
 
 interface StateToProps {
     visible: boolean,
@@ -113,6 +114,8 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
 }
 
 type Props = StateToProps & DispatchToProps;
+
+const { backendAPI } = config;
 class TrackAllConfirmContainer extends React.PureComponent<Props> {
     constructor(props: Props) {
         super(props);
@@ -124,8 +127,8 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
         if(outputImg==null){
             outputImg = document.getElementById('trackall-image') as HTMLImageElement;
         }
-        console.log('image width',outputImg.width);
-        console.log('image height',outputImg.height);
+        // console.log('image width',outputImg.width);
+        // console.log('image height',outputImg.height);
 
         // show loading
         var loading = document.getElementById('trackall-loading');
@@ -171,18 +174,9 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             // console.log('background',background);
             let ctx = canvas.getContext('2d');
             if(ctx && outputImg){
-                ctx.drawImage(outputImg,0,0,canvas.width,canvas.height);
-
-                // ctx.fillStyle='gray';
-                // ctx.fillRect(0,0,canvas.width,canvas.height);
-                // ctx.drawImage(outputImg,background[0],background[1],background[2],background[3],0,0,canvas.width,canvas.height);
-                // ctx.beginPath();
-                // ctx.lineWidth = 6;
-                // ctx.strokeStyle = "red";
-                // var pX = points[0]-background[0];
-                // var pY = points[1]-background[1];
-                // ctx.rect(pX*scaleFactor,pY*scaleFactor, width*scaleFactor,height*scaleFactor);
-                // ctx.stroke();
+                if(outputImg.complete){
+                    ctx.drawImage(outputImg,0,0,canvas.width,canvas.height);
+                }
 
             }
 
@@ -256,47 +250,7 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             }
         })();
     }
-    public componentDidUpdate(prevProps: Props): void {
-        const {
-            visible,
-            results,
-            sourceStates,
-            framesToTrack,
-            loading
-        } = this.props;
-        if(framesToTrack != prevProps.framesToTrack){
-            console.log('framesToTrack',framesToTrack);
-            if(loading){
 
-                this.track();
-                console.log('already loading');
-            }
-        }
-        if(loading != prevProps.loading){
-            console.log('loading',loading);
-        }
-        if(visible!=prevProps.visible && visible){
-            this.track();
-            this.waitForElementToDisplay("#trackall-vehicle-view-canvas",()=>{
-                let previewCanvas = window.document.getElementById('trackall-vehicle-view-canvas') as HTMLCanvasElement;
-                if(previewCanvas){
-                    let previewCtx = previewCanvas.getContext('2d') as CanvasRenderingContext2D;
-                    previewCtx.fillStyle='gray';
-                    previewCtx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
-                    previewCtx.stroke();
-                }
-
-
-            },1000,9000);
-
-        }
-        if(results!=prevProps.results){
-            console.log('results updated');
-
-            this.drawResults();
-            this.changePreview(sourceStates[0]);
-        }
-    }
     public drawResults =():void =>{
         const {
             results
@@ -321,36 +275,56 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
         }
 
     }
+
     public changePreview = (clientID:number) =>{
         const{
             sourceStates,
-            results
+            results,
+            jobInstance,
+            frameStart,
+            framesToTrack
         } = this.props;
-
-        this.draw(); //redraw the image
-        this.drawResults();
+        var outputImg = document.getElementById('trackall-image') as HTMLImageElement;
         let index = sourceStates.indexOf(clientID);
         console.log('index',index);
-        var offset = 20;
-        if(index >= 0){
-            let previewCanvas = window.document.getElementById('trackall-vehicle-view-canvas') as HTMLCanvasElement;
-            if(previewCanvas){
-                let previewCtx = previewCanvas.getContext('2d') as CanvasRenderingContext2D;
-                previewCtx.fillStyle='gray';
-                previewCtx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
-                previewCtx.stroke();
-                var outputImg = document.getElementById('trackall-image') as HTMLImageElement;
-                var bbox = results[index][results[index].length-1];
+        console.log('clientID',clientID);
+        outputImg.src = `${backendAPI}/tasks/${jobInstance.task.id}/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=${frameStart}&object-id=${clientID}`;
+        outputImg.onload =  () => {
+            console.log('onload of clientID',clientID);
+            var offset = 20;
+            if(index >= 0){
+                let previewCanvas = window.document.getElementById('trackall-vehicle-view-canvas') as HTMLCanvasElement;
+                if(previewCanvas){
+                    let previewCtx = previewCanvas.getContext('2d') as CanvasRenderingContext2D;
+                    previewCtx.fillStyle='gray';
+                    previewCtx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
+                    previewCtx.stroke();
+                    var outputImg = document.getElementById('trackall-image') as HTMLImageElement;
+                    //draw image
+                    var bbox = results[index][results[index].length-1];
 
-                let width = bbox[2]-bbox[0]+2*offset;
-                let height = bbox[3]-bbox[1]+2*offset;
-                let aspectRatio = height/width;
-                console.log('aspect ratio',aspectRatio);
-                previewCanvas.height = previewCanvas.width *aspectRatio;
-                console.log('canvas AR',previewCanvas.height/previewCanvas.width);
-                previewCtx.drawImage(outputImg,bbox[0]-offset,bbox[1]-offset,width,height,0,0,previewCanvas.width,previewCanvas.height);
+                    let width = bbox[2]-bbox[0]+2*offset;
+                    let height = bbox[3]-bbox[1]+2*offset;
+                    let aspectRatio = height/width;
+                    // console.log('aspect ratio',aspectRatio);
+                    previewCanvas.height = previewCanvas.width *aspectRatio;
+                    // console.log('canvas AR',previewCanvas.height/previewCanvas.width);
+                    previewCtx.drawImage(outputImg,bbox[0]-offset,bbox[1]-offset,width,height,0,0,previewCanvas.width,previewCanvas.height);
+
+                    let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
+                    let ctx = canvas.getContext('2d');
+                    if(ctx && outputImg){
+                        ctx.drawImage(outputImg,0,0,canvas.width,canvas.height);
+                        canvas.style.visibility ='';
+                    }
+                    }
+
+                this.draw(); //redraw the image
+                this.drawResults();
+                this.changeSelected(index);
             }
-            this.changeSelected(index);
+
+
         }
     }
     public changeSelected = (index:number):void =>{
@@ -395,6 +369,48 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
 
 
 
+    }
+    public componentDidUpdate(prevProps: Props): void {
+        const {
+            visible,
+            results,
+            sourceStates,
+            framesToTrack,
+            loading
+        } = this.props;
+        if(framesToTrack != prevProps.framesToTrack){
+            console.log('framesToTrack',framesToTrack);
+
+            if(loading){
+
+                this.track();
+                console.log('already loading');
+            }
+        }
+        if(loading != prevProps.loading){
+            console.log('loading',loading);
+        }
+        if(visible!=prevProps.visible && visible){
+            this.track();
+            this.waitForElementToDisplay("#trackall-vehicle-view-canvas",()=>{
+                let previewCanvas = window.document.getElementById('trackall-vehicle-view-canvas') as HTMLCanvasElement;
+                if(previewCanvas){
+                    let previewCtx = previewCanvas.getContext('2d') as CanvasRenderingContext2D;
+                    previewCtx.fillStyle='gray';
+                    previewCtx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
+                    previewCtx.stroke();
+                }
+
+
+            },1000,9000);
+
+        }
+        if(results!=prevProps.results){
+            console.log('results updated');
+
+            this.drawResults();
+            this.changePreview(sourceStates[0]);
+        }
     }
     public render(): JSX.Element {
         const {

@@ -801,7 +801,8 @@
                             params: {
                                 framesToTrack: params['framesToTrack'],
                                 bboxes: params['bboxes'],
-                                frameStart: params['frameStart']
+                                frameStart: params['frameStart'],
+                                objectID: params['ids']
                             }
                         });
                     }

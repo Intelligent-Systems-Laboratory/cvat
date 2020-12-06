@@ -228,25 +228,25 @@ class FrameProvider:
         chunk_reader = loader.load(chunk_number)
 
         chunk_number_start = chunk_number
-        print('frame start:',frame_start)
-        print('end: ',frame_end)
+        # print('frame start:',frame_start)
+        # print('end: ',frame_end)
         i=frame_start
-        print('i',i)
+        # print('i',i)
         start_while = self.current_milli_time()
-        print('start while',start_while)
+        # print('start while',start_while)
         while(i<frame_end+1):
             while(chunk_number == chunk_number_start and i<frame_end+1):
                 frame, frame_name, _ = chunk_reader[frame_offset]
                 start_convert = self.current_milli_time()
                 frame = self._convert_frame(frame, loader.reader_class, out_type)
-                print('convert time',self.current_milli_time()-start_convert)
+                # print('convert time',self.current_milli_time()-start_convert)
                 frames.append(frame)
                 i+=skip
                 _, chunk_number, frame_offset = self._validate_frame_number(i)
-                print('i',i)
+                # print('i',i)
             chunk_number_start = chunk_number
             chunk_reader = loader.load(chunk_number)
-            print('LOAD CHUNK')
-        print('end while',self.current_milli_time()-start_while)
-        print('frames length: ',len(frames))
+            # print('LOAD CHUNK')
+        # print('end while',self.current_milli_time()-start_while)
+        # print('frames length: ',len(frames))
         return frames

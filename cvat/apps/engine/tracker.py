@@ -102,3 +102,24 @@ def track_pysot(frameList, initBB):
             # cv2.imshow(video_name, frame)
             # cv2.waitKey(40)
     return coords
+
+class TrackResultsStorage:
+    results = []
+    updated = False
+    def check(self):
+        size = len(self.results)
+        print('storage size ',size)
+        if(size>0):
+            return True
+        else:
+            return False
+
+    def flush(self):
+        self.results = []
+    def get(self,objectID):
+        for result in self.results:
+            if(result['objectID']==objectID):
+                return result['data']
+    def store(self, item):
+        self.results.append(item)
+        self.updated = True

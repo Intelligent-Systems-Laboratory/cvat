@@ -57,7 +57,7 @@ from PIL import Image
 import numpy as np
 # ISL END
 
-from cvat.apps.engine.tracker import Tracker# ISL TRACKING
+from cvat.apps.engine.tracker import Tracker,TrackResultsStorage# ISL TRACKING
 from cvat.apps.engine.efficientcut import efficientcut #ISL EFFICIENTCUT
 
 import json # ISL GLOBAL ATTRIBUTES
@@ -75,7 +75,10 @@ from cvat.apps.engine.predict import predict
 # mabe end
 
 # mabe trackall
+import io
+import cv2
 previews = []
+storage = TrackResultsStorage()
 # mabe end
 
 # drf-yasg component doesn't handle correctly URL_FORMAT_OVERRIDE and
@@ -426,7 +429,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         # ADD code for getting the image here
         db_task = self.get_object()
         frame_provider = FrameProvider(db_task.data)
-        data_quality = FrameProvider.Quality.ORIGINAL
+        data_quality = FrameProvider.Quality.COMPRESSED
         img, mime = frame_provider.get_frame(int(frame), data_quality)
         img = Image.open(img)
         orig_img = np.array(img)
@@ -577,107 +580,159 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     )
     @action(detail=True, methods=['POST','GET'])
     def trackall(self, request, pk):
-        try:
-            previews = []
-            if request.method == 'POST':
-                print('request.data',request.data)
-                # get the parameters of the request
-                data = request.data['params']
-                bboxes = data['bboxes']
-                framesToTrack = int(data['framesToTrack'])
-                frameStart = int(data['frameStart'])
+        if request.method == 'POST':
+        # try:
+            storage.flush()
+            print('request.data',request.data)
+            # get the parameters of the request
+            data = request.data['params']
+            bboxes = data['bboxes']
+            framesToTrack = int(data['framesToTrack'])
+            frameStart = int(data['frameStart'])
+            objectIDs = data['objectID']
+            results = []
 
-                results = []
-
-                frameEnd = frameStart+framesToTrack
+            frameEnd = frameStart+framesToTrack
 
 
-                # get the frames
+            # get the frames
+            db_task = self.get_object()
+            frame_provider = FrameProvider(db_task.data)
+            data_quality = FrameProvider.Quality.COMPRESSED
+            skip = 2
+            out_type = FrameProvider.Type.NUMPY_ARRAY
+            frameList = frame_provider.get_frames_improved(frameStart,frameEnd,data_quality,out_type,skip)
+            tracker = Tracker()
+            for bbox in bboxes:
+                index = bboxes.index(bbox)
+                print('tracking item ',index)
+                bbox[0]=int(bbox[0])
+                bbox[1]=int(bbox[1])
+                bbox[2]=int(bbox[2])
+                bbox[3]=int(bbox[3])
+                xtl = bbox[0]
+                ytl = bbox[1]
+                xbr = bbox[2]
+                ybr = bbox[3]
+                data = (xtl, ytl, xbr-xtl, ybr-ytl)
+                result = tracker.track(frameList, data,'pysot')
+                # print('result length',len(result))
+                # print('frameList length', len(frameList))
+                # print(result)
+                results.append(result)
+                crops = []
+
+                for i in range(0,len(frameList)):
+                    if(i==0):
+                        crop = frameList[i][bbox[1]:bbox[3],bbox[0]:bbox[2]]
+                        crops.append(crop)
+                    else:
+                        temp_result = result[i-1]
+                        for coord in temp_result:
+                            coord = int(coord)
+                        crop = frameList[i][temp_result[1]:temp_result[3],temp_result[0]:temp_result[2]]
+                        crops.append(crop)
+                    # frameList[-1][ytl:yrb,xtl:xbr]
+
+                # print('crops length', len(crops))
+                store_data = []
+                store_id = objectIDs[index]
+                for i in range(len(crops)):
+                    item = {
+                        'bbox':bbox if i==0 else result[i-1],
+                        'frame': frameStart+i*2,
+                        'crop':crops[i],
+                        "objectID":store_id
+                    }
+                    store_data.append(item)
+                print('store_id',store_id)
+                store_entry={
+                    "data":store_data,
+                    "objectID":store_id
+                }
+                storage.store(store_entry)
+            return Response(results)
+        else:
+            # GET request
+            data_type = request.query_params.get('type', None)
+            data_id = request.query_params.get('number', None)
+            data_quality = request.query_params.get('quality', 'compressed')
+            frame_start = request.query_params.get('frame-start', None)
+            object_id = request.query_params.get('object-id', None)
+            if(object_id):
+                object_id = int(object_id)
+            possible_data_type_values = ('chunk', 'frame', 'preview')
+            possible_quality_values = ('compressed', 'original')
+
+            if not data_type or data_type not in possible_data_type_values:
+                return Response(data='data type not specified or has wrong value', status=status.HTTP_400_BAD_REQUEST)
+            elif data_type == 'chunk' or data_type == 'frame':
+                if not data_id:
+                    return Response(data='number not specified', status=status.HTTP_400_BAD_REQUEST)
+                elif data_quality not in possible_quality_values:
+                    return Response(data='wrong quality value', status=status.HTTP_400_BAD_REQUEST)
+
+            try:
                 db_task = self.get_object()
                 frame_provider = FrameProvider(db_task.data)
+
+                data_id = int(data_id)
                 data_quality = FrameProvider.Quality.COMPRESSED
-                skip = 2
-                out_type = FrameProvider.Type.NUMPY_ARRAY
-                frameList = frame_provider.get_frames_improved(frameStart,frameEnd,data_quality,out_type,skip)
-                tracker = Tracker()
-                for bbox in bboxes:
-                    print('tracking item ',bboxes.index(bbox))
-                    xtl = bbox[0]
-                    ytl = bbox[1]
-                    xbr = bbox[2]
-                    ybr = bbox[3]
-                    data = (xtl, ytl, xbr-xtl, ybr-ytl)
-                    result = tracker.track(frameList, data,'pysot')
-                    results.append(result)
-                    frame = frameList[-1]
-                    crops = []
-                    for i in range(0,len(result),3):
-                        if(i==0):
-                            crop = frame[bbox[1]:bbox[1]+bbox[3],bbox[0]:bbox[0]+bbox[2]]
-                            crops.append(crop)
-                        # frameList[-1][ytl:yrb,xtl:xbr]
-                    frame[bbox[1]:bbox[1]+bbox[3],bbox[0]:bbox[0]+bbox[2]]=crops[0]
-                    previews.append(frame)
-                return Response(results)
-            else:
-                # GET request
-                data_type = request.query_params.get('type', None)
-                data_id = request.query_params.get('number', None)
-                data_quality = request.query_params.get('quality', 'compressed')
-                frame_start = request.query_params.get('frame-start', None)
-                object_id = request.query_params.get('object-id', None)
-                possible_data_type_values = ('chunk', 'frame', 'preview')
-                possible_quality_values = ('compressed', 'original')
+                buf, mime = frame_provider.get_frame(data_id, data_quality)
 
-                if not data_type or data_type not in possible_data_type_values:
-                    return Response(data='data type not specified or has wrong value', status=status.HTTP_400_BAD_REQUEST)
-                elif data_type == 'chunk' or data_type == 'frame':
-                    if not data_id:
-                        return Response(data='number not specified', status=status.HTTP_400_BAD_REQUEST)
-                    elif data_quality not in possible_quality_values:
-                        return Response(data='wrong quality value', status=status.HTTP_400_BAD_REQUEST)
 
-                try:
-                    db_task = self.get_object()
-                    db_data = db_task.data
-                    frame_provider = FrameProvider(db_task.data)
+                # bytes_image=buf.getvalue()
 
-                    if data_type == 'chunk':
-                        data_id = int(data_id)
+                if(storage.check()):
+                    img = Image.open(buf)
+                    img = np.array(img)
+                    items = storage.get(object_id)
+                    print('object id',object_id)
+                    skip = 5
+                    i=0
+                    if(len(items)>0):
+                        # print(items)
+                        print('items not empty')
 
-                        data_quality = FrameProvider.Quality.COMPRESSED \
-                            if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
+                        item = items[-1] # save the crop of the vehicle in the current frame
+                        # print(item)
+                        retrieved_id = item['objectID']
+                        print('id from store',retrieved_id)
+                        orig_box = item['bbox']
+                        orig_crop = np.copy(img[orig_box[1]:orig_box[3],orig_box[0]:orig_box[2]])
 
-                        #TODO: av.FFmpegError processing
-                        if settings.USE_CACHE and db_data.storage_method == StorageMethodChoice.CACHE:
-                            buff, mime_type = frame_provider.get_chunk(data_id, data_quality)
-                            return HttpResponse(buff.getvalue(), content_type=mime_type)
+                        for item in items:
+                            i+=1
+                            if(skip%i!=0):
+                                continue
 
-                        # Follow symbol links if the chunk is a link on a real image otherwise
-                        # mimetype detection inside sendfile will work incorrectly.
-                        path = os.path.realpath(frame_provider.get_chunk(data_id, data_quality))
-                        return sendfile(request, path)
-
-                    elif data_type == 'frame':
-                        data_id = int(data_id)
-                        data_quality = FrameProvider.Quality.COMPRESSED \
-                            if data_quality == 'compressed' else FrameProvider.Quality.ORIGINAL
-                        buf, mime = frame_provider.get_frame(data_id, data_quality)
-                        return HttpResponse(buf.getvalue(), content_type=mime)
-
-                    elif data_type == 'preview':
-                        return sendfile(request, frame_provider.get_preview())
-                    else:
-                        return Response(data='unknown data type {}.'.format(data_type), status=status.HTTP_400_BAD_REQUEST)
-                except APIException as e:
-                    return Response(data=e.default_detail, status=e.status_code)
-                except Exception as e:
-                    msg = 'cannot get requested data type: {}, number: {}, quality: {}'.format(data_type, data_id, data_quality)
-                    slogger.task[pk].error(msg, exc_info=True)
-                    return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            msg = "something is wrong"
-            return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
+                            # print('aalsdjad')
+                            # print(item[0][0])
+                            crop = item['crop']
+                            box = item['bbox']
+                            # print('crop',np.shape(crop))
+                            # print('bbox',box)
+                            img[box[1]:box[3],box[0]:box[2]]=crop
+                            cv2.rectangle(img, (box[0],box[1]), (box[2],box[3]), (0,0,255), 1)
+                            centroid = (int((box[0]+box[2])/2),int((box[1]+box[3])/2))
+                            cv2.circle(img,centroid,4,(0,0,255),10)
+                        # write the final frame on top
+                        img[orig_box[1]:orig_box[3],orig_box[0]:orig_box[2]]=orig_crop
+                        cv2.rectangle(img, (orig_box[0],orig_box[1]), (orig_box[2],orig_box[3]), (255,0,0), 1)
+                    cv2.imwrite('ID_{}.jpg'.format(retrieved_id),img)
+                    # print(image)
+                    new_im = Image.fromarray(img,mode='RGB')
+                    b = io.BytesIO()
+                    new_im.save(b,format="jpeg")
+                    return HttpResponse(b.getvalue(), content_type=mime)
+                else:
+                    return HttpResponse(buf.getvalue(), content_type=mime)
+            except APIException as e:
+                return Response(data=e.default_detail, status=e.status_code)
+            except Exception as e:
+                msg = 'cannot get requested data type: {}, number: {}, quality: {}'.format(data_type, data_id, data_quality)
+                slogger.task[pk].error(msg, exc_info=True)
+                return Response(data=msg + '\n' + str(e), status=status.HTTP_400_BAD_REQUEST)
 
     # EDITED END
     # ISL GLOBAL ATTRIBUTES

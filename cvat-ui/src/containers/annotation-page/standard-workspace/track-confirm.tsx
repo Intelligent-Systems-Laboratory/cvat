@@ -100,9 +100,9 @@ type Props = StateToProps & DispatchToProps;
 class TrackConfirmContainer extends React.PureComponent<Props> {
     constructor(props: Props) {
         super(props);
-        this.waitPageToCompleteLoading();
+        this.attachCanvasMouseListenersOnLoad();
     }
-    private waitPageToCompleteLoading = (): void => {
+    private attachCanvasMouseListenersOnLoad = (): void => {
         const {
             onEditLastTrackState
         } = this.props;
@@ -160,7 +160,7 @@ class TrackConfirmContainer extends React.PureComponent<Props> {
 
                 });
             }else{
-                setTimeout(this.waitPageToCompleteLoading, 300);
+                setTimeout(this.attachCanvasMouseListenersOnLoad, 300);
             }
     }
     public canvas = document.getElementById("canvas") as HTMLCanvasElement;

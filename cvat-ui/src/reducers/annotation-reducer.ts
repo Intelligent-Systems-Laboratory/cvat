@@ -146,9 +146,10 @@ const defaultState: AnnotationState = {
         results: [],
         frameStart: 0,
         sourceStates: [],
-        preview: null,
+        selectedObjectID: 1,
         trackingStatus:false,
         loading:false,
+        mode:'NORMAL',
     }
     // mabe end
 
@@ -157,7 +158,18 @@ const defaultState: AnnotationState = {
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
         // mabe track all bbs
-
+        case AnnotationActionTypes.CHANGE_PREVIEW_OBJECTID: {
+            const {
+                objectID
+            } = action.payload;
+            return {
+                ...state,
+                trackAll: {
+                    ...state.trackAll,
+                    selectedObjectID:objectID,
+                }
+            };
+        }
         case AnnotationActionTypes.CHANGE_NUM_FRAME_TO_TRACK_ALL: {
             const {
                 frames
@@ -202,16 +214,53 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                 trackingStatus,
                 frameStart,
                 ids,
+                mode
             } = action.payload;
+            if(mode=='NORMAL'){
+
+            }else if(mode=='APPEND'){
+                var results = state.trackAll.results;
+                for(var i=0;i<results.length;i++){
+                    results[i].concat([tracks[i]]);
+                }
+            }else if(mode=='EDIT'){
+                const{
+                    index,
+                    drag,
+                    slice
+                }=action.payload;
+                var temp = [...state.trackAll.results];
+
+                var temp_bbox = [...temp[index][slice]];
+                temp_bbox[0]+=drag.x;
+                temp_bbox[1]+=drag.y;
+                temp_bbox[2]+=drag.x;
+                temp_bbox[3]+=drag.y;
+                temp[index][slice]=temp_bbox;
+
+                return {
+                    ...state,
+                    trackAll: {
+                        ...state.trackAll,
+                        results:temp,
+                        trackingStatus:trackingStatus,
+                        frameStart:(frameStart?frameStart:state.trackAll.frameStart),
+                        sourceStates:(ids?ids:state.trackAll.sourceStates),
+                        loading:false,
+                        mode:mode,
+                    }
+                };
+            }
             return {
                 ...state,
                 trackAll: {
                     ...state.trackAll,
                     results:tracks,
                     trackingStatus:trackingStatus,
-                    frameStart:frameStart,
-                    sourceStates:ids,
+                    frameStart:(frameStart?frameStart:state.trackAll.frameStart),
+                    sourceStates:(ids?ids:state.trackAll.sourceStates),
                     loading:false,
+                    mode:mode,
                 }
             };
         }

@@ -455,9 +455,10 @@ export interface AnnotationState {
         results: any[],
         frameStart: number,
         sourceStates: any[],
-        preview: any,
+        selectedObjectID: number,
         trackingStatus:boolean,
         loading:boolean,
+        mode:string,
     }
     // mabe end
     aiToolsRef: MutableRefObject<any>;

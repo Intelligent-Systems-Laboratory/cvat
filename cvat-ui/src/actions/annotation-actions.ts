@@ -228,10 +228,32 @@ export enum AnnotationActionTypes {
     UPDATE_TRACKALL_RESULTS='UPDATE_TRACKALL_RESULTS',
     SWITCH_AUTO_TRACKALL='SWITCH_AUTO_TRACKALL',
     CHANGE_NUM_FRAME_TO_TRACK_ALL = 'CHANGE_NUM_FRAME_TO_TRACK_ALL',
+    CHANGE_PREVIEW_OBJECTID ='CHANGE_PREVIEW_OBJECTID',
     // mabe end
 }
 // mabe track all bbs
-
+export function editTrackAllResults(drag: any,index:number,slice:number): AnyAction{
+    return {
+        type: AnnotationActionTypes.UPDATE_TRACKALL_RESULTS,
+                        payload: {
+                            trackingStatus:false,
+                            drag:drag,
+                            frameStart:null,
+                            ids:null,
+                            mode:'EDIT',
+                            index:index,
+                            slice:slice,
+                        },
+    };
+}
+export function changePreviewObjectID(objectID: number): AnyAction{
+    return {
+        type: AnnotationActionTypes.CHANGE_PREVIEW_OBJECTID,
+        payload: {
+            objectID,
+        },
+    };
+}
 export function changeNumFramesToTrackAll(frames: number): AnyAction{
     return {
         type: AnnotationActionTypes.CHANGE_NUM_FRAME_TO_TRACK_ALL,
@@ -328,7 +350,8 @@ export function fetch(jobInstance: any, url:string, params:any|undefined=null): 
                             trackingStatus:false,
                             tracks:data,
                             frameStart:params['frameStart'],
-                            ids:params['ids']
+                            ids:params['ids'],
+                            mode:params['mode']
                         },
                     });
 

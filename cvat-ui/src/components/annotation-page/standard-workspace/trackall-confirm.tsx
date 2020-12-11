@@ -18,6 +18,7 @@ import Icon from 'antd/lib/icon';
 
 import CloseCircleOutlined from '@ant-design/icons/CloseCircleOutlined';
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined';
+import LoadingOverlay from 'react-loading-overlay';
 
 interface Props {
     visible: boolean,
@@ -25,7 +26,7 @@ interface Props {
     results: any[],
     frameStart: number,
     sourceStates: any[],
-    preview: any,
+    preview_objectID: any,
     trackingStatus:boolean,
     onCancel():void,
     onOk():void,
@@ -43,7 +44,7 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
         results,
         frameStart,
         sourceStates,
-        preview,
+        preview_objectID,
         trackingStatus,
         onCancel,
         onOk,
@@ -53,7 +54,7 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
         loading,
     } = props;
 
-    var num_frames_to_track = 10;
+    var num_frames_to_track = 30;
     const { backendAPI } = config;
     return (
         <Modal
@@ -82,6 +83,21 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
             </div> */}
             <div id='track-content-container'>
                 <div id='track-text-box'>
+                <Text style={{color:"#000000",padding: "10px 10px"}} strong>Start</Text>
+                <InputNumber
+                    style={{paddingRight: "30px"}}
+                    size='small'
+                    min={0}
+                    defaultValue={frameStart}
+                    onChange={(value: number | undefined) => {
+                        // if(value){
+                        //     num_frames_to_track = value;
+                        //     onChangeNumFramesToTrack(value);
+                        // }
+                    }}
+
+                />
+                <Text style={{color:"#000000",padding: "10px 10px"}} strong>End</Text>
                 <InputNumber
                     size='small'
                     min={0}
@@ -89,22 +105,22 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                     onChange={(value: number | undefined) => {
                         if(value){
                             num_frames_to_track = value;
-                            onChangeNumFramesToTrack(value);
+
                         }
                     }}
 
                 />
+                <Button
+                    style={{marginLeft: "5px",marginBottom:"5px"}}
+                    onClick={
+                        (event:any) => {
+                            console.log('tracking up to',num_frames_to_track);
+                            onChangeNumFramesToTrack(num_frames_to_track);
+                        }}
+                > ok</Button>
                 </div>
                 <div id='trackall-body'>
                     <div id='track-canvas-container'>
-                        <div id='track-loading-div'>
-                            {
-                                loading &&
-                                <Spin id={'trackall-loading'} ></Spin>
-
-                                }
-
-                        </div>
                         <div id='trackall-canvas-div'>
                         {
                             // automaticTracking.jobInstance != null &&tasks/1/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=0
@@ -120,7 +136,14 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                                     }
                             }}></img>
                         }
-                        <canvas id='trackall-canvas' style={{visibility: "hidden"}} width='1200' height={1200*1080/1920}></canvas>
+                        <LoadingOverlay
+                        active={loading}
+                        spinner
+                        text='Tracking'
+                        >
+                            <canvas id='trackall-canvas' style={{visibility: "hidden"}} width='1200' height={1200*1080/1920}></canvas>
+
+                        </LoadingOverlay>
                         {/* <canvas id='track-canvas' ></canvas> */}
                         </div>
 
@@ -131,7 +154,7 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                     <div id='trackall-sidebar'>
                         <Text style={{color:"#FFFFFF",padding: "10px 10px"}} strong>Vehicle ID</Text>
                         <div id='vehicle-select'>
-                            <Radio.Group defaultValue={"0"} buttonStyle="solid" onChange={(e:RadioChangeEvent)=>{
+                            <Radio.Group defaultValue={preview_objectID} buttonStyle="solid" onChange={(e:RadioChangeEvent)=>{
                                 previewChangeHandler(e.target.value);
                             }}>
                                 {/* <Radio.Button key={0} value={'hi'}>{'hi'}</Radio.Button> */}

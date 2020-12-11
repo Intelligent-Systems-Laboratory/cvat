@@ -108,7 +108,6 @@ class TrackResultsStorage:
     updated = False
     def check(self):
         size = len(self.results)
-        print('storage size ',size)
         if(size>0):
             return True
         else:
@@ -120,6 +119,12 @@ class TrackResultsStorage:
         for result in self.results:
             if(result['objectID']==objectID):
                 return result['data']
-    def store(self, item):
-        self.results.append(item)
+    def store(self, entry):
+        self.results.append(entry)
         self.updated = True
+    def update(self, entry):
+        for result in self.results:
+
+            if(result['objectID']==entry['objectID']):
+                result['data']=result['data']+entry['data']
+                result['frameEnd']=entry['frameEnd']

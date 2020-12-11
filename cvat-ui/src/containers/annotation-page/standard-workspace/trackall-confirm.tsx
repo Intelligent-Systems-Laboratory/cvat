@@ -17,12 +17,15 @@ import {
     editLastTrackState,
     switchTrackAllModal,
     fetch,
-    changeNumFramesToTrackAll
+    changeNumFramesToTrackAll,
+    changePreviewObjectID,
+    editTrackAllResults
 } from 'actions/annotation-actions';
 
 import { CombinedState } from 'reducers/interfaces';
 import TrackAllConfirmComponent from 'components/annotation-page/standard-workspace/trackall-confirm';
 import config from 'cvat-core/src/config';
+import { result } from 'lodash';
 
 interface StateToProps {
     visible: boolean,
@@ -30,12 +33,13 @@ interface StateToProps {
     results: any[],
     frameStart: number,
     sourceStates: any[],
-    preview: any,
+    selectedObjectID: any,
     trackingStatus:boolean,
     jobInstance: any,
     annotations:any[],
     frame:number,
     loading: boolean,
+    mode: string,
 }
 
 interface DispatchToProps {
@@ -45,6 +49,8 @@ interface DispatchToProps {
     onPrevious():void;
     onEditLastTrackState(drag:any,resize:any): void;
     trackAll(jobInstance: any, url:string, params:any):void;
+    onChangePreviewObjectID(objectID:number):void;
+    onEditTrackAllResults(drag:any,index:number,slice:number):void;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -62,9 +68,10 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 results: results,
                 frameStart: frameStart,
                 sourceStates: sourceStates,
-                preview: preview,
+                selectedObjectID: selectedObjectID,
                 trackingStatus:trackingStatus,
                 loading: loading,
+                mode: mode,
             },
             player: {
                 frame: {
@@ -80,12 +87,13 @@ function mapStateToProps(state: CombinedState): StateToProps {
         results,
         frameStart,
         sourceStates,
-        preview,
+        selectedObjectID,
         trackingStatus,
         jobInstance,
         annotations,
         frame,
         loading,
+        mode
     };
 }
 
@@ -108,6 +116,12 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         },
         trackAll(jobInstance: any, url:string, params:any|undefined=null):void{
             dispatch(fetch(jobInstance,url,params));
+        },
+        onChangePreviewObjectID(objectID:number):void{
+            dispatch(changePreviewObjectID(objectID));
+        },
+        onEditTrackAllResults(drag:any,index:number,slice:number):void{
+            dispatch(editTrackAllResults(drag,index,slice));
         }
 
     };
@@ -117,8 +131,148 @@ type Props = StateToProps & DispatchToProps;
 
 const { backendAPI } = config;
 class TrackAllConfirmContainer extends React.PureComponent<Props> {
+
     constructor(props: Props) {
         super(props);
+        this.attachCanvasMouseListenersOnLoad();
+    }
+    public canvas = document.getElementById("trackall-canvas") as HTMLCanvasElement;
+    public context:any;
+    public dragging = false;
+    // for the local copy
+    public dragStart:any;
+    public dragEnd:any;
+
+    // for the global copy
+    public dragInitial:any;
+    public dragFinal:any;
+
+
+    public scaleX:number=1;
+    public scaleY:number=1;
+    public results_local:any={};
+
+    updateLocal(drag: { x: number; y: number; }) {
+        const {
+            sourceStates,
+            selectedObjectID,
+            results
+        } = this.props;
+
+
+        drag.x *=this.scaleX;
+        drag.y *=this.scaleY;
+        var index = sourceStates.indexOf(selectedObjectID);
+        console.log('objectID to be edited',selectedObjectID);
+        console.log('drag:',drag);
+        console.log('index to be edited:',index);
+        var indexToEdit = this.results_local[index].length-1;
+        var bbox = this.results_local[index][indexToEdit];
+        bbox[0]+=drag.x;
+        bbox[1]+=drag.y;
+        bbox[2]+=drag.x;
+        bbox[3]+=drag.y;
+        this.draw();
+        this.drawResults();
+    }
+
+    private attachCanvasMouseListenersOnLoad = (): void => {
+
+        var verbose:boolean = false;
+        // this function is required in order to catch the DOM element that we are waiting, in this case the trackall-canvas
+        // for some reason document.getElementById('trackall-canvas') returns null even when the modal is being shown
+        // this could be because the modal is shown in asynchronously and is not using the main thread
+            this.canvas = document.getElementById("trackall-canvas") as HTMLCanvasElement;
+            if(this.canvas){
+                this.scaleX = 1920/this.canvas.width;
+                this.scaleY = 1080/this.canvas.height;
+                this.context = this.canvas.getContext('2d');
+                this.canvas.addEventListener('mousedown', (event:any) => {
+
+                    this.dragStart = {
+                        x: event.pageX - this.canvas.offsetLeft,
+                        y: event.pageY - this.canvas.offsetTop
+                    }
+
+                    this.dragInitial = {
+                        x: event.pageX - this.canvas.offsetLeft,
+                        y: event.pageY - this.canvas.offsetTop
+                    }
+
+                    this.dragging = true;
+                    if(verbose){
+                        console.log('track canvas mousedown');
+                        console.log(this.dragStart);
+                    }
+
+                });
+
+                this.canvas.addEventListener('mousemove', (event:any) => {
+                    if (this.dragging) {
+
+                    this.dragEnd = {
+                        x: event.pageX - this.canvas.offsetLeft,
+                        y: event.pageY - this.canvas.offsetTop
+                    }
+                    // this.context.translate(this.dragEnd.x - this.dragStart.x, this.dragEnd.y - this.dragStart.y);
+                    // console.log('dragging. x: ',this.dragEnd.x,'y:',this.dragEnd.y);
+                    var drag = {
+                        x:this.dragEnd.x-this.dragStart.x,
+                        y:this.dragEnd.y-this.dragStart.y,
+                    };
+                    var resize = {
+                        x:0,
+                        y:0,
+                    }
+                    // this.loadImage();
+                    this.dragStart=this.dragEnd;
+
+                    this.updateLocal(drag);
+                    }
+                });
+                this.canvas.addEventListener('mouseup', (event:any) => {
+                    if(verbose)
+                    console.log('track canvas up');
+                    this.dragFinal = {
+                        x: event.pageX - this.canvas.offsetLeft,
+                        y: event.pageY - this.canvas.offsetTop
+                    }
+
+                    this.dragging = false;
+                    console.log('dragged (final). x: ',this.dragFinal.x-this.dragInitial.x,'y:',this.dragFinal.y-this.dragInitial.y);
+
+                    if(verbose){
+                        console.log('dragstart',this.dragStart);
+                        console.log('dragend',this.dragEnd);
+                        console.log('dragged. x: ',this.dragEnd.x-this.dragStart.x,'y:',this.dragEnd.y-this.dragStart.y);
+                    }
+                    var drag = {
+                        x:this.dragFinal.x-this.dragInitial.x,
+                        y:this.dragFinal.y-this.dragInitial.y,
+                    };
+                    this.updateTracks(drag);
+                });
+            }else{
+                setTimeout(this.attachCanvasMouseListenersOnLoad, 300);
+            }
+    }
+    private updateTracks = (drag:any):void => {
+        const {
+            onEditTrackAllResults,
+            sourceStates,
+            selectedObjectID,
+            results
+        } = this.props;
+
+
+        drag.x *=this.scaleX;
+        drag.y *=this.scaleY;
+        var index = sourceStates.indexOf(selectedObjectID);
+        console.log('objectID to be edited',selectedObjectID);
+        console.log('drag:',drag);
+        console.log('index to be edited:',index);
+        var indexToEdit = results[index].length-1;
+        onEditTrackAllResults(drag,index,indexToEdit);
     }
     public loadImage = (outputImg:HTMLImageElement|null=null):void => {
         const {
@@ -127,51 +281,19 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
         if(outputImg==null){
             outputImg = document.getElementById('trackall-image') as HTMLImageElement;
         }
-        // console.log('image width',outputImg.width);
-        // console.log('image height',outputImg.height);
 
         // show loading
         var loading = document.getElementById('trackall-loading');
         let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
 
-
-        // var index = Math.floor((automaticTracking.current-automaticTracking.frameStart)/2)-1;
-        // var points = automaticTracking.states[index]; // bounding box of the result of tracking in the current frame
-        // console.log('points', points);
-        // console.log('index',index);
-        // console.log('points',points);
-        // var width = points[2] - points[0];
-        // var height = points[3] - points[1];
-        // console.log('width, height',width,height);
-        // for (let coord of background){
-        //     // this is in the case that tracker returns negative values
-        //     if (coord < 0){
-        //         coord = 0
-        //     }
-        // }
-        // fix
         const canvasMaxWidth = 1200;
         const canvasMaxHeight = canvasMaxWidth*1080/1920;
 
         var bboxMaxPercent = 0.8;
         var scaleFactor = 1;
-        // if (height >= canvasMaxHeight*bboxMaxPercent){
-        //     console.log('exceeded max height');
-        //     while(height/bboxMaxPercent>canvasMaxHeight/scaleFactor){
-        //         scaleFactor-=0.01;
-        //     }
-        // }
         if(canvas){
             canvas.width = canvasMaxWidth;
             canvas.height = canvasMaxHeight;
-            // canvas.height = Math.max((1080/1920)*700+height-200,(1080/1920)*700);
-            // canvas.height = 550;
-            console.log('canvas width, height',canvas.width,canvas.height);
-            // compute the background of the canvas since we cannot display the whole canvas
-            // var bgWidth = canvas.width/scaleFactor;
-            // var bgHeight = canvas.height/scaleFactor;
-            // var background:number[] = [points[0]+width/2-bgWidth/2,points[1]+height/2-bgHeight/2,bgWidth,bgHeight]
-            // console.log('background',background);
             let ctx = canvas.getContext('2d');
             if(ctx && outputImg){
                 if(outputImg.complete){
@@ -188,7 +310,6 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
     }
     public draw = ():void => {
         var done = false;  // ensures the this.loadImage runs only once
-        // console.log('load the image in frame ',automaticTracking.current);
         var outputImg = document.getElementById('trackall-image') as HTMLImageElement;
         if(outputImg){
             outputImg.onload = () =>{
@@ -202,7 +323,7 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
         }
 
     }
-    public track = ():void=>{
+    public track = (mode:string):void=>{
         var loading = document.getElementById('trackall-loading');
         if(loading){
             loading.style.visibility="";
@@ -214,7 +335,7 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             annotations,
             framesToTrack,
             frame,
-
+            results
         } = this.props;
         var bboxes:number[][] = [];
         var ids: number[] = [];
@@ -223,12 +344,26 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             ids.push(state.clientID);
         });
         console.log(bboxes);
-        const params ={
-            bboxes:bboxes,
-            framesToTrack: framesToTrack,
-            frameStart: frame,
-            ids:ids,
+        var params:any={};
+        if(mode == "NORMAL"||mode=="APPEND"){
+            params ={
+                bboxes:bboxes,
+                framesToTrack: framesToTrack,
+                frameStart: frame,
+                ids:ids,
+                mode:mode,
+            }
+        }else if (mode == "EDIT"){
+            params ={
+                bboxes:bboxes,
+                framesToTrack: framesToTrack,
+                frameStart: frame,
+                ids:ids,
+                mode:mode,
+                tracks:results
+            }
         }
+
         trackAll(jobInstance,`tasks/${jobInstance.task.id}/trackall`,params);
         console.log('start tracking all bbs');
 
@@ -253,25 +388,32 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
 
     public drawResults =():void =>{
         const {
-            results
+            sourceStates
         } = this.props;
+        var results = this.results_local;
         try {
             let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
             let ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
             ctx.beginPath();
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
             ctx.strokeStyle = "red";
-            results.forEach(track=>{
+            var i=0;
+            results.forEach((track: string | any[])=>{
                 let result = track[track.length-1];
                 let width = result[2]-result[0];
                 let height = result[3]-result[1];
                 let scaleX = 1920/canvas.width;
                 let scaleY = 1080/canvas.height;
                 ctx.rect(result[0]/scaleX,result[1]/scaleY,width/scaleX,height/scaleY);
+                ctx.font = "30px Arial";
+                ctx.textAlign = "center";
+                ctx.fillStyle = "red";
+                ctx.fillText(`${sourceStates[i]}`, (result[0]+width/2)/(scaleX), (result[1]+height/2+15)/(scaleY));
+                i++;
             });
             ctx.stroke();
         } catch (error) {
-            console.log('error');
+            console.log('error',error);
         }
 
     }
@@ -279,11 +421,14 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
     public changePreview = (clientID:number) =>{
         const{
             sourceStates,
-            results,
             jobInstance,
             frameStart,
-            framesToTrack
+            framesToTrack,
+            onChangePreviewObjectID,
+            selectedObjectID,
         } = this.props;
+        var results = this.results_local;
+        onChangePreviewObjectID(clientID);
         var outputImg = document.getElementById('trackall-image') as HTMLImageElement;
         let index = sourceStates.indexOf(clientID);
         console.log('index',index);
@@ -321,16 +466,19 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
 
                 this.draw(); //redraw the image
                 this.drawResults();
-                this.changeSelected(index);
+                this.changeSelected();
             }
 
 
         }
     }
-    public changeSelected = (index:number):void =>{
+    public changeSelected = ():void =>{
         const {
             results,
+            selectedObjectID,
+            sourceStates
         } = this.props;
+        var index = sourceStates.indexOf(selectedObjectID);
         var dotSize=3;
         let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
         let ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -376,14 +524,15 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             results,
             sourceStates,
             framesToTrack,
-            loading
+            loading,
+            selectedObjectID,
+            mode
         } = this.props;
         if(framesToTrack != prevProps.framesToTrack){
             console.log('framesToTrack',framesToTrack);
 
             if(loading){
-
-                this.track();
+                this.track('APPEND');
                 console.log('already loading');
             }
         }
@@ -391,7 +540,7 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             console.log('loading',loading);
         }
         if(visible!=prevProps.visible && visible){
-            this.track();
+            this.track('NORMAL');
             this.waitForElementToDisplay("#trackall-vehicle-view-canvas",()=>{
                 let previewCanvas = window.document.getElementById('trackall-vehicle-view-canvas') as HTMLCanvasElement;
                 if(previewCanvas){
@@ -406,10 +555,24 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
 
         }
         if(results!=prevProps.results){
+            this.results_local= results.map(function(arr){
+                return arr.map(function(arr: any[]){
+                    return arr.slice();
+                });
+            });
+            console.log(this.results_local);
             console.log('results updated');
-
+            console.log('mode',mode);
+            this.draw();
             this.drawResults();
-            this.changePreview(sourceStates[0]);
+            if(mode=="APPEND" || mode=="NORMAL"){
+
+                this.changePreview(selectedObjectID);
+            }
+            else if(mode == "EDIT"){
+                this.changeSelected();
+            }
+
         }
     }
     public render(): JSX.Element {
@@ -419,7 +582,7 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             results,
             frameStart,
             sourceStates,
-            preview,
+            selectedObjectID,
             trackingStatus,
             cancel,
             frame,
@@ -434,7 +597,7 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
                 visible={visible}
                 framesToTrack = {framesToTrack}
                 frameStart = {frame}
-                preview = {preview}
+                preview_objectID = {selectedObjectID}
                 results = {results}
                 sourceStates = {sourceStates}
                 trackingStatus = {trackingStatus}

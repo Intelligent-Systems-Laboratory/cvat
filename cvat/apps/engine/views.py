@@ -582,75 +582,146 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     def trackall(self, request, pk):
         if request.method == 'POST':
         # try:
-            storage.flush()
             print('request.data',request.data)
             # get the parameters of the request
             data = request.data['params']
-            bboxes = data['bboxes']
+            mode = data['mode'] #'NORMAL' or 'APPEND'
             framesToTrack = int(data['framesToTrack'])
             frameStart = int(data['frameStart'])
+            print('framesToTrack',framesToTrack)
             objectIDs = data['objectID']
+            frameEnd = frameStart+framesToTrack
             results = []
 
-            frameEnd = frameStart+framesToTrack
-
-
-            # get the frames
+            #frame getter
             db_task = self.get_object()
             frame_provider = FrameProvider(db_task.data)
             data_quality = FrameProvider.Quality.COMPRESSED
             skip = 2
             out_type = FrameProvider.Type.NUMPY_ARRAY
-            frameList = frame_provider.get_frames_improved(frameStart,frameEnd,data_quality,out_type,skip)
+
+            #initiate tracker
             tracker = Tracker()
-            for bbox in bboxes:
-                index = bboxes.index(bbox)
-                print('tracking item ',index)
-                bbox[0]=int(bbox[0])
-                bbox[1]=int(bbox[1])
-                bbox[2]=int(bbox[2])
-                bbox[3]=int(bbox[3])
-                xtl = bbox[0]
-                ytl = bbox[1]
-                xbr = bbox[2]
-                ybr = bbox[3]
-                data = (xtl, ytl, xbr-xtl, ybr-ytl)
-                result = tracker.track(frameList, data,'pysot')
-                # print('result length',len(result))
-                # print('frameList length', len(frameList))
-                # print(result)
-                results.append(result)
-                crops = []
 
-                for i in range(0,len(frameList)):
-                    if(i==0):
-                        crop = frameList[i][bbox[1]:bbox[3],bbox[0]:bbox[2]]
-                        crops.append(crop)
-                    else:
-                        temp_result = result[i-1]
-                        for coord in temp_result:
-                            coord = int(coord)
-                        crop = frameList[i][temp_result[1]:temp_result[3],temp_result[0]:temp_result[2]]
-                        crops.append(crop)
-                    # frameList[-1][ytl:yrb,xtl:xbr]
+            #track based on the mode
+            if(mode=='NORMAL'):
+                storage.flush()
+                bboxes = data['bboxes']
+                # get the frames
 
-                # print('crops length', len(crops))
-                store_data = []
-                store_id = objectIDs[index]
-                for i in range(len(crops)):
-                    item = {
-                        'bbox':bbox if i==0 else result[i-1],
-                        'frame': frameStart+i*2,
-                        'crop':crops[i],
-                        "objectID":store_id
+                frameList = frame_provider.get_frames_improved(frameStart,frameEnd,data_quality,out_type,skip)
+
+                for bbox in bboxes:
+                    index = bboxes.index(bbox)
+                    print('tracking item ',index)
+                    bbox[0]=int(bbox[0])
+                    bbox[1]=int(bbox[1])
+                    bbox[2]=int(bbox[2])
+                    bbox[3]=int(bbox[3])
+                    xtl = bbox[0]
+                    ytl = bbox[1]
+                    xbr = bbox[2]
+                    ybr = bbox[3]
+                    data = (xtl, ytl, xbr-xtl, ybr-ytl)
+                    result = tracker.track(frameList, data,'pysot')
+                    # print('result length',len(result))
+                    # print('frameList length', len(frameList))
+                    # print(result)
+                    results.append(result)
+                    crops = []
+
+                    for i in range(0,len(frameList)):
+                        if(i==0):
+                            crop = frameList[i][bbox[1]:bbox[3],bbox[0]:bbox[2]]
+                            crops.append(crop)
+                        else:
+                            temp_result = result[i-1]
+                            for coord in temp_result:
+                                coord = int(coord)
+                            crop = frameList[i][temp_result[1]:temp_result[3],temp_result[0]:temp_result[2]]
+                            crops.append(crop)
+                        # frameList[-1][ytl:yrb,xtl:xbr]
+
+                    # print('crops length', len(crops))
+                    store_data = []
+                    store_id = objectIDs[index]
+                    for i in range(len(crops)):
+                        item = {
+                            'bbox':bbox if i==0 else result[i-1],
+                            'frame': frameStart+i*2,
+                            'crop':crops[i],
+                            "objectID":store_id
+                        }
+                        store_data.append(item)
+                    print('store_id',store_id)
+                    store_entry={
+                        "data":store_data,
+                        "objectID":store_id,
+                        "frameStart":frameStart,
+                        "frameEnd":frameEnd
                     }
-                    store_data.append(item)
-                print('store_id',store_id)
-                store_entry={
-                    "data":store_data,
-                    "objectID":store_id
-                }
-                storage.store(store_entry)
+                    storage.store(store_entry)
+            elif(mode =='APPEND'):
+                print('tracking in mode APPEND')
+                bboxes = []
+                new_frame_start = storage.get(objectIDs[0])[-1]['frame']
+                print(new_frame_start)
+                for objectID in objectIDs:
+                    items = storage.get(objectID)
+                    bbox = items[-1]['bbox']
+                    bboxes.append(bbox)
+                    print(bbox)
+                frameList = frame_provider.get_frames_improved(new_frame_start,frameEnd,data_quality,out_type,skip)
+
+                for bbox in bboxes:
+                    index = bboxes.index(bbox)
+                    print('tracking item ',index)
+                    bbox[0]=int(bbox[0])
+                    bbox[1]=int(bbox[1])
+                    bbox[2]=int(bbox[2])
+                    bbox[3]=int(bbox[3])
+                    xtl = bbox[0]
+                    ytl = bbox[1]
+                    xbr = bbox[2]
+                    ybr = bbox[3]
+                    data = (xtl, ytl, xbr-xtl, ybr-ytl)
+                    result = tracker.track(frameList, data,'pysot')
+                    print('result length',len(result))
+                    print('frameList length', len(frameList))
+                    # print(result)
+                    results.append(result)
+                    crops = []
+
+                    for i in range(0,len(frameList)):
+                        if(i==0):
+                            continue
+                        else:
+                            temp_result = result[i-1] #a bbox
+                            for coord in temp_result:
+                                coord = int(coord)
+                            crop = frameList[i][temp_result[1]:temp_result[3],temp_result[0]:temp_result[2]]
+                            crops.append(crop)
+                        # frameList[-1][ytl:yrb,xtl:xbr]
+
+                    print('crops length', len(crops))
+                    store_data = []
+                    store_id = objectIDs[index]
+                    for i in range(len(crops)):
+                        item = {
+                            'bbox':result[i],
+                            'frame': new_frame_start+(1+i)*2,
+                            'crop':crops[i],
+                            "objectID":store_id
+                        }
+                        store_data.append(item)
+                    print('store_id',store_id)
+                    store_entry={
+                        "data":store_data,
+                        "objectID":store_id,
+                        "frameStart":frameStart,
+                        "frameEnd":frameEnd
+                    }
+                    storage.update(store_entry)
             return Response(results)
         else:
             # GET request
@@ -688,39 +759,38 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     img = np.array(img)
                     items = storage.get(object_id)
                     print('object id',object_id)
-                    skip = 5
+                    skip = 3
                     i=0
-                    if(len(items)>0):
-                        # print(items)
-                        print('items not empty')
+                    if(items):
+                        if(len(items)>0):
+                            # print(items)
+                            print('items not empty')
 
-                        item = items[-1] # save the crop of the vehicle in the current frame
-                        # print(item)
-                        retrieved_id = item['objectID']
-                        print('id from store',retrieved_id)
-                        orig_box = item['bbox']
-                        orig_crop = np.copy(img[orig_box[1]:orig_box[3],orig_box[0]:orig_box[2]])
+                            item = items[-1] # save the crop of the vehicle in the current frame
+                            # print(item)
+                            retrieved_id = item['objectID']
+                            print('id from store',retrieved_id)
+                            orig_box = item['bbox']
+                            orig_crop = np.copy(img[orig_box[1]:orig_box[3],orig_box[0]:orig_box[2]])
 
-                        for item in items:
-                            i+=1
-                            if(skip%i!=0):
-                                continue
+                            for item in items:
+                                i+=1
+                                if(i%skip!=0):
+                                    continue
 
-                            # print('aalsdjad')
-                            # print(item[0][0])
-                            crop = item['crop']
-                            box = item['bbox']
-                            # print('crop',np.shape(crop))
-                            # print('bbox',box)
-                            img[box[1]:box[3],box[0]:box[2]]=crop
-                            cv2.rectangle(img, (box[0],box[1]), (box[2],box[3]), (0,0,255), 1)
-                            centroid = (int((box[0]+box[2])/2),int((box[1]+box[3])/2))
-                            cv2.circle(img,centroid,4,(0,0,255),10)
-                        # write the final frame on top
-                        img[orig_box[1]:orig_box[3],orig_box[0]:orig_box[2]]=orig_crop
-                        cv2.rectangle(img, (orig_box[0],orig_box[1]), (orig_box[2],orig_box[3]), (255,0,0), 1)
-                    cv2.imwrite('ID_{}.jpg'.format(retrieved_id),img)
-                    # print(image)
+                                # print('aalsdjad')
+                                # print(item[0][0])
+                                crop = item['crop']
+                                box = item['bbox']
+                                # print('crop',np.shape(crop))
+                                # print('bbox',box)
+                                img[box[1]:box[3],box[0]:box[2]]=crop
+                                cv2.rectangle(img, (box[0],box[1]), (box[2],box[3]), (0,0,255), 1)
+                                centroid = (int((box[0]+box[2])/2),int((box[1]+box[3])/2))
+                                cv2.circle(img,centroid,4,(0,0,255),10)
+                            # write the final frame on top
+                            img[orig_box[1]:orig_box[3],orig_box[0]:orig_box[2]]=orig_crop
+                            cv2.rectangle(img, (orig_box[0],orig_box[1]), (orig_box[2],orig_box[3]), (255,0,0), 1)
                     new_im = Image.fromarray(img,mode='RGB')
                     b = io.BytesIO()
                     new_im.save(b,format="jpeg")

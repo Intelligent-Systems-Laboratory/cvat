@@ -80,6 +80,7 @@
         }
 
         await getAnnotationsFromServer(session);
+        console.log('get Annotations');
         return cache.get(session).collection.get(frame, allTracks, filters);
     }
 

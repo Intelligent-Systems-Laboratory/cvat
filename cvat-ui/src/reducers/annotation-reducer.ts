@@ -10,6 +10,7 @@ import { AnnotationActionTypes } from 'actions/annotation-actions';
 import { AuthActionTypes } from 'actions/auth-actions';
 import { BoundariesActionTypes } from 'actions/boundaries-actions';
 import { AnnotationState, ActiveControl, ShapeType, ObjectType, ContextMenuType, Workspace } from './interfaces';
+import Empty from 'antd/lib/empty';
 
 const defaultState: AnnotationState = {
     activities: {
@@ -146,10 +147,14 @@ const defaultState: AnnotationState = {
         results: [],
         frameStart: 0,
         sourceStates: [],
-        selectedObjectID: 1,
         trackingStatus:false,
         loading:false,
         mode:'NORMAL',
+        // for preview and editing mode
+        selectedObjectID: 1,
+        bbox_slice: [0,0,0,0],
+        slice:14, // the last index in the default framerange which is 30 (skip by 2)
+        annotations:{},
     }
     // mabe end
 
@@ -158,6 +163,30 @@ const defaultState: AnnotationState = {
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
         // mabe track all bbs
+        case AnnotationActionTypes.GET_ANNOTATIONS_SERVER: {
+            const {
+                data
+            } = action.payload;
+            return {
+                ...state,
+                trackAll: {
+                    ...state.trackAll,
+                    annotations:data
+                }
+            };
+        }
+        case AnnotationActionTypes.CHANGE_SLICE_TRACKALL: {
+            const {
+                slice
+            } = action.payload;
+            return {
+                ...state,
+                trackAll: {
+                    ...state.trackAll,
+                    slice:slice
+                }
+            };
+        }
         case AnnotationActionTypes.CHANGE_PREVIEW_OBJECTID: {
             const {
                 objectID
@@ -210,33 +239,64 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
         case AnnotationActionTypes.UPDATE_TRACKALL_RESULTS: {
             const {
                 tracks,
-                visible,
                 trackingStatus,
                 frameStart,
                 ids,
                 mode
             } = action.payload;
             if(mode=='NORMAL'){
-
+                return {
+                    ...state,
+                    trackAll: {
+                        ...state.trackAll,
+                        results:tracks,
+                        trackingStatus:trackingStatus,
+                        frameStart:(frameStart?frameStart:state.trackAll.frameStart),
+                        sourceStates:(ids?ids:state.trackAll.sourceStates),
+                        loading:false,
+                        mode:mode,
+                    }
+                };
             }else if(mode=='APPEND'){
-                var results = state.trackAll.results;
-                for(var i=0;i<results.length;i++){
-                    results[i].concat([tracks[i]]);
+                var temp: any[] = [];
+                for(var i=0;i<state.trackAll.results.length;i++){
+                    var track = [];
+                    for(var j=0;j<state.trackAll.results[i].length;j++){
+                        track.push(state.trackAll.results[i][j]);
+                    }
+                    temp.push(track);
                 }
+                for(var i=0;i<temp.length;i++){
+                    tracks[i].forEach((bbox: number[])=> {
+                        temp[i].push(bbox);
+                    });
+                }
+                console.log('temp',temp);
+
+                var slice:number = (state.trackAll.slice+tracks[0].length);
+                return {
+                    ...state,
+                    trackAll: {
+                        ...state.trackAll,
+                        results:temp,
+                        trackingStatus:trackingStatus,
+                        frameStart:(frameStart?frameStart:state.trackAll.frameStart),
+                        sourceStates:(ids?ids:state.trackAll.sourceStates),
+                        loading:false,
+                        mode:mode,
+                        slice:slice
+                    }
+                };
             }else if(mode=='EDIT'){
                 const{
                     index,
                     drag,
-                    slice
+                    slice,
+                    bbox
                 }=action.payload;
                 var temp = [...state.trackAll.results];
 
-                var temp_bbox = [...temp[index][slice]];
-                temp_bbox[0]+=drag.x;
-                temp_bbox[1]+=drag.y;
-                temp_bbox[2]+=drag.x;
-                temp_bbox[3]+=drag.y;
-                temp[index][slice]=temp_bbox;
+                temp[index][slice]=bbox;
 
                 return {
                     ...state,
@@ -248,21 +308,11 @@ export default (state = defaultState, action: AnyAction): AnnotationState => {
                         sourceStates:(ids?ids:state.trackAll.sourceStates),
                         loading:false,
                         mode:mode,
+                        bbox_slice:bbox,
                     }
                 };
             }
-            return {
-                ...state,
-                trackAll: {
-                    ...state.trackAll,
-                    results:tracks,
-                    trackingStatus:trackingStatus,
-                    frameStart:(frameStart?frameStart:state.trackAll.frameStart),
-                    sourceStates:(ids?ids:state.trackAll.sourceStates),
-                    loading:false,
-                    mode:mode,
-                }
-            };
+
         }
         case AnnotationActionTypes.SWITCH_AUTO_TRACKALL_MODAL: {
             const { visible } = action.payload;

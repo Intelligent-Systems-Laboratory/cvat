@@ -74,6 +74,7 @@ function mapDispatchToProps(dispatch: any, own: OwnProps): DispatchToProps {
 
     return {
         getJob(): void {
+            console.log('from annotation-page.tsx',taskID,jobID,initialFrame,initialFilters);
             dispatch(getJobAsync(taskID, jobID, initialFrame, initialFilters));
         },
         saveLogs(): void {

@@ -51,7 +51,7 @@ def efficientcut(frame_img,ROI):
                                 ratios=anchor_ratios, scales=anchor_scales)
     path = os.path.abspath("./")
     model_path = os.path.join(path,'cvat/apps/engine/efficientdet-d0_best.pth')
-    print('path',model_path)
+    # print('path',model_path)
     model.load_state_dict(torch.load(model_path, map_location='cpu')) # add path to weights here
     model.requires_grad_(False)
     model.eval()

@@ -229,15 +229,26 @@ export enum AnnotationActionTypes {
     SWITCH_AUTO_TRACKALL='SWITCH_AUTO_TRACKALL',
     CHANGE_NUM_FRAME_TO_TRACK_ALL = 'CHANGE_NUM_FRAME_TO_TRACK_ALL',
     CHANGE_PREVIEW_OBJECTID ='CHANGE_PREVIEW_OBJECTID',
+    CHANGE_SLICE_TRACKALL = 'CHANGE_SLICE_TRACKALL',
+    GET_ANNOTATIONS_SERVER = 'GET_ANNOTATIONS_SERVER',
+    EDIT_ANNOTATIONS_SERVER ='EDIT_ANNOTATIONS_SERVER',
     // mabe end
 }
 // mabe track all bbs
-export function editTrackAllResults(drag: any,index:number,slice:number): AnyAction{
+export function changeSlice(slice:number): AnyAction{
+    return {
+        type: AnnotationActionTypes.CHANGE_SLICE_TRACKALL,
+                        payload: {
+                            slice:slice,
+                        },
+    };
+}
+export function editTrackAllResults(bbox: any,index:number,slice:number): AnyAction{
     return {
         type: AnnotationActionTypes.UPDATE_TRACKALL_RESULTS,
                         payload: {
                             trackingStatus:false,
-                            drag:drag,
+                            bbox:bbox,
                             frameStart:null,
                             ids:null,
                             mode:'EDIT',
@@ -302,7 +313,7 @@ export function switchTracking(tracking: boolean, trackedStateID: number | null)
 // ISL END
 
 // ISL TRACKING
-export function fetch(jobInstance: any, url:string, params:any|undefined=null): AnyAction {
+export function fetch(jobInstance: any, url:string, params:any|undefined=null): ThunkAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             if(url=='tasks/1/ISLconfig'){
@@ -343,21 +354,46 @@ export function fetch(jobInstance: any, url:string, params:any|undefined=null): 
                 console.log('trackall BBs in annotation-actions');
                 jobInstance.annotations.fetch(url,params).then((data: any) => {
                     console.log('data from server: ',data);
+                    if(params['mode']=='NORMAL' || params['mode']=='APPEND'){
+                        dispatch({
+                            type: AnnotationActionTypes.UPDATE_TRACKALL_RESULTS,
+                            payload: {
+                                trackingStatus:false,
+                                tracks:data,
+                                frameStart:params['frameStart'],
+                                ids:params['ids'],
+                                mode:params['mode'],
+                            },
+                        });
+                    }else if (params['mode']=='EDIT'){
+                        console.log('EDIT MODE FROM SERVER DONE!');
+                    }
 
-                    dispatch({
-                        type: AnnotationActionTypes.UPDATE_TRACKALL_RESULTS,
-                        payload: {
-                            trackingStatus:false,
-                            tracks:data,
-                            frameStart:params['frameStart'],
-                            ids:params['ids'],
-                            mode:params['mode']
-                        },
-                    });
 
 
 
                 });
+            }else if(url==`jobs/${jobInstance.id}/annotations`){
+                if(params['mode']=='GET'){
+                    console.log('getting annotations in annotation-actions');
+                    jobInstance.annotations.fetch(url,params).then((data: any) => {
+                        console.log('data from server: ',data);
+                        dispatch({
+                            type: AnnotationActionTypes.GET_ANNOTATIONS_SERVER,
+                            payload: {
+                                data:data
+                            },
+                        });
+                    });
+                }else{
+                    console.log('editing annotations in annotation-actions');
+                    jobInstance.annotations.fetch(url,params).then((data: any) => {
+                        console.log('data from server: ',data);
+                        //reload to apply changes
+                        window.location.reload(true);
+                    });
+                }
+
             }
         } catch (error) {
             console.log('Error Occured While Fetching', error);
@@ -393,7 +429,7 @@ export function switchAutoTrack(status:boolean): AnyAction {
     };
 }
 
-export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,mode:string = 'OVERRIDE',lastPoints:number[]=[]): AnyAction {
+export function track(jobInstance:any,objectState:any,frameStart:number,frameEnd:number,mode:string = 'OVERRIDE',lastPoints:number[]=[]): ThunkAction {
     // if mode == 'OVERRIDE', all of the previous states to be tracked will be deleted
     // if mode == 'APPEND', new tracking states will be added on the end of the list
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
@@ -454,7 +490,7 @@ export function editLastTrackState(drag:any,resize:any): AnyAction {
 // ISL END
 
 // ISL AUTOFIT
-export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAction {
+export function autoFit(jobInstance: any, stateToFit: any, frame: number): ThunkAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const state = stateToFit;
@@ -489,7 +525,7 @@ export function autoFit(jobInstance: any, stateToFit: any, frame: number): AnyAc
 // ISL END
 
 // ISL INTERPOLATION
-export function asLastKeyframe(jobInstance: any, stateToFit: any, frame: number): AnyAction {
+export function asLastKeyframe(jobInstance: any, stateToFit: any, frame: number): ThunkAction {
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const state = stateToFit;
@@ -561,7 +597,7 @@ export function okGlobalAttributes(globalAttributes:any): AnyAction {
         },
     };
 }
-export function editLabels(jobInstance: any,labels_data:any ,selected:any): AnyAction {
+export function editLabels(jobInstance: any,labels_data:any ,selected:any): ThunkAction {
     // console.log('Editing label for task ',jobInstance.task.id);
     // console.log('attributes: ', labels_data);
     // console.log('selected: ', selected);
@@ -592,7 +628,7 @@ export function editLabels(jobInstance: any,labels_data:any ,selected:any): AnyA
         }
     };
 };
-export function fetchAttributes(jobInstance: any): AnyAction {
+export function fetchAttributes(jobInstance: any): ThunkAction {
     // console.log('Editing label for task ',jobInstance.task.id);
     // console.log('attributes: ', labels_data);
     // console.log('selected: ', selected);
@@ -620,7 +656,7 @@ export function fetchAttributes(jobInstance: any): AnyAction {
         }
     };
 };
-export function saveAttributes(jobInstance: any,attributes:any,selected:any): AnyAction {
+export function saveAttributes(jobInstance: any,attributes:any,selected:any): ThunkAction {
     // console.log('Editing label for task ',jobInstance.task.id);
     // console.log('attributes: ', labels_data);
     // console.log('selected: ', selected);
@@ -1357,6 +1393,7 @@ export function closeJob(): ThunkAction {
 }
 
 export function getJobAsync(tid: number, jid: number, initialFrame: number, initialFilters: string[]): ThunkAction {
+    console.log('reloading annotation-actions.tsx');
     return async (dispatch: ActionCreator<Dispatch>): Promise<void> => {
         try {
             const state: CombinedState = getStore().getState();

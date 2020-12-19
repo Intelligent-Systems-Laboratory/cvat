@@ -455,10 +455,14 @@ export interface AnnotationState {
         results: any[],
         frameStart: number,
         sourceStates: any[],
-        selectedObjectID: number,
         trackingStatus:boolean,
         loading:boolean,
         mode:string,
+        //for preview and editing mode
+        selectedObjectID: number,
+        slice:number, // index in the track array of the bbox being edited
+        bbox_slice:number[], // the edited points of the bbox
+        annotations:any,// annotations to and from server
     }
     // mabe end
     aiToolsRef: MutableRefObject<any>;

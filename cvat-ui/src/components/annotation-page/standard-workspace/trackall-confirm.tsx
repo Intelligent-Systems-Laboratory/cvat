@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 // ISL TRACKING
 // this file controls the UI of the modal that appears when the tracking shortcut 'y' is pressed
-import React from 'react';
+import React,{useState} from 'react';
 
 import Modal from 'antd/lib/modal';
 import InputNumber from 'antd/lib/input-number';
@@ -15,11 +15,14 @@ import Spin from 'antd/lib/spin';
 import Radio, { RadioChangeEvent } from 'antd/lib/radio';
 import { SettingsIcon } from 'icons';
 import Icon from 'antd/lib/icon';
+import Slider from 'antd/lib/slider';
 
 import CloseCircleOutlined from '@ant-design/icons/CloseCircleOutlined';
 import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined';
 import LoadingOverlay from 'react-loading-overlay';
+import { Col , Row } from 'antd/lib/grid';
 
+import axios from 'axios';
 interface Props {
     visible: boolean,
     framesToTrack: number,
@@ -34,10 +37,17 @@ interface Props {
     jobInstance: any,
     previewChangeHandler(clientID: number): void,
     loading:boolean,
+    reload():void,
+    onEditSlice(slice:number):void,
+    slice:number,
+
 }
 
 var first_time = true;
+
 export default function TrackAllConfirmComponent(props: Props): JSX.Element {
+    const [sliderValue,setSliderValue] = useState(0);
+    const [displayText,setDisplayText] = useState("Hello");
     const {
         visible,
         framesToTrack,
@@ -52,6 +62,8 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
         jobInstance,
         previewChangeHandler,
         loading,
+        onEditSlice,
+        slice
     } = props;
 
     var num_frames_to_track = 30;
@@ -124,7 +136,7 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                         <div id='trackall-canvas-div'>
                         {
                             // automaticTracking.jobInstance != null &&tasks/1/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=0
-                                <img src={`${backendAPI}/tasks/${jobInstance.task.id}/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=0`} width="1365" height="767" id='trackall-image' style={{display: "none"}}
+                                <img src={`${backendAPI}/tasks/${jobInstance.task.id}/trackall?type=frame&quality=compressed&number=${frameStart+framesToTrack}&frame-start=0&slice=0`} width="1365" height="767" id='trackall-image' style={{display: "none"}}
                                     onLoad={()=>{
                                     let outputImg = document.getElementById('trackall-image') as HTMLImageElement;
                                     let canvas = window.document.getElementById('trackall-canvas') as HTMLCanvasElement;
@@ -188,8 +200,53 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                                         // onEditLastTrackState(drag,resize);
                                     }
                                 }> Confirm </Button>
+        <Row>
+            <Col span={12}>
+            <Slider
+                min={frameStart}
+                max={framesToTrack+frameStart}
+                onChange={(value)=>{
+                    setSliderValue(value as number);
+                    var temp_slice = Math.ceil((value as number/2)-1);
+                    onEditSlice(temp_slice>0?temp_slice:0);
+                }
+                }
+                value={(slice+1)*2}
+                step={1}
+            />
+            </Col>
+            <Col span={4}>
+            <InputNumber
+                min={frameStart}
+                max={frameStart+framesToTrack}
+                style={{ margin: '0 16px' }}
+                step={1}
+                value={(slice+1)*2}
 
+                onChange={(value)=>{
+                    setSliderValue(value as number);}
+                }
+            />
+            </Col>
+        </Row>
+        <Button className='btn-bottom' onClick={
+                    (event:any) => {
+                        var url = 'tasks/1/ISLconfig';
+                        const username = 'admin'
+                        const password = 'admin'
 
+                        const token = Buffer.from(`${username}:${password}`, 'utf8').toString('base64');
+                        // window.location.reload(true);
+                        axios.get(`${backendAPI}/${url}`,
+                        {
+                            headers: {
+                                'Authorization': `Basic ${token}`
+                              },
+                        }).then((res)=> {
+                            console.log('from server', res);
+                        });
+                    }
+        }> Test</Button>
                         </div>
                     </div>
                 </div>

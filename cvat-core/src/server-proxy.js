@@ -733,10 +733,10 @@
                     //     points: [0, 0, 0, 0],
                     // };
                 }
-                if(response.data){
+                if (response.data) {
                     return response.data;
                 }
-                else{
+                else {
                     return {
                         points: [0, 0, 0, 0],
                     }
@@ -767,45 +767,52 @@
                         }
                     });
                 } catch (errorData) {
-                    console.log('backend',backendAPI);
+                    console.log('backend', backendAPI);
                     console.log(errorData);
                     throw generateError(errorData);
                 }
 
                 return response.data;
             }
-            async function fetch(id,url,params) { // generic fetching
+            async function fetch(id, url, params) { // generic fetching
                 const { backendAPI } = config;
-                console.log('fetching ',url);
-                console.log('params',params);
+                console.log('fetching ', url);
+                console.log('params', params);
+                console.log('id', id);
                 let response = null;
                 try {
-                    if(params != null && url == 'tasks/1/ISLconfig'){
+                    if (params != null && url == 'tasks/1/ISLconfig') {
                         response = await Axios.post(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
                             params: params,
                         });
-                    }else if(params == null && url == 'tasks/1/ISLconfig'){
+                    } else if (params == null && url == 'tasks/1/ISLconfig') {
                         response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
 
                         });
-                    }else if(url==`tasks/${id}/predictBBs`){
+                    } else if (url == `tasks/${id}/predictBBs`) {
                         console.log('predict bbs in server-proxy')
                         response = await Axios.get(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
                             params: {
                                 frameNumber: params['frameNumber'],
                             }
                         });
-                    }else if(url==`tasks/${id}/trackall`){
+                    } else if (url == `tasks/${id}/trackall`) {
                         console.log('tracking all bbs server-proxy');
                         response = await Axios.post(`${backendAPI}/${url}`, { // EDITED to  add the URL parameters instead
-                            params: {
-                                framesToTrack: params['framesToTrack'],
-                                bboxes: params['bboxes'],
-                                frameStart: params['frameStart'],
-                                objectID: params['ids'],
-                                mode: params['mode']
-                            }
+                            params: params
                         });
+                    }else if (url.endsWith('/annotations')) {
+                        if(params['mode']=='GET'){
+
+                            console.log('getting annnotations server-proxy');
+                            response = await Axios.get(`${backendAPI}/${url}`,);
+                        }else if(params['mode']=='EDIT'){
+                            console.log('getting annnotations server-proxy');
+                            // let params = {
+                            //     data:params
+                            // }
+                            response = await Axios.put(`${backendAPI}/${url}`,params['annotations']);
+                        }
                     }
 
                 } catch (errorData) {
@@ -817,9 +824,9 @@
             // ISL END
 
             // ISL GLOBAL ATTRIBUTES
-            async function updateLabels(id, data,selected) {
+            async function updateLabels(id, data, selected) {
                 const { backendAPI } = config;
-                let task_details = {},labels = null;
+                let task_details = {}, labels = null;
 
                 try {
                     task_details = await Axios.get(`${backendAPI}/tasks/${id}`, { // EDITED to  add the URL parameters instead
@@ -829,28 +836,29 @@
                 } catch (errorData) {
                     throw generateError(errorData);
                 }
-                let update_details = {...task_details.data,
+                let update_details = {
+                    ...task_details.data,
                 }
                 console.log(update_details.labels);
                 for (let key in data) {
                     console.log('key', key);
                     let found = false;
-                    for(let attribute of update_details.labels[0].attributes){
-                        if(key == attribute.name){
-                            console.log('found ',key,'in original labels');
+                    for (let attribute of update_details.labels[0].attributes) {
+                        if (key == attribute.name) {
+                            console.log('found ', key, 'in original labels');
                             found = true;
                             attribute.values = data[key];
                             attribute.default_value = selected[key];
                         }
                     }
-                    if(!found){
+                    if (!found) {
                         // if key already exist in the attributes, do nothing
                         let new_attribute = {
-                            name: key+"",
+                            name: key + "",
                             default_value: selected[key],
                             mutable: true,
-                            input_type:"select",
-                            values:data[key],
+                            input_type: "select",
+                            values: data[key],
                         };
                         update_details.labels[0].attributes.push(new_attribute);
 
@@ -861,14 +869,14 @@
                 let updateLabel = null;
                 try {
                     updateLabel = await Axios.put(`${backendAPI}/tasks/${id}`,
-                    update_details
+                        update_details
                     );
                 } catch (errorData) {
                     throw generateError(errorData);
                 }
                 return updateLabel.data;
             }
-            async function fetchAttributes(id){
+            async function fetchAttributes(id) {
                 const { backendAPI } = config;
                 let request = null;
                 try {
@@ -881,12 +889,12 @@
                 }
                 return request.data;
             }
-            async function saveAttributes(id,attributes,selected){
+            async function saveAttributes(id, attributes, selected) {
                 const { backendAPI } = config;
                 let request = null;
                 let data = {
-                    attributes:attributes,
-                    selected:selected
+                    attributes: attributes,
+                    selected: selected
                 }
                 try {
                     request = await Axios.post(`${backendAPI}/tasks/${id}/saveattributes`, { // EDITED to  add the URL parameters instead

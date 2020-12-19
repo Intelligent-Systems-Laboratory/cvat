@@ -124,7 +124,16 @@ class TrackResultsStorage:
         self.updated = True
     def update(self, entry):
         for result in self.results:
-
             if(result['objectID']==entry['objectID']):
                 result['data']=result['data']+entry['data']
                 result['frameEnd']=entry['frameEnd']
+    def edit(self,objectID,slice_index,bbox,crop):
+        for result in self.results:
+            if(result['objectID']==objectID):
+                print('before',result['data'][slice_index]['bbox'])
+                result['data'][slice_index]['bbox']=bbox
+                result['data'][slice_index]['crop']=crop
+                print('after',result['data'][slice_index]['bbox'])
+                print(slice_index)
+                print('last index',len(result['data']))
+                print(result['data'][-1]['bbox'])

@@ -55,7 +55,7 @@ class GlobalModalContainer extends React.PureComponent<Props> {
 
     constructor(props:Props) {
         super(props);
-        console.log('MARKER!!',props.labels[0].attributes);
+        // console.log('MARKER!!',props.labels[0].attributes);
     }
 
     public render(): JSX.Element {

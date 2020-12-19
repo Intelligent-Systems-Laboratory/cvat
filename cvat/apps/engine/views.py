@@ -77,6 +77,7 @@ from cvat.apps.engine.predict import predict
 # mabe trackall
 import io
 import cv2
+from math import floor
 previews = []
 storage = TrackResultsStorage()
 # mabe end
@@ -585,7 +586,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             print('request.data',request.data)
             # get the parameters of the request
             data = request.data['params']
-            mode = data['mode'] #'NORMAL' or 'APPEND'
+            mode = data['mode'] #'NORMAL' or 'APPEND' or 'EDIT'
             framesToTrack = int(data['framesToTrack'])
             frameStart = int(data['frameStart'])
             print('framesToTrack',framesToTrack)
@@ -604,6 +605,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             tracker = Tracker()
 
             #track based on the mode
+            print('tracking in mode',mode)
             if(mode=='NORMAL'):
                 storage.flush()
                 bboxes = data['bboxes']
@@ -624,18 +626,30 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     ybr = bbox[3]
                     data = (xtl, ytl, xbr-xtl, ybr-ytl)
                     result = tracker.track(frameList, data,'pysot')
+                    int_result = []
+                    for idx, bbox in enumerate(result):
+                        temp_bbox = [int(bbox[0]),int(bbox[1]),int(bbox[2]),int(bbox[3])]
+                        fittedbbox = efficientcut(frameList[idx+1], [bbox[0], bbox[1], bbox[2], bbox[3]])
+                        temp_bbox = [0,0,0,0]
+                        temp_bbox[0]=int(fittedbbox[0])
+                        temp_bbox[1]=int(fittedbbox[1])
+                        temp_bbox[2]=int(fittedbbox[2])
+                        temp_bbox[3]=int(fittedbbox[3])
+                        int_result.append(temp_bbox)
+                        # print(type(result[idx][0]))
+                        # print(int_result[idx])
                     # print('result length',len(result))
                     # print('frameList length', len(frameList))
                     # print(result)
-                    results.append(result)
+                    results.append(int_result)
                     crops = []
-
+                    result = int_result
                     for i in range(0,len(frameList)):
                         if(i==0):
                             crop = frameList[i][bbox[1]:bbox[3],bbox[0]:bbox[2]]
                             crops.append(crop)
                         else:
-                            temp_result = result[i-1]
+                            temp_result = int_result[i-1]
                             for coord in temp_result:
                                 coord = int(coord)
                             crop = frameList[i][temp_result[1]:temp_result[3],temp_result[0]:temp_result[2]]
@@ -662,7 +676,6 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     }
                     storage.store(store_entry)
             elif(mode =='APPEND'):
-                print('tracking in mode APPEND')
                 bboxes = []
                 new_frame_start = storage.get(objectIDs[0])[-1]['frame']
                 print(new_frame_start)
@@ -722,6 +735,23 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                         "frameEnd":frameEnd
                     }
                     storage.update(store_entry)
+            elif(mode=='EDIT'):
+                print('EDIT MODE DETECTED')
+                selectedObjectID = data['selectedObjectID']
+                slice_index = int(data['slice']) +1 # +1 to account for the initial bounding box stored in the server but not in the UI
+                bbox_slice = data['bbox_slice']
+
+                bbox_slice[0]=int(bbox_slice[0])
+                bbox_slice[1]=int(bbox_slice[1])
+                bbox_slice[2]=int(bbox_slice[2])
+                bbox_slice[3]=int(bbox_slice[3])
+                print(bbox_slice)
+                img, mime = frame_provider.get_frame(slice_index*2+2, data_quality)
+                img = Image.open(img)
+                orig_img = np.array(img)
+                crop = orig_img[bbox_slice[1]:bbox_slice[3],bbox_slice[0]:bbox_slice[2]]
+                storage.edit(selectedObjectID,slice_index,bbox_slice,crop)
+                return Response([0,0,0,0])
             return Response(results)
         else:
             # GET request
@@ -730,6 +760,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             data_quality = request.query_params.get('quality', 'compressed')
             frame_start = request.query_params.get('frame-start', None)
             object_id = request.query_params.get('object-id', None)
+            slice_index = request.query_params.get('slice', None)
+            #convert to index of items
+            slice_index = floor(int(slice_index)/2)
+            print(slice_index)
             if(object_id):
                 object_id = int(object_id)
             possible_data_type_values = ('chunk', 'frame', 'preview')
@@ -764,9 +798,9 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     if(items):
                         if(len(items)>0):
                             # print(items)
-                            print('items not empty')
+                            print('items not empty. size:',len(items))
 
-                            item = items[-1] # save the crop of the vehicle in the current frame
+                            item = items[slice_index] # save the crop of the desired slice index
                             # print(item)
                             retrieved_id = item['objectID']
                             print('id from store',retrieved_id)

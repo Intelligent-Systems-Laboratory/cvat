@@ -18,6 +18,8 @@ import getCore from 'cvat-core-wrapper';
 import consts from 'consts';
 import {checkOccluded} from './auto-occlude';
 import { switchTrackAll } from 'actions/annotation-actions';
+
+import notification from 'antd/lib/notification'; // mabe trackall
 const cvat = getCore();
 
 const MAX_DISTANCE_TO_OPEN_SHAPE = 50;
@@ -659,11 +661,23 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             annotations,
             onSwitchTrackAllModal
         } = this.props;
-        console.log(annotations);
-        onSwitchTrackAllModal(true);
-        annotations.forEach(annotation => {
-            console.log('client ID', annotation.frame)
-        });
+        // console.log(annotations);
+        console.log('annotations.length',annotations.length);
+        if(annotations.length>0){
+            onSwitchTrackAllModal(true);
+        }else{
+            notification.info({
+                message: (
+                    <div
+                        // eslint-disable-next-line
+                        dangerouslySetInnerHTML={{
+                            __html: "No bounding boxes found in the current frame! Create at least one.",
+                        }}
+                    />
+                ),
+                duration: 3,
+            });
+        }
     }
     // mabe end
     // ISL AUTOFIT
@@ -1368,6 +1382,7 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
                 preventDefault(event);
                 console.log('Tracking all bbox in the current frame')
                 // this.predictBBs();
+
                 this.trackAllBBs();
             },
             // mabe end

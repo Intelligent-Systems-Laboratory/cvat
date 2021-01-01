@@ -277,3 +277,9 @@
     padding-top: 20px;
     padding-bottom: 10px;
 }
+
+#preview-playback-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}

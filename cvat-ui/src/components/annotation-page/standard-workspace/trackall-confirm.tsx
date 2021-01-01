@@ -46,7 +46,7 @@ interface Props {
 var first_time = true;
 
 export default function TrackAllConfirmComponent(props: Props): JSX.Element {
-    const [sliderValue,setSliderValue] = useState(0);
+    const [sliderValue,setSliderValue] = useState(14);
     const [displayText,setDisplayText] = useState("Hello");
     const {
         visible,
@@ -200,53 +200,59 @@ export default function TrackAllConfirmComponent(props: Props): JSX.Element {
                                         // onEditLastTrackState(drag,resize);
                                     }
                                 }> Confirm </Button>
-        <Row>
-            <Col span={12}>
-            <Slider
-                min={frameStart}
-                max={framesToTrack+frameStart}
-                onChange={(value)=>{
-                    setSliderValue(value as number);
-                    var temp_slice = Math.ceil((value as number/2)-1);
-                    onEditSlice(temp_slice>0?temp_slice:0);
-                }
-                }
-                value={(slice+1)*2}
-                step={1}
-            />
-            </Col>
-            <Col span={4}>
-            <InputNumber
-                min={frameStart}
-                max={frameStart+framesToTrack}
-                style={{ margin: '0 16px' }}
-                step={1}
-                value={(slice+1)*2}
 
-                onChange={(value)=>{
-                    setSliderValue(value as number);}
-                }
-            />
-            </Col>
-        </Row>
-        <Button className='btn-bottom' onClick={
-                    (event:any) => {
-                        var url = 'tasks/1/ISLconfig';
-                        const username = 'admin'
-                        const password = 'admin'
+                        </div>
+                        <InputNumber
+                                        min={frameStart}
+                                        max={frameStart+framesToTrack}
+                                        step={1}
+                                        value={(slice+1)*2}
 
-                        const token = Buffer.from(`${username}:${password}`, 'utf8').toString('base64');
-                        // window.location.reload(true);
-                        axios.get(`${backendAPI}/${url}`,
-                        {
-                            headers: {
-                                'Authorization': `Basic ${token}`
-                              },
-                        }).then((res)=> {
-                            console.log('from server', res);
-                        });
-                    }
-        }> Test</Button>
+                                        onChange={(value)=>{
+                                            var temp_slice = Math.ceil((value as number/2)-1);
+                                            onEditSlice(temp_slice);
+                                        }
+                                        }
+                                    />
+                        <div id='preview-playback-container'>
+                            <Button
+                                className='btn-bottom' onClick={
+                                    (event:any) => {
+                                        if((slice-1)*2>0){
+                                            onEditSlice(slice-1);
+                                        }
+                                    }
+                                    }> {"<"}
+                            </Button>
+                            <Slider
+                                min={frameStart}
+                                max={framesToTrack+frameStart}
+                                style={{flexGrow: 4}}
+                                onChange={(value)=>{
+                                    console.log('value',value);
+                                    var temp_slice = Math.ceil((value as number/2)-1);
+
+                                    setSliderValue(temp_slice as number);
+                                    onEditSlice(temp_slice>0?temp_slice:0);
+                                    console.log('slider value',sliderValue);
+                                    console.log(sliderValue);
+                                }
+                                }
+                                value={(slice+1)*2}
+                                step={2}
+                            />
+
+
+                            <Button
+                                onClick={
+                                    (event:any) => {
+                                        var limit = frameStart+framesToTrack;
+                                        if((slice+1)*2<limit){
+                                            onEditSlice(slice+1);
+                                        }
+                                    }
+                                    }> {">"}
+                            </Button>
                         </div>
                     </div>
                 </div>

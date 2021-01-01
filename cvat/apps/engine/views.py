@@ -629,7 +629,8 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     int_result = []
                     for idx, bbox in enumerate(result):
                         temp_bbox = [int(bbox[0]),int(bbox[1]),int(bbox[2]),int(bbox[3])]
-                        fittedbbox = efficientcut(frameList[idx+1], [bbox[0], bbox[1], bbox[2], bbox[3]])
+                        # fittedbbox = efficientcut(frameList[idx+1], [bbox[0], bbox[1], bbox[2], bbox[3]])
+                        fittedbbox = temp_bbox
                         temp_bbox = [0,0,0,0]
                         temp_bbox[0]=int(fittedbbox[0])
                         temp_bbox[1]=int(fittedbbox[1])

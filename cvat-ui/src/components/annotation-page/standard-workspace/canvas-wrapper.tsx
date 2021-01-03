@@ -1376,11 +1376,11 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             // mabe predict bbs
             PREDICT_BBS: (event: KeyboardEvent | undefined) => {
                 preventDefault(event);
-                console.log('running inference in the current frame')
-                const loadingAnimation = window.document.getElementById('cvat_canvas_loading_animation');
-                if(loadingAnimation)
-                loadingAnimation.classList.add('cvat_canvas_hidden');
-                this.predictBBs();
+                console.log('running inference in the current frame disabled');
+                // const loadingAnimation = window.document.getElementById('cvat_canvas_loading_animation');
+                // if(loadingAnimation)
+                // loadingAnimation.classList.add('cvat_canvas_hidden');
+                // this.predictBBs();
             },
             // mabe end
             // mabe track all

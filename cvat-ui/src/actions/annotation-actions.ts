@@ -232,6 +232,7 @@ export enum AnnotationActionTypes {
     CHANGE_SLICE_TRACKALL = 'CHANGE_SLICE_TRACKALL',
     GET_ANNOTATIONS_SERVER = 'GET_ANNOTATIONS_SERVER',
     EDIT_ANNOTATIONS_SERVER ='EDIT_ANNOTATIONS_SERVER',
+    GET_LABEL_ID_SERVER = 'GET_LABEL_ID_SERVER'
     // mabe end
 }
 // mabe track all bbs
@@ -394,6 +395,22 @@ export function fetch(jobInstance: any, url:string, params:any|undefined=null): 
                     });
                 }
 
+            }else if(url==`tasks/${jobInstance.task.id}`){
+                console.log('getting label ID');
+                jobInstance.annotations.fetch(url,params).then((data: any) => {
+                    console.log('data from server: ',data);
+                    dispatch({
+                        type: AnnotationActionTypes.GET_LABEL_ID_SERVER,
+                        payload: {
+                            labelID:data['labels'][0]['id']
+                        },
+                    });
+
+
+
+
+
+                });
             }
         } catch (error) {
             console.log('Error Occured While Fetching', error);

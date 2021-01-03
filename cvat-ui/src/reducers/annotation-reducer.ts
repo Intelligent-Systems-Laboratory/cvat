@@ -155,6 +155,7 @@ const defaultState: AnnotationState = {
         bbox_slice: [0,0,0,0],
         slice:14, // the last index in the default framerange which is 30 (skip by 2)
         annotations:{},
+        labelID:1
     }
     // mabe end
 
@@ -163,6 +164,18 @@ const defaultState: AnnotationState = {
 export default (state = defaultState, action: AnyAction): AnnotationState => {
     switch (action.type) {
         // mabe track all bbs
+        case AnnotationActionTypes.GET_LABEL_ID_SERVER: {
+            const {
+                labelID
+            } = action.payload;
+            return {
+                ...state,
+                trackAll: {
+                    ...state.trackAll,
+                    labelID:labelID
+                }
+            };
+        }
         case AnnotationActionTypes.GET_ANNOTATIONS_SERVER: {
             const {
                 data

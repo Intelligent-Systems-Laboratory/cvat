@@ -373,6 +373,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             for(var prediction of predictions){
                 this.createNewBox(prediction);
             }
+            if(loadingAnimation){
+                loadingAnimation.classList.remove('cvat_canvas_hidden');
+            }
         }
         // mabe track all bbs
         if(trackAll.trackingStatus){
@@ -1374,6 +1377,9 @@ export default class CanvasWrapperComponent extends React.PureComponent<Props> {
             PREDICT_BBS: (event: KeyboardEvent | undefined) => {
                 preventDefault(event);
                 console.log('running inference in the current frame')
+                const loadingAnimation = window.document.getElementById('cvat_canvas_loading_animation');
+                if(loadingAnimation)
+                loadingAnimation.classList.add('cvat_canvas_hidden');
                 this.predictBBs();
             },
             // mabe end

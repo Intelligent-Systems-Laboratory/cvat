@@ -813,6 +813,9 @@
                             // }
                             response = await Axios.put(`${backendAPI}/${url}`,params['annotations']);
                         }
+                    }else if (url == `tasks/${id}`) {
+                        console.log('tracking all bbs server-proxy');
+                        response = await Axios.get(`${backendAPI}/${url}`);
                     }
 
                 } catch (errorData) {

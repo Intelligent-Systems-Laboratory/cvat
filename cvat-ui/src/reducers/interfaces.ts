@@ -463,6 +463,7 @@ export interface AnnotationState {
         slice:number, // index in the track array of the bbox being edited
         bbox_slice:number[], // the edited points of the bbox
         annotations:any,// annotations to and from server
+        labelID:number, // label id from the /tasks/{id}
     }
     // mabe end
     aiToolsRef: MutableRefObject<any>;

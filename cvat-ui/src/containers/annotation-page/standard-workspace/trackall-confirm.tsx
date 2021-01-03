@@ -45,6 +45,7 @@ interface StateToProps {
     slice: number,
     bbox_slice: number[],
     server_annotations:any,
+    labelID:number,//fetched labelID from the server
 }
 
 interface DispatchToProps {
@@ -58,7 +59,8 @@ interface DispatchToProps {
     onEditTrackAllResults(drag: any, index: number, slice: number): void;
     onEditSlice(slice: number): void;
     getAnnotationsServer(jobInstance: any, url: string, params: any | undefined): void;
-    editAnnotationsServer(jobInstance: any, url: string, params: any | undefined): void
+    editAnnotationsServer(jobInstance: any, url: string, params: any | undefined): void;
+    getLabelIDServer(jobInstance: any, url: string, params: any | undefined): void;
 }
 
 function mapStateToProps(state: CombinedState): StateToProps {
@@ -83,6 +85,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
                 slice: slice,
                 bbox_slice: bbox_slice,
                 annotations:server_annotations,
+                labelID:labelID,
             },
             player: {
                 frame: {
@@ -108,6 +111,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         slice,
         bbox_slice,
         server_annotations,
+        labelID
     };
 }
 
@@ -146,6 +150,9 @@ function mapDispatchToProps(dispatch: any): DispatchToProps {
         editAnnotationsServer(jobInstance: any, url: string, params: any | undefined = null): void {
             dispatch(fetch(jobInstance,url,params));
         },
+        getLabelIDServer(jobInstance: any, url: string, params: any | undefined = null): void {
+            dispatch(fetch(jobInstance,url,params));
+        }
 
     };
 }
@@ -176,59 +183,86 @@ class TrackAllConfirmContainer extends React.PureComponent<Props> {
             results,
             annotations,
             sourceStates,
-            server_annotations
+            server_annotations,
+            frameStart,
+            labelID
         } = this.props;
         // let server_annotations:any = this.temp_annotations;
         // console.log(this.temp_annotations);
         let url = `jobs/${jobInstance.id}/annotations`;
         console.log('annotations',annotations);
+        console.log('results',results);
 
         let server_annotations_copy:any = this.goclone(server_annotations);
-
-            // server_annotations_copy['tracks'][0]['shapes'].push(temp);
-            // console.log('MARKER',server_annotations_copy);
-            // this.done_annotations = true;
-            // this.temp_annotations = server_annotations_copy;
-
-        results.forEach((track,index)=>{
-            var objectID = sourceStates[index];
+        console.log('server_annotations',server_annotations);
+        console.log('server_annotations_copy',server_annotations_copy);
+        var final_tracks: any[] = [];
+        var sample_track = {
+            attributes:[{
+                value:'car',
+                spec_id: labelID}],
+            frame: frameStart,
+            source:'manual',
+            shapes: [],
+            label_id: labelID,
+            group: 0
+        }
+        var sample_shape = {
+            attributes: [],
+            occluded: false,
+            outside: false,
+            points:[],
+            type: 'rectangle',
+            z_order: 0,
+            frame:0
+        }
+        results.forEach((track,track_num)  => {
+            let tempTrack = this.goclone(sample_track);
+            // console.log('results loop');
             var tempShapes: any[] = [];
-            annotations.forEach((state)=>{
+            annotations.forEach(state => {
+                // console.log('annotations loop');
+                var objectID = sourceStates[track_num];
                 if(state.clientID == objectID){
-                    let initialBB:any = this.goclone(server_annotations_copy['tracks'][index]['shapes'][0]);
-                    initialBB['points']=state.points;
+
+                    let initialBB = this.goclone(sample_shape);
+                    initialBB.points = state.points;
                     tempShapes.push(initialBB);
-                    track.forEach((bbox: any,slice: number) => {
-                        let temp:any = this.goclone(server_annotations_copy['tracks'][index]['shapes'][0]);
-                        temp['frame']=(slice+1)*2;
-                        delete temp['id'];
-                        temp['points']= bbox;
-                        tempShapes.push(temp);
-                        console.log('index:',index,'slice:',slice);
+                    // console.log('initialBB',initialBB);
+                    track.forEach((bbox:number[],index:number) => {
+                        let tempBB = this.goclone(sample_shape);
+                        tempBB.points = bbox;
+                        tempBB['frame']=(index+1)*2;
+                        tempShapes.push(tempBB);
                     });
+                    tempTrack.shapes = tempShapes;
+                    final_tracks.push(tempTrack);
                 }
+
             });
 
-            server_annotations_copy['tracks'][index]['shapes']=tempShapes;
-            tempShapes=[];
         });
+        // server_annotations_copy['tracks'] = final_tracks;
+
         console.log('annotation to be uploaded',server_annotations_copy);
         let params ={
             mode: 'EDIT',
             annotations:server_annotations_copy,
         }
-        editAnnotationsServer(jobInstance,url,params);
+        // editAnnotationsServer(jobInstance,url,params);
     }
     getAnnotations = ():any => {
         const{
             getAnnotationsServer,
             jobInstance,
+            getLabelIDServer
         } = this.props;
         let url = `jobs/${jobInstance.id}/annotations`;
         let params ={
             mode: 'GET'
         }
         getAnnotationsServer(jobInstance,url,params);
+        getLabelIDServer(jobInstance,`tasks/${jobInstance.task.id}`,null);
     }
     checkEditingPoints(mouseLocation: any):number {
         const {

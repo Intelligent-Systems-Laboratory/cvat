@@ -413,10 +413,10 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['GET'])
     def autofit(self, request, pk):
         frame = request.query_params.get('frameNumber', None)
-        xtl = int(request.query_params.get('x1', None))
-        ytl = int(request.query_params.get('y1', None))
-        xbr = int(request.query_params.get('x2', None))
-        ybr = int(request.query_params.get('y2', None))
+        xtl = float(request.query_params.get('x1', None))
+        ytl = float(request.query_params.get('y1', None))
+        xbr = float(request.query_params.get('x2', None))
+        ybr = float(request.query_params.get('y2', None))
         data = [0,0,100,100]
         config.read(config_path)
         if(not config.getboolean('main','autofit')):
@@ -426,6 +426,17 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
                     "points" : [xtl, ytl, xbr, ybr],
                 }
             return Response(new_coords)
+        # expand the dimensions by 20% to get snaps for vehicles bigger than the initial box
+        width = xbr-xtl
+        height = ybr-ytl
+        xtl -= (width/2)*0.1
+        ytl -= (height/2)*0.1
+        xbr += (width/2)*0.1
+        ybr += (height/2)*0.1
+        xtl = int(xtl)
+        ytl = int(ytl)
+        xbr = int(xbr)
+        ybr = int(ybr)
 
         # ADD code for getting the image here
         db_task = self.get_object()
